@@ -5,440 +5,401 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Livelli Fiume Reno (dati ARPAE)</title>
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-        }
-        #dashboard {
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            width: 100%;
-        }
-        #map {
-            width: 30%; /* Map takes 30% of the width */
-            height: 100vh; /* Full viewport height */
-            position: fixed; /* Fixed position on the left */
-            top: 0;
-            left: 0;
-        }
-        .content {
-            margin-left: 32%; /* Leave space for the map */
-            width: 68%; /* Remaining space for plots */
-        }
-        .level-container {
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            border-bottom: 1px solid #ccc;
-        }
-        .level-row {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-around;
-        }
-        .sensor-plot {
-            width: 500px; /* Increased width for plot */
-            height: 400px; /* Increased height for plot */
-            border: 1px solid #ccc;
-            margin-bottom: 20px;
-        }
-        .sensor-info {
-            text-align: center;
-            margin-top: 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .sensor-dot {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            margin-right: 10px;
-            border: 2px solid black; /* Black border for visibility */
-        }
-        /* Buttons at the top */
-        #range-buttons {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        .range-button {
-            padding: 10px 20px;
-            margin: 0 10px;
-            background-color: lightgray;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            border-radius: 5px;
-        }
-        .range-button.active {
-            background-color: darkgray;
-            color: white;
-        }
-    </style>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+
     <!-- Leaflet.js for map (version 1.9.4) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- Plotly.js for charts -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <style>
+        #map {
+            width: 100%;
+            height: 800px; /* Adjust height inside the column */
+        }
+        .sensor-plot {
+            border: 1px solid #ccc;
+            margin-bottom: 20px;
+        }
+        /* Custom divider line between rows */
+        .row-divider {
+            border-top: 1px solid #ccc;
+            margin: 20px 0;
+        }
+    </style>
 </head>
 <body>
 
-    <!-- The map will be displayed on the left side -->
-    <div id="map"></div>
-
-    <div class="content">
-        <h1 style="text-align: center;">Livelli Fiume Reno <a href="https://www.arpae.it/it/temi-ambientali/acqua/dati-acque/acque-superficiali/dati-idrometrici-in-tempo-reale-1">(dati ARPAE)</a></h1>
-
-        <!-- Range buttons for choosing between 24h, 48h, and 72h -->
-        <div id="range-buttons">
-            <button class="range-button" data-range="24">Last 24 Hours</button>
-            <button class="range-button active" data-range="48">Last 48 Hours</button> <!-- Default is 48 hours -->
-            <button class="range-button" data-range="72">Last 72 Hours</button>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Map (no card, just a div) -->
+        <div class="col-md-3">
+            <div id="map"></div>
         </div>
 
-        <div id="dashboard">
-            <!-- Dynamic content for time series plots will be inserted here -->
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <div class="content">
+                <h1 class="text-center my-4">Livelli Fiume Reno 
+                    <a href="https://www.arpae.it/it/temi-ambientali/acqua/dati-acque/acque-superficiali/dati-idrometrici-in-tempo-reale-1">(dati ARPAE)</a>
+                </h1>
+
+                <!-- Range buttons for choosing between 24h, 48h, and 72h -->
+                <div id="range-buttons" class="d-flex justify-content-center mb-4">
+                    <button class="btn btn-secondary mx-2 range-button" data-range="24">Last 24 Hours</button>
+                    <button class="btn btn-secondary mx-2 range-button active" data-range="48">Last 48 Hours</button>
+                    <button class="btn btn-secondary mx-2 range-button" data-range="72">Last 72 Hours</button>
+                </div>
+
+                <div id="dashboard" class="col-12">
+                    <!-- Dynamic content for time series plots will be inserted here -->
+                </div>
+            </div>
         </div>
     </div>
+</div>
 
-    <script>
-        let currentRange = 48; // Default range in hours (48 hours)
-        let sensorDataGlobal = []; // Store sensor data globally
-        let mapInitialized = false; // To prevent re-initializing the map
+<script>
+    let currentRange = 48; // Default range in hours (48 hours)
+    let sensorDataGlobal = []; // Store sensor data globally
+    let mapInitialized = false; // To prevent re-initializing the map
 
-        // ===== Fetch the Configuration from config.json =====
-        async function fetchConfig() {
-            try {
-                const response = await fetch('config.json');
-                if (!response.ok) throw new Error("Failed to load configuration");
-                return await response.json();
-            } catch (error) {
-                console.error('Error fetching config.json:', error);
-                return null;
+    // ===== Fetch the Configuration from config.json =====
+    async function fetchConfig() {
+        try {
+            const response = await fetch('config.json');
+            if (!response.ok) throw new Error("Failed to load configuration");
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching config.json:', error);
+            return null;
+        }
+    }
+
+    // ===== Fetch Data for Each Sensor from URL =====
+    async function fetchSensorData(sensorName, config) {
+        try {
+            const sensorConfig = config.sensors[sensorName];
+            const response = await fetch(sensorConfig.url);
+            if (!response.ok) throw new Error("Failed to fetch data");
+            const data = await response.json();
+            return parseSensorData(sensorName, data._items[0]); // Assuming _items contains the relevant data
+        } catch (error) {
+            console.error('Error fetching sensor data:', error);
+            return null;
+        }
+    }
+
+    // ===== Parse the Sensor Data from the API Response =====
+    function parseSensorData(sensorName, sensorItem) {
+        const nome = sensorItem.anagrafica.nome;
+        const coordinates = sensorItem.anagrafica.geometry.coordinates.reverse();  // Reverse to get [lat, lon]
+        const levels = sensorItem.anagrafica.sensori.livello_idro.soglie; // [yellow, orange, red]
+
+        // Parse time series data
+        const timeSeries = [];
+        for (const [date, times] of Object.entries(sensorItem.dati)) {
+            for (const [time, value] of Object.entries(times)) {
+                const year = date.substring(0, 4);
+                const month = date.substring(4, 6);
+                const day = date.substring(6, 8);
+                const hours = time.substring(0, 2);
+                const minutes = time.substring(2, 4);
+                const timestamp = new Date(`${year}-${month}-${day}T${hours}:${minutes}:00Z`);
+                timeSeries.push({ time: timestamp, value: value.livello_idro });
             }
         }
+        timeSeries.sort((a, b) => a.time - b.time);
 
-        // ===== Fetch Data for Each Sensor from URL =====
-        async function fetchSensorData(sensorName, config) {
-            try {
-                const sensorConfig = config.sensors[sensorName];
-                const response = await fetch(sensorConfig.url);
-                if (!response.ok) throw new Error("Failed to fetch data");
-                const data = await response.json();
-                return parseSensorData(sensorName, data._items[0]); // Assuming _items contains the relevant data
-            } catch (error) {
-                console.error('Error fetching sensor data:', error);
-                return null;
-            }
-        }
+        return {
+            name: nome,
+            coordinates: coordinates,
+            levels: {
+                yellow: levels ? levels[0] : null,
+                orange: levels ? levels[1] : null,
+                red: levels ? levels[2] : null,
+            },
+            timeSeries: timeSeries
+        };
+    }
 
-        // ===== Parse the Sensor Data from the API Response =====
-        function parseSensorData(sensorName, sensorItem) {
-            const nome = sensorItem.anagrafica.nome;
-            const coordinates = sensorItem.anagrafica.geometry.coordinates.reverse();  // Reverse to get [lat, lon]
-            const levels = sensorItem.anagrafica.sensori.livello_idro.soglie; // [yellow, orange, red]
+    // ===== Determine the status color for the sensor (based on the latest water level) =====
+    function getSensorStatus(sensor) {
+        const latestValue = sensor.timeSeries[sensor.timeSeries.length - 1].value;
+        if (latestValue < sensor.levels.yellow) return 'success';  // Green
+        if (latestValue < sensor.levels.orange) return 'warning';  // Yellow
+        if (latestValue < sensor.levels.red) return 'danger';  // Red
+        return 'danger';  // Extreme danger, use red
+    }
 
-            // Parse time series data
-            const timeSeries = [];
-            for (const [date, times] of Object.entries(sensorItem.dati)) {
-                for (const [time, value] of Object.entries(times)) {
-                    const year = date.substring(0, 4);
-                    const month = date.substring(4, 6);
-                    const day = date.substring(6, 8);
-                    const hours = time.substring(0, 2);
-                    const minutes = time.substring(2, 4);
-                    const timestamp = new Date(`${year}-${month}-${day}T${hours}:${minutes}:00Z`);
-                    timeSeries.push({ time: timestamp, value: value.livello_idro });
-                }
-            }
-            timeSeries.sort((a, b) => a.time - b.time);
+    // ===== Filter the time series data to show only the latest X hours =====
+    function filterTimeSeries(sensor, hours) {
+        const now = new Date();
+        const cutoffTime = new Date(now.getTime() - (hours * 60 * 60 * 1000)); // Calculate cutoff time
+        return sensor.timeSeries.filter(entry => entry.time >= cutoffTime);
+    }
 
-            return {
-                name: nome,
-                coordinates: coordinates,
-                levels: {
-                    yellow: levels ? levels[0] : null,
-                    orange: levels ? levels[1] : null,
-                    red: levels ? levels[2] : null,
-                },
-                timeSeries: timeSeries
-            };
-        }
+    // ===== Compute Sensor Levels based on followers =====
+    function computeSensorLevels(config) {
+        const levels = {};
+        const followers = {};  // Track followers for each sensor
 
-        // ===== Determine color for sensor dot based on the latest water level =====
-        function getSensorStatusColor(sensor) {
-            const latestValue = sensor.timeSeries[sensor.timeSeries.length - 1].value;
-            if (latestValue < sensor.levels.yellow) return 'green';
-            if (latestValue < sensor.levels.orange) return 'yellow';
-            if (latestValue < sensor.levels.red) return 'orange';
-            return 'red';
-        }
-
-        // ===== Filter the time series data to show only the latest X hours =====
-        function filterTimeSeries(sensor, hours) {
-            const now = new Date();
-            const cutoffTime = new Date(now.getTime() - (hours * 60 * 60 * 1000)); // Calculate cutoff time
-            return sensor.timeSeries.filter(entry => entry.time >= cutoffTime);
-        }
-
-        // ===== Compute Sensor Levels based on followers =====
-        function computeSensorLevels(config) {
-            const levels = {};
-            const followers = {};  // Track followers for each sensor
-
-            // Initialize followers for each sensor
-            Object.keys(config.sensors).forEach(sensor => {
-                followers[sensor] = [];
-            });
-
-            // Build the followers tree based on dependencies
-            Object.keys(config.sensors).forEach(sensor => {
-                const dependencies = config.sensors[sensor].dependencies;
-                dependencies.forEach(dep => {
-                    if (followers[dep]) {
-                        followers[dep].push(sensor);  // Add the sensor as a follower of its dependency
-                    }
-                });
-            });
-
-            // Start from sensors that have no followers (leaves of the tree)
-            const visited = new Set();
-            const sensorsWithNoFollowers = Object.keys(followers).filter(sensor => followers[sensor].length === 0);
-
-            function assignLevel(sensor, currentLevel) {
-                if (visited.has(sensor)) return;
-                visited.add(sensor);
-                levels[sensor] = Math.max(levels[sensor] || 0, currentLevel);
-
-                // Find all sensors that depend on the current sensor
-                const dependencies = config.sensors[sensor].dependencies;
-                dependencies.forEach(dep => {
-                    assignLevel(dep, currentLevel + 1);  // Increase the level for dependencies
-                });
-            }
-
-            // Assign levels starting from sensors with no followers
-            sensorsWithNoFollowers.forEach(sensor => {
-                assignLevel(sensor, 0);  // Sensors with no followers start at level 0
-            });
-
-            return levels;
-        }
-
-        // ===== Initialize Map (one map with all sensors) and fit bounds with 50px padding =====
-        function initializeMap(sensors) {
-            if (mapInitialized) return; // Skip if the map is already initialized
-
-            const map = L.map('map').setView([44.5, 11.3], 8); // Centered in the region
-
-            // Add OpenStreetMap tile layer
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: 'Map data © OpenStreetMap contributors'
-            }).addTo(map);
-
-            // Add markers for all sensors with tooltips
-            const markers = sensors.map(sensor => {
-                return L.marker(sensor.coordinates)
-                    .bindTooltip(sensor.name, { permanent: true, direction: 'right', className: 'sensor-tooltip' }) // Show the name as a label
-                    .bindPopup(`<strong>${sensor.name}</strong>`)
-                    .addTo(map);
-            });
-
-            // Auto-center the map to fit all sensor markers with a 50px margin
-            const bounds = L.latLngBounds(markers.map(marker => marker.getLatLng()));
-            map.fitBounds(bounds, { padding: [50, 50] });
-
-            mapInitialized = true; // Mark map as initialized
-        }
-
-        // ===== Draw Time Series Chart with Levels and Gridlines using Plotly.js =====
-        function drawTimeSeries(sensor, plotElementId, range) {
-            // Filter the time series data based on the selected range (24, 48, 72 hours)
-            const filteredData = filterTimeSeries(sensor, range);
-            const times = filteredData.map(d => d.time);
-            const values = filteredData.map(d => d.value);
-
-            const trace = { x: times, y: values, mode: 'lines', name: 'Water Level', line: { color: 'blue' } };
-            const layout = {
-                xaxis: { 
-                    title: 'Time', 
-                    type: 'date', 
-                    showgrid: true // Show grid on x-axis
-                },
-                yaxis: { 
-                    title: 'Water Level (m)', 
-                    range: [0, Math.max(sensor.levels.red + 3, Math.max(...values))], 
-                    showgrid: true // Show grid on y-axis
-                },
-                shapes: [], // Placeholder for threshold lines
-                autosize: true, // Ensure that the plot resizes properly
-                width: 500,
-                height: 400,
-                margin: { t: 10 }  // Reduce top margin since there's no title
-            };
-
-            // Add threshold lines if they are not null
-            if (sensor.levels.yellow !== null) {
-                layout.shapes.push({
-                    type: 'line',
-                    xref: 'paper',
-                    x0: 0,
-                    x1: 1,
-                    y0: sensor.levels.yellow,
-                    y1: sensor.levels.yellow,
-                    line: {
-                        color: 'yellow',
-                        width: 2,
-                        dash: 'dash'
-                    }
-                });
-            }
-            if (sensor.levels.orange !== null) {
-                layout.shapes.push({
-                    type: 'line',
-                    xref: 'paper',
-                    x0: 0,
-                    x1: 1,
-                    y0: sensor.levels.orange,
-                    y1: sensor.levels.orange,
-                    line: {
-                        color: 'orange',
-                        width: 2,
-                        dash: 'dash'
-                    }
-                });
-            }
-            if (sensor.levels.red !== null) {
-                layout.shapes.push({
-                    type: 'line',
-                    xref: 'paper',
-                    x0: 0,
-                    x1: 1,
-                    y0: sensor.levels.red,
-                    y1: sensor.levels.red,
-                    line: {
-                        color: 'red',
-                        width: 2,
-                        dash: 'dash'
-                    }
-                });
-            }
-
-            // Ensure the element exists before calling Plotly
-            requestAnimationFrame(() => {
-                Plotly.newPlot(plotElementId, [trace], layout);
-            });
-        }
-
-        // ===== Render the dashboard with the selected time range =====
-        function renderDashboardWithRange(range) {
-            const dashboardDiv = document.getElementById('dashboard');
-            dashboardDiv.innerHTML = ''; // Clear the dashboard before rendering
-
-            const sensorLevels = computeSensorLevels(sensorDataGlobal.config);
-
-            const sensorsByLevel = {};
-            Object.keys(sensorLevels).forEach(sensor => {
-                const level = sensorLevels[sensor];
-                if (!sensorsByLevel[level]) sensorsByLevel[level] = [];
-                sensorsByLevel[level].push(sensor);
-            });
-
-            Object.keys(sensorsByLevel).forEach(level => {
-                const levelContainer = document.createElement('div');
-                levelContainer.className = 'level-container';
-
-                // Create a row for sensor plots (time series)
-                const levelRow = document.createElement('div');
-                levelRow.className = 'level-row';
-
-                sensorsByLevel[level].forEach(sensorName => {
-                    const sensor = sensorDataGlobal.data.find(s => s.name === sensorName);
-                    if (!sensor) return;
-
-                    // Create container for sensor plot
-                    const sensorDiv = document.createElement('div');
-                    sensorDiv.className = 'sensor-plot';
-
-                    // Create a div element for the Plotly chart
-                    const plotDiv = document.createElement('div');
-                    plotDiv.id = `plot-${sensor.name}`;
-
-                    sensorDiv.appendChild(plotDiv);
-
-                    // Add sensor info below chart
-                    const sensorInfo = document.createElement('div');
-                    sensorInfo.className = 'sensor-info';
-
-                    // Create a dot with the sensor's status color
-                    const sensorDot = document.createElement('div');
-                    sensorDot.className = 'sensor-dot';
-                    sensorDot.style.backgroundColor = getSensorStatusColor(sensor);
-
-                    sensorInfo.appendChild(sensorDot);
-                    sensorInfo.innerHTML += `<strong>${sensor.name}</strong>`;
-
-                    sensorDiv.appendChild(sensorInfo);
-                    levelRow.appendChild(sensorDiv);
-
-                    // Call drawTimeSeries to draw the plot, ensuring it waits for the DOM to update
-                    requestAnimationFrame(() => {
-                        drawTimeSeries(sensor, plotDiv.id, range);
-                    });
-                });
-
-                // Append the row for plots to the level container
-                levelContainer.appendChild(levelRow);
-
-                // Append the level container to the dashboard
-                dashboardDiv.appendChild(levelContainer);
-            });
-
-            // Initialize the map (only once) with all sensors
-            initializeMap(sensorDataGlobal.data);
-
-        }
-
-        // ===== Main Function to Render the Dashboard =====
-        async function renderDashboard() {
-            const config = await fetchConfig();
-            if (!config) return;
-
-            const sensorNames = Object.keys(config.sensors);
-            const sensorData = await Promise.all(sensorNames.map(sensorName => fetchSensorData(sensorName, config)));
-
-            // Store the fetched data globally
-            sensorDataGlobal = { config, data: sensorData };
-
-            // Render dashboard with default 48-hour range
-            renderDashboardWithRange(48);
-        }
-
-        // Handle range button clicks
-        document.getElementById('range-buttons').addEventListener('click', (e) => {
-            if (e.target.classList.contains('range-button')) {
-                // Remove 'active' class from all buttons and add it to the clicked one
-                document.querySelectorAll('.range-button').forEach(button => button.classList.remove('active'));
-                e.target.classList.add('active');
-
-                // Get the range from the clicked button's data attribute
-                const range = parseInt(e.target.getAttribute('data-range'));
-                currentRange = range;
-
-                // Re-render the dashboard with the selected range
-                renderDashboardWithRange(range);
-            }
+        // Initialize followers for each sensor
+        Object.keys(config.sensors).forEach(sensor => {
+            followers[sensor] = [];
         });
 
-        // Initialize the dashboard on page load
-        document.addEventListener('DOMContentLoaded', renderDashboard);
+        // Build the followers tree based on dependencies
+        Object.keys(config.sensors).forEach(sensor => {
+            const dependencies = config.sensors[sensor].dependencies;
+            dependencies.forEach(dep => {
+                if (followers[dep]) {
+                    followers[dep].push(sensor);  // Add the sensor as a follower of its dependency
+                }
+            });
+        });
 
-    </script>
+        // Start from sensors that have no followers (leaves of the tree)
+        const visited = new Set();
+        const sensorsWithNoFollowers = Object.keys(followers).filter(sensor => followers[sensor].length === 0);
+
+        function assignLevel(sensor, currentLevel) {
+            if (visited.has(sensor)) return;
+            visited.add(sensor);
+            levels[sensor] = Math.max(levels[sensor] || 0, currentLevel);
+
+            // Find all sensors that depend on the current sensor
+            const dependencies = config.sensors[sensor].dependencies;
+            dependencies.forEach(dep => {
+                assignLevel(dep, currentLevel + 1);  // Increase the level for dependencies
+            });
+        }
+
+        // Assign levels starting from sensors with no followers
+        sensorsWithNoFollowers.forEach(sensor => {
+            assignLevel(sensor, 0);  // Sensors with no followers start at level 0
+        });
+
+        return levels;
+    }
+
+    // ===== Initialize Map (one map with all sensors) and fit bounds with 50px padding =====
+    function initializeMap(sensors) {
+        if (mapInitialized) return; // Skip if the map is already initialized
+
+        const map = L.map('map').setView([44.5, 11.3], 8); // Centered in the region
+
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: 'Map data © OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Add markers for all sensors with tooltips
+        const markers = sensors.map(sensor => {
+            return L.marker(sensor.coordinates)
+                .bindTooltip(sensor.name, { permanent: true, direction: 'right', className: 'sensor-tooltip' }) // Show the name as a label
+                .bindPopup(`<strong>${sensor.name}</strong>`)
+                .addTo(map);
+        });
+
+        // Auto-center the map to fit all sensor markers with a 50px margin
+        const bounds = L.latLngBounds(markers.map(marker => marker.getLatLng()));
+        map.fitBounds(bounds, { padding: [50, 50] });
+
+        mapInitialized = true; // Mark map as initialized
+    }
+
+    // ===== Draw Time Series Chart with Levels and Gridlines using Plotly.js =====
+    function drawTimeSeries(sensor, plotElementId, range) {
+        // Filter the time series data based on the selected range (24, 48, 72 hours)
+        const filteredData = filterTimeSeries(sensor, range);
+        const times = filteredData.map(d => d.time);
+        const values = filteredData.map(d => d.value);
+
+        const trace = { x: times, y: values, mode: 'lines', name: 'Water Level', line: { color: 'blue' } };
+        const layout = {
+            xaxis: { 
+                title: 'Time', 
+                type: 'date', 
+                showgrid: true // Show grid on x-axis
+            },
+            yaxis: { 
+                title: 'Water Level (m)', 
+                range: [0, Math.max(sensor.levels.red + 3, Math.max(...values))], 
+                showgrid: true // Show grid on y-axis
+            },
+            shapes: [], // Placeholder for threshold lines
+            autosize: true, // Ensure that the plot resizes properly
+            height: 400,
+            margin: { t: 10 }  // Reduce top margin since there's no title
+        };
+        const plot_config = { responsive: true };
+
+        // Add threshold lines if they are not null
+        if (sensor.levels.yellow !== null) {
+            layout.shapes.push({
+                type: 'line',
+                xref: 'paper',
+                x0: 0,
+                x1: 1,
+                y0: sensor.levels.yellow,
+                y1: sensor.levels.yellow,
+                line: {
+                    color: 'yellow',
+                    width: 2,
+                    dash: 'dash'
+                }
+            });
+        }
+        if (sensor.levels.orange !== null) {
+            layout.shapes.push({
+                type: 'line',
+                xref: 'paper',
+                x0: 0,
+                x1: 1,
+                y0: sensor.levels.orange,
+                y1: sensor.levels.orange,
+                line: {
+                    color: 'orange',
+                    width: 2,
+                    dash: 'dash'
+                }
+            });
+        }
+        if (sensor.levels.red !== null) {
+            layout.shapes.push({
+                type: 'line',
+                xref: 'paper',
+                x0: 0,
+                x1: 1,
+                y0: sensor.levels.red,
+                y1: sensor.levels.red,
+                line: {
+                    color: 'red',
+                    width: 2,
+                    dash: 'dash'
+                }
+            });
+        }
+
+        // Ensure the element exists before calling Plotly
+        requestAnimationFrame(() => {
+            Plotly.newPlot(plotElementId, [trace], layout, plot_config);
+        });
+    }
+
+    // ===== Render the dashboard with the selected time range =====
+    function renderDashboardWithRange(range) {
+        const dashboardDiv = document.getElementById('dashboard');
+        dashboardDiv.innerHTML = ''; // Clear the dashboard before rendering
+
+        const sensorLevels = computeSensorLevels(sensorDataGlobal.config);
+
+        const sensorsByLevel = {};
+        Object.keys(sensorLevels).forEach(sensor => {
+            const level = sensorLevels[sensor];
+            if (!sensorsByLevel[level]) sensorsByLevel[level] = [];
+            sensorsByLevel[level].push(sensor);
+        });
+
+        Object.keys(sensorsByLevel).forEach(level => {
+            const levelContainer = document.createElement('div');
+            levelContainer.className = 'level-container';
+
+            // Create a row for sensor plots (time series)
+            const levelRow = document.createElement('div');
+            levelRow.className = 'row';
+
+            sensorsByLevel[level].forEach(sensorName => {
+                const sensor = sensorDataGlobal.data.find(s => s.name === sensorName);
+                if (!sensor) return;
+
+                const statusClass = getSensorStatus(sensor);  // Get the status for card color
+
+                // Create a Bootstrap card for the sensor plot
+                const cardDiv = document.createElement('div');
+                cardDiv.className = `card text-white bg-${statusClass} col-lg-4 col-md-12 mb-2`;
+
+                const cardHeader = document.createElement('div');
+                cardHeader.className = 'card-header';
+                cardHeader.textContent = sensor.name;
+
+                const cardBody = document.createElement('div');
+                cardBody.className = 'card-body';
+
+                // Create a div element for the Plotly chart
+                const plotDiv = document.createElement('div');
+                plotDiv.id = `plot-${sensor.name}`;
+                plotDiv.className = 'sensor-plot';
+
+                cardBody.appendChild(plotDiv);
+                cardDiv.appendChild(cardHeader);
+                cardDiv.appendChild(cardBody);
+                levelRow.appendChild(cardDiv);
+
+                // Call drawTimeSeries to draw the plot, ensuring it waits for the DOM to update
+                requestAnimationFrame(() => {
+                    drawTimeSeries(sensor, plotDiv.id, range);
+                });
+            });
+
+            // Append the row for plots to the level container
+            levelContainer.appendChild(levelRow);
+
+            // Add a divider line between rows
+            const divider = document.createElement('div');
+            divider.className = 'row-divider';
+            levelContainer.appendChild(divider);
+
+            // Append the level container to the dashboard
+            dashboardDiv.appendChild(levelContainer);
+        });
+
+        // Initialize the map (only once) with all sensors
+        initializeMap(sensorDataGlobal.data);
+
+    }
+
+    // ===== Main Function to Render the Dashboard =====
+    async function renderDashboard() {
+        const config = await fetchConfig();
+        if (!config) return;
+
+        const sensorNames = Object.keys(config.sensors);
+        const sensorData = await Promise.all(sensorNames.map(sensorName => fetchSensorData(sensorName, config)));
+
+        // Store the fetched data globally
+        sensorDataGlobal = { config, data: sensorData };
+
+        // Render dashboard with default 48-hour range
+        renderDashboardWithRange(48);
+    }
+
+    // Handle range button clicks
+    document.getElementById('range-buttons').addEventListener('click', (e) => {
+        if (e.target.classList.contains('range-button')) {
+            // Remove 'active' class from all buttons and add it to the clicked one
+            document.querySelectorAll('.range-button').forEach(button => button.classList.remove('active'));
+            e.target.classList.add('active');
+
+            // Get the range from the clicked button's data attribute
+            const range = parseInt(e.target.getAttribute('data-range'));
+            currentRange = range;
+
+            // Re-render the dashboard with the selected range
+            renderDashboardWithRange(range);
+        }
+    });
+
+    // Initialize the dashboard on page load
+    document.addEventListener('DOMContentLoaded', renderDashboard);
+
+</script>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
