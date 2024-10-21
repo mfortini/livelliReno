@@ -15,18 +15,51 @@
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
     <style>
+        /* Sidebar */
+        #map-container {
+            height: 100vh; /* Full height */
+            background-color: #f8f9fa;
+            position: sticky;
+            top: 0;
+            overflow-y: auto;
+        }
+
         #map {
             width: 100%;
-            height: 800px; /* Adjust height inside the column */
+            height: 100%; /* Make map span full height */
         }
+
+        /* For smaller screens, the map moves to the top and takes 400px height */
+        @media (max-width: 768px) {
+            #map-container {
+                position: relative;
+                height: 400px;
+            }
+            #map {
+                height: 100%;
+            }
+        }
+
         .sensor-plot {
             border: 1px solid #ccc;
             margin-bottom: 20px;
         }
+
         /* Custom divider line between rows */
         .row-divider {
             border-top: 1px solid #ccc;
             margin: 20px 0;
+        }
+
+        /* Modify Bootstrap classes to customize text colors */
+        .bg-success { background-color: green !important; }
+        .bg-warning { background-color: yellow !important; color: black !important; } /* Yellow with black text */
+        .bg-danger { background-color: red !important; }
+        .bg-orange { background-color: orange !important; }
+
+        /* Bold text in the card headers */
+        .card-header {
+            font-weight: bold;
         }
     </style>
 </head>
@@ -34,13 +67,14 @@
 
 <div class="container-fluid">
     <div class="row">
-        <!-- Map (no card, just a div) -->
-        <div class="col-md-3">
+        <!-- Sidebar with map -->
+        <div id="map-container" class="col-12 col-md-3 p-3">
+            <h4 class="text-center">Sensor Map</h4>
             <div id="map"></div>
         </div>
 
-        <!-- Main Content -->
-        <div class="col-md-9">
+        <!-- Main Content (sensor plots) -->
+        <div class="col-12 col-md-9">
             <div class="content">
                 <h1 class="text-center my-4">Livelli Fiume Reno 
                     <a href="https://www.arpae.it/it/temi-ambientali/acqua/dati-acque/acque-superficiali/dati-idrometrici-in-tempo-reale-1">(dati ARPAE)</a>
@@ -130,8 +164,17 @@
         const latestValue = sensor.timeSeries[sensor.timeSeries.length - 1].value;
         if (latestValue < sensor.levels.yellow) return 'success';  // Green
         if (latestValue < sensor.levels.orange) return 'warning';  // Yellow
-        if (latestValue < sensor.levels.red) return 'danger';  // Red
-        return 'danger';  // Extreme danger, use red
+        if (latestValue < sensor.levels.red) return 'orange';  // Orange
+        return 'danger';  // Red
+    }
+
+    // ===== Determine the color for the marker based on the water level =====
+    function getSensorColor(sensor) {
+        const latestValue = sensor.timeSeries[sensor.timeSeries.length - 1].value;
+        if (latestValue < sensor.levels.yellow) return 'green';  // Green
+        if (latestValue < sensor.levels.orange) return 'yellow';  // Yellow
+        if (latestValue < sensor.levels.red) return 'orange';  // Orange
+        return 'red';  // Red for danger
     }
 
     // ===== Filter the time series data to show only the latest X hours =====
@@ -139,50 +182,6 @@
         const now = new Date();
         const cutoffTime = new Date(now.getTime() - (hours * 60 * 60 * 1000)); // Calculate cutoff time
         return sensor.timeSeries.filter(entry => entry.time >= cutoffTime);
-    }
-
-    // ===== Compute Sensor Levels based on followers =====
-    function computeSensorLevels(config) {
-        const levels = {};
-        const followers = {};  // Track followers for each sensor
-
-        // Initialize followers for each sensor
-        Object.keys(config.sensors).forEach(sensor => {
-            followers[sensor] = [];
-        });
-
-        // Build the followers tree based on dependencies
-        Object.keys(config.sensors).forEach(sensor => {
-            const dependencies = config.sensors[sensor].dependencies;
-            dependencies.forEach(dep => {
-                if (followers[dep]) {
-                    followers[dep].push(sensor);  // Add the sensor as a follower of its dependency
-                }
-            });
-        });
-
-        // Start from sensors that have no followers (leaves of the tree)
-        const visited = new Set();
-        const sensorsWithNoFollowers = Object.keys(followers).filter(sensor => followers[sensor].length === 0);
-
-        function assignLevel(sensor, currentLevel) {
-            if (visited.has(sensor)) return;
-            visited.add(sensor);
-            levels[sensor] = Math.max(levels[sensor] || 0, currentLevel);
-
-            // Find all sensors that depend on the current sensor
-            const dependencies = config.sensors[sensor].dependencies;
-            dependencies.forEach(dep => {
-                assignLevel(dep, currentLevel + 1);  // Increase the level for dependencies
-            });
-        }
-
-        // Assign levels starting from sensors with no followers
-        sensorsWithNoFollowers.forEach(sensor => {
-            assignLevel(sensor, 0);  // Sensors with no followers start at level 0
-        });
-
-        return levels;
     }
 
     // ===== Initialize Map (one map with all sensors) and fit bounds with 50px padding =====
@@ -196,12 +195,18 @@
             attribution: 'Map data © OpenStreetMap contributors'
         }).addTo(map);
 
-        // Add markers for all sensors with tooltips
+        // Add circle markers for all sensors with dynamic colors
         const markers = sensors.map(sensor => {
-            return L.marker(sensor.coordinates)
-                .bindTooltip(sensor.name, { permanent: true, direction: 'right', className: 'sensor-tooltip' }) // Show the name as a label
-                .bindPopup(`<strong>${sensor.name}</strong>`)
-                .addTo(map);
+            const sensorColor = getSensorColor(sensor);
+            return L.circleMarker(sensor.coordinates, {
+                color: sensorColor,
+                radius: 8,  // Size of the circle
+                fillColor: sensorColor,
+                fillOpacity: 0.8
+            })
+            .bindTooltip(sensor.name, { permanent: true, direction: 'right', className: 'sensor-tooltip' }) // Show the name as a label
+            .bindPopup(`<strong>${sensor.name}</strong>`)
+            .addTo(map);
         });
 
         // Auto-center the map to fit all sensor markers with a 50px margin
@@ -288,6 +293,50 @@
         requestAnimationFrame(() => {
             Plotly.newPlot(plotElementId, [trace], layout, plot_config);
         });
+    }
+
+    // ===== Compute Sensor Levels based on dependencies =====
+    function computeSensorLevels(config) {
+        const levels = {};
+        const followers = {};  // Track followers for each sensor
+
+        // Initialize followers for each sensor
+        Object.keys(config.sensors).forEach(sensor => {
+            followers[sensor] = [];
+        });
+
+        // Build the followers tree based on dependencies
+        Object.keys(config.sensors).forEach(sensor => {
+            const dependencies = config.sensors[sensor].dependencies;
+            dependencies.forEach(dep => {
+                if (followers[dep]) {
+                    followers[dep].push(sensor);  // Add the sensor as a follower of its dependency
+                }
+            });
+        });
+
+        // Start from sensors that have no followers (leaves of the tree)
+        const visited = new Set();
+        const sensorsWithNoFollowers = Object.keys(followers).filter(sensor => followers[sensor].length === 0);
+
+        function assignLevel(sensor, currentLevel) {
+            if (visited.has(sensor)) return;
+            visited.add(sensor);
+            levels[sensor] = Math.max(levels[sensor] || 0, currentLevel);
+
+            // Find all sensors that depend on the current sensor
+            const dependencies = config.sensors[sensor].dependencies;
+            dependencies.forEach(dep => {
+                assignLevel(dep, currentLevel + 1);  // Increase the level for dependencies
+            });
+        }
+
+        // Assign levels starting from sensors with no followers
+        sensorsWithNoFollowers.forEach(sensor => {
+            assignLevel(sensor, 0);  // Sensors with no followers start at level 0
+        });
+
+        return levels;
     }
 
     // ===== Render the dashboard with the selected time range =====
