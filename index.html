@@ -21,7 +21,6 @@
             background-color: #f8f9fa;
             position: sticky;
             top: 0;
-            overflow-y: auto;
         }
 
         #map {
@@ -29,11 +28,11 @@
             height: 100%; /* Make map span full height */
         }
 
-        /* For smaller screens, the map moves to the top and takes 400px height */
+        /* For smaller screens, the map moves to the bottom and takes 400px height */
         @media (max-width: 768px) {
             #map-container {
-                position: relative;
                 height: 400px;
+                position: relative;
             }
             #map {
                 height: 100%;
@@ -60,6 +59,16 @@
         /* Bold text in the card headers */
         .card-header {
             font-weight: bold;
+            cursor: pointer; /* Make the card header clickable */
+        }
+
+        /* Custom map marker styling */
+        .map-marker-rect {
+            border-radius: 5px;
+            padding: 5px 10px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1.5;
         }
     </style>
 </head>
@@ -67,14 +76,14 @@
 
 <div class="container-fluid">
     <div class="row">
-        <!-- Sidebar with map -->
-        <div id="map-container" class="col-12 col-md-3 p-3">
+        <!-- Sidebar with map, moved to the bottom on small screens -->
+        <div id="map-container" class="col-12 col-md-3 order-md-1 order-last p-3">
             <h4 class="text-center">Sensor Map</h4>
             <div id="map"></div>
         </div>
 
         <!-- Main Content (sensor plots) -->
-        <div class="col-12 col-md-9">
+        <div class="col-12 col-md-9 order-md-2">
             <div class="content">
                 <h1 class="text-center my-4">Livelli Fiume Reno 
                     <a href="https://www.arpae.it/it/temi-ambientali/acqua/dati-acque/acque-superficiali/dati-idrometrici-in-tempo-reale-1">(dati ARPAE)</a>
@@ -95,10 +104,26 @@
     </div>
 </div>
 
+<!-- Bootstrap Modal for Zoomed Graph -->
+<div class="modal fade" id="zoomedGraphModal" tabindex="-1" aria-labelledby="zoomedGraphModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="zoomedGraphModalLabel"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="zoomed-plot" style="height: 500px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     let currentRange = 48; // Default range in hours (48 hours)
     let sensorDataGlobal = []; // Store sensor data globally
     let mapInitialized = false; // To prevent re-initializing the map
+    let map, markers, bounds;  // Declare map, markers, and bounds globally
 
     // ===== Fetch the Configuration from config.json =====
     async function fetchConfig() {
@@ -168,13 +193,39 @@
         return 'danger';  // Red
     }
 
-    // ===== Determine the color for the marker based on the water level =====
+    // ===== Determine the color for the marker and rectangle based on the water level =====
     function getSensorColor(sensor) {
         const latestValue = sensor.timeSeries[sensor.timeSeries.length - 1].value;
         if (latestValue < sensor.levels.yellow) return 'green';  // Green
         if (latestValue < sensor.levels.orange) return 'yellow';  // Yellow
         if (latestValue < sensor.levels.red) return 'orange';  // Orange
         return 'red';  // Red for danger
+    }
+
+    // ===== Create custom marker for map (rounded rectangle) =====
+    function createCustomMarker(sensor) {
+        const latestValue = sensor.timeSeries[sensor.timeSeries.length - 1].value;
+        const latestTimestamp = sensor.timeSeries[sensor.timeSeries.length - 1].time;
+        const color = getSensorColor(sensor);
+        const textColor = color === 'yellow' ? 'black' : 'white'; // Use black text for yellow markers
+
+        // Format the timestamp as HH:MM
+        const formattedTime = `${latestTimestamp.getUTCHours().toString().padStart(2, '0')}:${latestTimestamp.getUTCMinutes().toString().padStart(2, '0')} UTC`;
+
+        // Safely create the custom marker using a template literal (no line breaks)
+        const htmlContent = `
+            <div class="map-marker-rect" style="background-color: ${color}; 
+            border-radius: 8px; color: ${textColor}; padding: 4px 8px; font-weight: bold; 
+            text-align: center; line-height: 1.2;">
+                ${latestValue}m<br><small>${sensor.name}</small>
+            </div>`;
+
+        return L.divIcon({
+            html: htmlContent.trim(),  // Trim extra white space
+            className: '',  // No additional class
+            iconSize: [70, 40],  // Customize size of the icon
+            iconAnchor: [35, 20]  // Position the icon properly
+        });
     }
 
     // ===== Filter the time series data to show only the latest X hours =====
@@ -188,36 +239,37 @@
     function initializeMap(sensors) {
         if (mapInitialized) return; // Skip if the map is already initialized
 
-        const map = L.map('map').setView([44.5, 11.3], 8); // Centered in the region
+        map = L.map('map').setView([44.5, 11.3], 8); // Centered in the region
 
         // Add OpenStreetMap tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: 'Map data © OpenStreetMap contributors'
         }).addTo(map);
 
-        // Add circle markers for all sensors with dynamic colors
-        const markers = sensors.map(sensor => {
-            const sensorColor = getSensorColor(sensor);
-            return L.circleMarker(sensor.coordinates, {
-                color: sensorColor,
-                radius: 8,  // Size of the circle
-                fillColor: sensorColor,
-                fillOpacity: 0.8
-            })
-            .bindTooltip(sensor.name, { permanent: true, direction: 'right', className: 'sensor-tooltip' }) // Show the name as a label
-            .bindPopup(`<strong>${sensor.name}</strong>`)
-            .addTo(map);
+        // Add custom markers for all sensors
+        markers = sensors.map(sensor => {
+            const customMarker = createCustomMarker(sensor);  // Create the custom marker
+            const marker = L.marker(sensor.coordinates, { icon: customMarker })
+                .bindPopup(`<strong>${sensor.name}</strong><br>Level: ${sensor.timeSeries[sensor.timeSeries.length - 1].value}m`)
+                .addTo(map);
+            return marker;
         });
 
-        // Auto-center the map to fit all sensor markers with a 50px margin
-        const bounds = L.latLngBounds(markers.map(marker => marker.getLatLng()));
+        // Calculate bounds for markers and fit map to bounds
+        bounds = L.latLngBounds(markers.map(marker => marker.getLatLng()));
         map.fitBounds(bounds, { padding: [50, 50] });
+
+        // Add window resize event listener to recalculate bounds on resize
+        window.addEventListener('resize', () => {
+            map.invalidateSize();  // Update map size
+            map.fitBounds(bounds, { padding: [50, 50] });  // Recalculate fitBounds
+        });
 
         mapInitialized = true; // Mark map as initialized
     }
 
     // ===== Draw Time Series Chart with Levels and Gridlines using Plotly.js =====
-    function drawTimeSeries(sensor, plotElementId, range) {
+    function drawTimeSeries(sensor, plotElementId, range, zoomed = false) {
         // Filter the time series data based on the selected range (24, 48, 72 hours)
         const filteredData = filterTimeSeries(sensor, range);
         const times = filteredData.map(d => d.time);
@@ -236,8 +288,8 @@
                 showgrid: true // Show grid on y-axis
             },
             shapes: [], // Placeholder for threshold lines
-            autosize: true, // Ensure that the plot resizes properly
-            height: 400,
+            autosize: !zoomed, // If zoomed, make it a fixed size; otherwise, allow resizing
+            height: zoomed ? 500 : 400, // Larger height for zoomed-in chart
             margin: { t: 10 }  // Reduce top margin since there's no title
         };
         const plot_config = { responsive: true };
@@ -366,14 +418,20 @@
                 if (!sensor) return;
 
                 const statusClass = getSensorStatus(sensor);  // Get the status for card color
+                const latestValue = sensor.timeSeries[sensor.timeSeries.length - 1].value; // Get latest value
+                const latestTimestamp = sensor.timeSeries[sensor.timeSeries.length - 1].time;
+                
+                // Format the timestamp as HH:MM
+                const formattedTime = `${latestTimestamp.getUTCHours().toString().padStart(2, '0')}:${latestTimestamp.getUTCMinutes().toString().padStart(2, '0')} UTC`;
 
                 // Create a Bootstrap card for the sensor plot
                 const cardDiv = document.createElement('div');
-                cardDiv.className = `card text-white bg-${statusClass} col-lg-4 col-md-12 mb-2`;
+                cardDiv.className = `card text-white bg-${statusClass} col-lg-4 col-md-12 mx-2 mb-2`;
 
                 const cardHeader = document.createElement('div');
                 cardHeader.className = 'card-header';
-                cardHeader.textContent = sensor.name;
+                cardHeader.textContent = `${sensor.name} (Latest: ${latestValue}m at ${formattedTime})`; // Add latest value and time to header
+                cardHeader.addEventListener('click', () => openZoomedGraph(sensor, range)); // Add event listener to open modal
 
                 const cardBody = document.createElement('div');
                 cardBody.className = 'card-body';
@@ -409,6 +467,19 @@
         // Initialize the map (only once) with all sensors
         initializeMap(sensorDataGlobal.data);
 
+    }
+
+    // Function to open the zoomed graph in the modal
+    function openZoomedGraph(sensor, range) {
+        const modalTitle = document.getElementById('zoomedGraphModalLabel');
+        modalTitle.textContent = `${sensor.name}`;
+
+        // Show the modal
+        const zoomedGraphModal = new bootstrap.Modal(document.getElementById('zoomedGraphModal'));
+        zoomedGraphModal.show();
+
+        // Render the zoomed chart in the modal
+        drawTimeSeries(sensor, 'zoomed-plot', range, true);
     }
 
     // ===== Main Function to Render the Dashboard =====
