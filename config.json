@@ -1,0 +1,36 @@
+{
+"sensors": {
+                "Bonconvento": {
+                    "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223141%22%7D",
+                    "dependencies": ["Casalecchio tiro a volo"]
+                },
+                "Forcelli": {
+                    "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223123%22%7D",
+                    "dependencies": ["Lavino di Sotto", "Paltrone Samoggia"]
+                },
+                "Lavino di Sotto": {
+                    "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223125%22%7D",
+                    "dependencies": []
+                },
+                "Paltrone Samoggia": {
+                    "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223164%22%7D",
+                    "dependencies": []
+                },
+                "Sostegno Reno": {
+                    "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%225314%22%7D",
+                    "dependencies": ["Bonconvento"]
+                },
+                "Cento": {
+                    "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223098%22%7D",
+                    "dependencies": ["Forcelli", "Sostegno Reno"]
+                },
+            "Casalecchio tiro a volo": {
+                "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223101%22%7D",
+                "dependencies": ["Casalecchio chiusa"]
+            },
+            "Casalecchio chiusa": {
+                "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223095%22%7D",
+                "dependencies": []
+            }
+            }
+}
