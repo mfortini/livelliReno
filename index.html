@@ -9,16 +9,28 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
+            display: flex;
         }
         #dashboard {
             display: flex;
             flex-direction: column;
             padding: 20px;
+            width: 100%;
+        }
+        #map {
+            width: 30%; /* Map takes 30% of the width */
+            height: 100vh; /* Full viewport height */
+            position: fixed; /* Fixed position on the left */
+            top: 0;
+            left: 0;
+        }
+        .content {
+            margin-left: 32%; /* Leave space for the map */
+            width: 68%; /* Remaining space for plots */
         }
         .level-container {
             display: flex;
-            justify-content: space-around;
-            align-items: flex-start;
+            flex-direction: column;
             padding: 20px;
             border-bottom: 1px solid #ccc;
         }
@@ -26,19 +38,12 @@
             display: flex;
             flex-wrap: wrap;
             justify-content: space-around;
-            width: 70%;
-        }
-        .map-container {
-            width: 28%;
-            height: 500px; /* Increased height for map */
-            margin-right: 10px;
-            border: 1px solid #ccc;
         }
         .sensor-plot {
             width: 500px; /* Increased width for plot */
             height: 400px; /* Increased height for plot */
             border: 1px solid #ccc;
-            margin-right: 10px;
+            margin-bottom: 20px;
         }
         .sensor-info {
             text-align: center;
@@ -48,8 +53,8 @@
             align-items: center;
         }
         .sensor-dot {
-            width: 16px;  /* Increased size */
-            height: 16px; /* Increased size */
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
             margin-right: 10px;
             border: 2px solid black; /* Black border for visibility */
@@ -74,31 +79,36 @@
             color: white;
         }
     </style>
-    <!-- Leaflet.js for map -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <!-- Leaflet.js for map (version 1.9.4) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- Plotly.js for charts -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
 
-    <h1 style="text-align: center;">Sensor Dashboard with Plotly and Levels</h1>
+    <!-- The map will be displayed on the left side -->
+    <div id="map"></div>
 
-    <!-- Range buttons for choosing between 24h, 48h, and 72h -->
-    <div id="range-buttons">
-        <button class="range-button" data-range="24">Last 24 Hours</button>
-        <button class="range-button active" data-range="48">Last 48 Hours</button> <!-- Default is 48 hours -->
-        <button class="range-button" data-range="72">Last 72 Hours</button>
-    </div>
+    <div class="content">
+        <h1 style="text-align: center;">Sensor Dashboard with Plotly and Levels</h1>
 
-    <div id="dashboard">
-        <!-- Dynamic content for maps and time series will be inserted here -->
+        <!-- Range buttons for choosing between 24h, 48h, and 72h -->
+        <div id="range-buttons">
+            <button class="range-button" data-range="24">Last 24 Hours</button>
+            <button class="range-button active" data-range="48">Last 48 Hours</button> <!-- Default is 48 hours -->
+            <button class="range-button" data-range="72">Last 72 Hours</button>
+        </div>
+
+        <div id="dashboard">
+            <!-- Dynamic content for time series plots will be inserted here -->
+        </div>
     </div>
 
     <script>
         let currentRange = 48; // Default range in hours (48 hours)
         let sensorDataGlobal = []; // Store sensor data globally
-        let mapsInitialized = false; // To prevent redrawing maps
+        let mapInitialized = false; // To prevent re-initializing the map
 
         // ===== Fetch the Configuration from config.json =====
         async function fetchConfig() {
@@ -151,9 +161,9 @@
                 name: nome,
                 coordinates: coordinates,
                 levels: {
-                    yellow: levels[0],
-                    orange: levels[1],
-                    red: levels[2],
+                    yellow: levels ? levels[0] : null,
+                    orange: levels ? levels[1] : null,
+                    red: levels ? levels[2] : null,
                 },
                 timeSeries: timeSeries
             };
@@ -219,22 +229,18 @@
             return levels;
         }
 
-        // ===== Initialize Map for a Specific Level (no re-drawing if already initialized) =====
-        function initializeMap(sensors, mapId) {
-            const mapElement = document.getElementById(mapId);
+        // ===== Initialize Map (one map with all sensors) and fit bounds with 50px padding =====
+        function initializeMap(sensors) {
+            if (mapInitialized) return; // Skip if the map is already initialized
 
-            if (mapElement.dataset.mapInitialized === "true") {
-                return;  // Skip if the map is already initialized
-            }
-
-            const map = L.map(mapId);
+            const map = L.map('map').setView([44.5, 11.3], 8); // Centered in the region
 
             // Add OpenStreetMap tile layer
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: 'Map data © OpenStreetMap contributors'
             }).addTo(map);
 
-            // Add markers for the sensors with labels (tooltips)
+            // Add markers for all sensors with tooltips
             const markers = sensors.map(sensor => {
                 return L.marker(sensor.coordinates)
                     .bindTooltip(sensor.name, { permanent: true, direction: 'right', className: 'sensor-tooltip' }) // Show the name as a label
@@ -242,15 +248,14 @@
                     .addTo(map);
             });
 
-            // Auto-center the map to fit all sensor markers
-            const group = new L.featureGroup(markers);
-            map.fitBounds(group.getBounds(), { padding: [10, 10] }); // Add padding to prevent overlap
-            map.setZoom(11); // Set default zoom to 11
+            // Auto-center the map to fit all sensor markers with a 50px margin
+            const bounds = L.latLngBounds(markers.map(marker => marker.getLatLng()));
+            map.fitBounds(bounds, { padding: [50, 50] });
 
-            mapElement.dataset.mapInitialized = "true";  // Mark the map as initialized
+            mapInitialized = true; // Mark map as initialized
         }
 
-        // ===== Draw Time Series Chart with Levels using Plotly.js =====
+        // ===== Draw Time Series Chart with Levels and Gridlines using Plotly.js =====
         function drawTimeSeries(sensor, plotElementId, range) {
             // Filter the time series data based on the selected range (24, 48, 72 hours)
             const filteredData = filterTimeSeries(sensor, range);
@@ -259,19 +264,77 @@
 
             const trace = { x: times, y: values, mode: 'lines', name: 'Water Level', line: { color: 'blue' } };
             const layout = {
-                title: sensor.name,
-                xaxis: { title: 'Time', type: 'date' },
-                yaxis: { title: 'Water Level (m)', range: [0, Math.max(sensor.levels.red + 3, Math.max(...values))] },
-                shapes: [
-                    { type: 'line', xref: 'paper', x0: 0, x1: 1, y0: sensor.levels.yellow, y1: sensor.levels.yellow, line: { color: 'yellow', width: 2, dash: 'dash' } },
-                    { type: 'line', xref: 'paper', x0: 0, x1: 1, y0: sensor.levels.orange, y1: sensor.levels.orange, line: { color: 'orange', width: 2, dash: 'dash' } },
-                    { type: 'line', xref: 'paper', x0: 0, x1: 1, y0: sensor.levels.red, y1: sensor.levels.red, line: { color: 'red', width: 2, dash: 'dash' } }
-                ]
+                xaxis: { 
+                    title: 'Time', 
+                    type: 'date', 
+                    showgrid: true // Show grid on x-axis
+                },
+                yaxis: { 
+                    title: 'Water Level (m)', 
+                    range: [0, Math.max(sensor.levels.red + 3, Math.max(...values))], 
+                    showgrid: true // Show grid on y-axis
+                },
+                shapes: [], // Placeholder for threshold lines
+                autosize: true, // Ensure that the plot resizes properly
+                width: 500,
+                height: 400,
+                margin: { t: 10 }  // Reduce top margin since there's no title
             };
-            Plotly.newPlot(plotElementId, [trace], layout);
+
+            // Add threshold lines if they are not null
+            if (sensor.levels.yellow !== null) {
+                layout.shapes.push({
+                    type: 'line',
+                    xref: 'paper',
+                    x0: 0,
+                    x1: 1,
+                    y0: sensor.levels.yellow,
+                    y1: sensor.levels.yellow,
+                    line: {
+                        color: 'yellow',
+                        width: 2,
+                        dash: 'dash'
+                    }
+                });
+            }
+            if (sensor.levels.orange !== null) {
+                layout.shapes.push({
+                    type: 'line',
+                    xref: 'paper',
+                    x0: 0,
+                    x1: 1,
+                    y0: sensor.levels.orange,
+                    y1: sensor.levels.orange,
+                    line: {
+                        color: 'orange',
+                        width: 2,
+                        dash: 'dash'
+                    }
+                });
+            }
+            if (sensor.levels.red !== null) {
+                layout.shapes.push({
+                    type: 'line',
+                    xref: 'paper',
+                    x0: 0,
+                    x1: 1,
+                    y0: sensor.levels.red,
+                    y1: sensor.levels.red,
+                    line: {
+                        color: 'red',
+                        width: 2,
+                        dash: 'dash'
+                    }
+                });
+            }
+
+            // Ensure the element exists before calling Plotly
+            requestAnimationFrame(() => {
+                Plotly.newPlot(plotElementId, [trace], layout);
+            });
         }
 
-        // ===== Render the dashboard with the selected time range (maps won't be re-initialized) =====
+        // ===== Render the dashboard with the selected time range =====
         function renderDashboardWithRange(range) {
             const dashboardDiv = document.getElementById('dashboard');
             dashboardDiv.innerHTML = ''; // Clear the dashboard before rendering
@@ -289,11 +352,6 @@
                 const levelContainer = document.createElement('div');
                 levelContainer.className = 'level-container';
 
-                // Create map container
-                const mapContainer = document.createElement('div');
-                mapContainer.className = 'map-container';
-                mapContainer.id = `map-level-${level}`;  // Unique ID for map
-
                 // Create a row for sensor plots (time series)
                 const levelRow = document.createElement('div');
                 levelRow.className = 'level-row';
@@ -309,8 +367,6 @@
                     // Create a div element for the Plotly chart
                     const plotDiv = document.createElement('div');
                     plotDiv.id = `plot-${sensor.name}`;
-                    plotDiv.style.width = '500px';
-                    plotDiv.style.height = '400px';
 
                     sensorDiv.appendChild(plotDiv);
 
@@ -328,29 +384,23 @@
 
                     sensorDiv.appendChild(sensorInfo);
                     levelRow.appendChild(sensorDiv);
+
+                    // Call drawTimeSeries to draw the plot, ensuring it waits for the DOM to update
+                    requestAnimationFrame(() => {
+                        drawTimeSeries(sensor, plotDiv.id, range);
+                    });
                 });
 
-                // Append the map container and sensor plots to the level container
-                levelContainer.appendChild(mapContainer);
+                // Append the row for plots to the level container
                 levelContainer.appendChild(levelRow);
 
                 // Append the level container to the dashboard
                 dashboardDiv.appendChild(levelContainer);
-
-                // Initialize the map for the current level (only once)
-                const levelSensors = sensorsByLevel[level].map(sensorName => sensorDataGlobal.data.find(s => s.name === sensorName));
-                initializeMap(levelSensors, mapContainer.id);
-
-                // Draw the time series charts for the current level
-                sensorsByLevel[level].forEach(sensorName => {
-                    const sensor = sensorDataGlobal.data.find(s => s.name === sensorName);
-                    if (sensor) {
-                        drawTimeSeries(sensor, `plot-${sensor.name}`, range);
-                    }
-                });
             });
 
-            mapsInitialized = true; // Maps are initialized after first render
+            // Initialize the map (only once) with all sensors
+            initializeMap(sensorDataGlobal.data);
+
         }
 
         // ===== Main Function to Render the Dashboard =====
