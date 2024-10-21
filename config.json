@@ -30,6 +30,30 @@
             },
             "Casalecchio chiusa": {
                 "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223095%22%7D",
+                "dependencies": ["Sasso Marconi", "Vergato DX"]
+            },
+            "Dosso": {
+                "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223116%22%7D",
+                "dependencies": ["Cento"]
+            },
+            "Opera Reno Panfilia": {
+                "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223117%22%7D",
+                "dependencies": ["Dosso"]
+            },
+            "Secondo Salto": {
+                "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223118%22%7D",
+                "dependencies": ["Opera Reno Panfilia"]
+            },
+            "Gallo": {
+                "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223120%22%7D",
+                "dependencies": ["Opera Reno Panfilia"]
+            },
+            "Sasso Marconi": {
+                "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223094%22%7D",
+                "dependencies": []
+            },
+            "Vergato DX": {
+                "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%2253132%22%7D",
                 "dependencies": []
             }
             }
