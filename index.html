@@ -275,22 +275,27 @@
         const times = filteredData.map(d => d.time);
         const values = filteredData.map(d => d.value);
 
-        const trace = { x: times, y: values, mode: 'lines', name: 'Water Level', line: { color: 'blue' } };
+        const trace = { x: times, y: values, mode: 'lines', name: 'Water Level', line: { color: 'ligthblue' } };
         const layout = {
+            paper_bgcolor: "rgba(0,0,0,1)",
+            plot_bgcolor: "rgba(0,0,0,1)",
+                 font: {
+color: 'white'
+},
             xaxis: { 
-                title: 'Time', 
                 type: 'date', 
+                gridcolor: "rgba(200,200,200,0.3)",
                 showgrid: true // Show grid on x-axis
             },
             yaxis: { 
-                title: 'Water Level (m)', 
                 range: [0, Math.max(sensor.levels.red + 3, Math.max(...values))], 
+                gridcolor: "rgba(200,200,200,0.3)",
                 showgrid: true // Show grid on y-axis
             },
             shapes: [], // Placeholder for threshold lines
             autosize: !zoomed, // If zoomed, make it a fixed size; otherwise, allow resizing
             height: zoomed ? 500 : 400, // Larger height for zoomed-in chart
-            margin: { t: 10 }  // Reduce top margin since there's no title
+            margin: { t: 10, b: 40, r: 10, l: 20 }  // Reduce top margin since there's no title
         };
         const plot_config = { responsive: true };
 
@@ -305,7 +310,7 @@
                 y1: sensor.levels.yellow,
                 line: {
                     color: 'yellow',
-                    width: 2,
+                    width: 1,
                     dash: 'dash'
                 }
             });
@@ -320,7 +325,7 @@
                 y1: sensor.levels.orange,
                 line: {
                     color: 'orange',
-                    width: 2,
+                    width: 1,
                     dash: 'dash'
                 }
             });
@@ -335,7 +340,7 @@
                 y1: sensor.levels.red,
                 line: {
                     color: 'red',
-                    width: 2,
+                    width: 1,
                     dash: 'dash'
                 }
             });
