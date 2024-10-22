@@ -89,11 +89,17 @@
                     <a href="https://www.arpae.it/it/temi-ambientali/acqua/dati-acque/acque-superficiali/dati-idrometrici-in-tempo-reale-1">(dati ARPAE)</a>
                 </h1>
 
-                <!-- Range buttons for choosing between 24h, 48h, and 72h -->
+                <!-- Range buttons for choosing between 24h, 48h, and 72h, plus toggle switch -->
                 <div id="range-buttons" class="d-flex justify-content-center mb-4">
                     <button class="btn btn-secondary mx-2 range-button" data-range="24">Last 24 Hours</button>
                     <button class="btn btn-secondary mx-2 range-button active" data-range="48">Last 48 Hours</button>
                     <button class="btn btn-secondary mx-2 range-button" data-range="72">Last 72 Hours</button>
+
+                    <!-- Toggle for Normalized / Non-Normalized Data -->
+                    <div class="form-check form-switch mx-4">
+                        <input class="form-check-input" type="checkbox" id="toggleNormalized">
+                        <label class="form-check-label" for="toggleNormalized">Normalized Values</label>
+                    </div>
                 </div>
 
                 <div id="dashboard" class="col-12">
@@ -121,9 +127,16 @@
 
 <script>
     let currentRange = 48; // Default range in hours (48 hours)
+    let isNormalized = false; // Default mode is non-normalized (toggle is off by default)
     let sensorDataGlobal = []; // Store sensor data globally
     let mapInitialized = false; // To prevent re-initializing the map
     let map, markers, bounds;  // Declare map, markers, and bounds globally
+
+    // Add event listener to the toggle switch
+    document.getElementById('toggleNormalized').addEventListener('change', function(e) {
+        isNormalized = e.target.checked;
+        renderDashboardWithRange(currentRange); // Re-render the dashboard with the selected mode
+    });
 
     // ===== Fetch the Configuration from config.json =====
     async function fetchConfig() {
@@ -184,172 +197,11 @@
         };
     }
 
-    // ===== Determine the status color for the sensor (based on the latest water level) =====
-    function getSensorStatus(sensor) {
-        const latestValue = sensor.timeSeries[sensor.timeSeries.length - 1].value;
-        if (latestValue < sensor.levels.yellow) return 'success';  // Green
-        if (latestValue < sensor.levels.orange) return 'warning';  // Yellow
-        if (latestValue < sensor.levels.red) return 'orange';  // Orange
-        return 'danger';  // Red
-    }
-
-    // ===== Determine the color for the marker and rectangle based on the water level =====
-    function getSensorColor(sensor) {
-        const latestValue = sensor.timeSeries[sensor.timeSeries.length - 1].value;
-        if (latestValue < sensor.levels.yellow) return 'green';  // Green
-        if (latestValue < sensor.levels.orange) return 'yellow';  // Yellow
-        if (latestValue < sensor.levels.red) return 'orange';  // Orange
-        return 'red';  // Red for danger
-    }
-
-    // ===== Create custom marker for map (rounded rectangle) =====
-    function createCustomMarker(sensor) {
-        const latestValue = sensor.timeSeries[sensor.timeSeries.length - 1].value;
-        const latestTimestamp = sensor.timeSeries[sensor.timeSeries.length - 1].time;
-        const color = getSensorColor(sensor);
-        const textColor = color === 'yellow' ? 'black' : 'white'; // Use black text for yellow markers
-
-        // Format the timestamp as HH:MM
-        const formattedTime = `${latestTimestamp.getUTCHours().toString().padStart(2, '0')}:${latestTimestamp.getUTCMinutes().toString().padStart(2, '0')} UTC`;
-
-        // Safely create the custom marker using a template literal (no line breaks)
-        const htmlContent = `
-            <div class="map-marker-rect" style="background-color: ${color}; 
-            border-radius: 8px; color: ${textColor}; padding: 4px 8px; font-weight: bold; 
-            text-align: center; line-height: 1.2;">
-                ${latestValue}m<br><small>${sensor.name}</small>
-            </div>`;
-
-        return L.divIcon({
-            html: htmlContent.trim(),  // Trim extra white space
-            className: '',  // No additional class
-            iconSize: [70, 40],  // Customize size of the icon
-            iconAnchor: [35, 20]  // Position the icon properly
-        });
-    }
-
-    // ===== Filter the time series data to show only the latest X hours =====
-    function filterTimeSeries(sensor, hours) {
-        const now = new Date();
-        const cutoffTime = new Date(now.getTime() - (hours * 60 * 60 * 1000)); // Calculate cutoff time
-        return sensor.timeSeries.filter(entry => entry.time >= cutoffTime);
-    }
-
-    // ===== Initialize Map (one map with all sensors) and fit bounds with 50px padding =====
-    function initializeMap(sensors) {
-        if (mapInitialized) return; // Skip if the map is already initialized
-
-        map = L.map('map').setView([44.5, 11.3], 8); // Centered in the region
-
-        // Add OpenStreetMap tile layer
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: 'Map data © OpenStreetMap contributors'
-        }).addTo(map);
-
-        // Add custom markers for all sensors
-        markers = sensors.map(sensor => {
-            const customMarker = createCustomMarker(sensor);  // Create the custom marker
-            const marker = L.marker(sensor.coordinates, { icon: customMarker })
-                .bindPopup(`<strong>${sensor.name}</strong><br>Level: ${sensor.timeSeries[sensor.timeSeries.length - 1].value}m`)
-                .addTo(map);
-            return marker;
-        });
-
-        // Calculate bounds for markers and fit map to bounds
-        bounds = L.latLngBounds(markers.map(marker => marker.getLatLng()));
-        map.fitBounds(bounds, { padding: [50, 50] });
-
-        // Add window resize event listener to recalculate bounds on resize
-        window.addEventListener('resize', () => {
-            map.invalidateSize();  // Update map size
-            map.fitBounds(bounds, { padding: [50, 50] });  // Recalculate fitBounds
-        });
-
-        mapInitialized = true; // Mark map as initialized
-    }
-
-    // ===== Draw Time Series Chart with Levels and Gridlines using Plotly.js =====
-    function drawTimeSeries(sensor, plotElementId, range, zoomed = false) {
-        // Filter the time series data based on the selected range (24, 48, 72 hours)
-        const filteredData = filterTimeSeries(sensor, range);
-        const times = filteredData.map(d => d.time);
-        const values = filteredData.map(d => d.value);
-
-        const trace = { x: times, y: values, mode: 'lines', name: 'Water Level', line: { color: 'ligthblue' } };
-        const layout = {
-            paper_bgcolor: "rgba(0,0,0,1)",
-            plot_bgcolor: "rgba(0,0,0,1)",
-                 font: {
-color: 'white'
-},
-            xaxis: { 
-                type: 'date', 
-                gridcolor: "rgba(200,200,200,0.3)",
-                showgrid: true // Show grid on x-axis
-            },
-            yaxis: { 
-                range: [0, Math.max(sensor.levels.red + 3, Math.max(...values))], 
-                gridcolor: "rgba(200,200,200,0.3)",
-                showgrid: true // Show grid on y-axis
-            },
-            shapes: [], // Placeholder for threshold lines
-            autosize: !zoomed, // If zoomed, make it a fixed size; otherwise, allow resizing
-            height: zoomed ? 500 : 400, // Larger height for zoomed-in chart
-            margin: { t: 10, b: 40, r: 10, l: 20 }  // Reduce top margin since there's no title
-        };
-        const plot_config = { responsive: true };
-
-        // Add threshold lines if they are not null
-        if (sensor.levels.yellow !== null) {
-            layout.shapes.push({
-                type: 'line',
-                xref: 'paper',
-                x0: 0,
-                x1: 1,
-                y0: sensor.levels.yellow,
-                y1: sensor.levels.yellow,
-                line: {
-                    color: 'yellow',
-                    width: 1,
-                    dash: 'dash'
-                }
-            });
-        }
-        if (sensor.levels.orange !== null) {
-            layout.shapes.push({
-                type: 'line',
-                xref: 'paper',
-                x0: 0,
-                x1: 1,
-                y0: sensor.levels.orange,
-                y1: sensor.levels.orange,
-                line: {
-                    color: 'orange',
-                    width: 1,
-                    dash: 'dash'
-                }
-            });
-        }
-        if (sensor.levels.red !== null) {
-            layout.shapes.push({
-                type: 'line',
-                xref: 'paper',
-                x0: 0,
-                x1: 1,
-                y0: sensor.levels.red,
-                y1: sensor.levels.red,
-                line: {
-                    color: 'red',
-                    width: 1,
-                    dash: 'dash'
-                }
-            });
-        }
-
-        // Ensure the element exists before calling Plotly
-        requestAnimationFrame(() => {
-            Plotly.newPlot(plotElementId, [trace], layout, plot_config);
-        });
+    // ===== Find the latest non-null value in the time series =====
+    function getLatestNonNullValue(sensor) {
+        // Reverse the time series to search for the latest non-null value
+        const latestValidPoint = sensor.timeSeries.slice().reverse().find(point => point.value !== null);
+        return latestValidPoint ? latestValidPoint.value : null;
     }
 
     // ===== Compute Sensor Levels based on dependencies =====
@@ -396,8 +248,239 @@ color: 'white'
         return levels;
     }
 
+    // ===== Create custom marker for the map =====
+    function createCustomMarker(sensor) {
+        const latestValue = getLatestNonNullValue(sensor); // Use the latest non-null value
+        const latestTimestamp = sensor.timeSeries[sensor.timeSeries.length - 1].time;
+        const color = getSensorColor(sensor);
+        const textColor = color === 'yellow' ? 'black' : 'white'; // Use black text for yellow markers
+
+        // Format the timestamp as HH:MM
+        const formattedTime = `${latestTimestamp.getUTCHours().toString().padStart(2, '0')}:${latestTimestamp.getUTCMinutes().toString().padStart(2, '0')} UTC`;
+
+        // Safely create the custom marker using a template literal (no line breaks)
+        const htmlContent = `
+            <div class="map-marker-rect" style="background-color: ${color}; 
+            border-radius: 8px; color: ${textColor}; padding: 4px 8px; font-weight: bold; 
+            text-align: center; line-height: 1.2;">
+                ${latestValue}m<br><small>${sensor.name}</small>
+            </div>`;
+
+        return L.divIcon({
+            html: htmlContent.trim(),  // Trim extra white space
+            className: '',  // No additional class
+            iconSize: [70, 40],  // Customize size of the icon
+            iconAnchor: [35, 20]  // Position the icon properly
+        });
+    }
+
+    // ===== Determine the color for the marker based on sensor status =====
+    function getSensorColor(sensor) {
+        const latestValue = getLatestNonNullValue(sensor); // Use the latest non-null value
+        if (latestValue < sensor.levels.yellow) return 'green';  // Green
+        if (latestValue < sensor.levels.orange) return 'yellow';  // Yellow
+        if (latestValue < sensor.levels.red) return 'orange';  // Orange
+        return 'red';  // Red for danger
+    }
+
+    // ===== Function to normalize a sensor's level =====
+    function normalizeLevel(sensor, value) {
+    if (value === null) {
+        return null; // Preserve null values
+    }
+
+    const highestSoglia = getHighestSoglia(sensor);
+    if (highestSoglia > 0) {
+        return value / highestSoglia;
+    } else {
+        return value; // Return the value as-is if no valid soglia exists
+    }
+}
+
+    // ===== Corrected: Calculate the weighted average for the filtered time series (24, 48, 72 hours) using the trapezoidal rule =====
+    function calculateWeightedAverage(sensor, filteredData, isNormalized) {
+        const highestSoglia = getHighestSoglia(sensor);
+        let weightedSum = 0;
+        let totalTime = 0;
+
+        for (let i = 1; i < filteredData.length; i++) {
+            const prevPoint = filteredData[i - 1];
+            const currentPoint = filteredData[i];
+
+            const timeDiff = (currentPoint.time - prevPoint.time) / (1000 * 60 * 60); // Time difference in hours
+            const prevValue = isNormalized ? prevPoint.value / highestSoglia : prevPoint.value;
+            const currentValue = isNormalized ? currentPoint.value / highestSoglia : currentPoint.value;
+            const avgValue = (prevValue + currentValue) / 2;
+
+            weightedSum += avgValue * timeDiff;
+            totalTime += timeDiff;
+        }
+
+        return totalTime > 0 ? weightedSum / totalTime : 0;
+    }
+
+    // ===== Draw Time Series Chart with Levels and Gridlines using Plotly.js =====
+    function drawTimeSeries(sensor, plotElementId, range, zoomed = false) {
+        // Filter the time series data based on the selected range (24, 48, 72 hours)
+        const filteredData = filterTimeSeries(sensor, range);
+        const times = filteredData.map(d => d.time);
+        const values = filteredData.map(d => isNormalized ? normalizeLevel(sensor, d.value) : d.value);
+
+        const trace = { x: times, y: values, mode: 'lines', name: isNormalized ? 'Normalized Level' : 'Water Level', line: { color: 'lightblue' } };
+        
+        // Calculate the weighted average using only the filtered data
+        const weightedAverage = calculateWeightedAverage(sensor, filteredData, isNormalized);
+
+        const layout = {
+            paper_bgcolor: "rgba(0,0,0,1)",
+            plot_bgcolor: "rgba(0,0,0,1)",
+            font: {
+                color: 'white'
+            },
+            xaxis: { 
+                type: 'date', 
+                gridcolor: "rgba(200,200,200,0.3)",
+                showgrid: true // Show grid on x-axis
+            },
+            yaxis: { 
+                range: [0, isNormalized ? 1.2 : Math.max(sensor.levels.red + 3, Math.max(...values))], // Cap y-axis at 1.2 if normalized
+                gridcolor: "rgba(200,200,200,0.3)",
+                showgrid: true // Show grid on y-axis
+            },
+            shapes: [], // Placeholder for threshold lines and weighted average
+            autosize: !zoomed, // If zoomed, make it a fixed size; otherwise, allow resizing
+            height: zoomed ? 500 : 400, // Larger height for zoomed-in chart
+            margin: { t: 10, b: 40, r: 10, l: 20 }  // Reduce top margin since there's no title
+        };
+        const plot_config = { responsive: true };
+
+        // Add threshold lines if they are not null (adjust for normalized mode)
+        const thresholdMultiplier = isNormalized ? (1 / getHighestSoglia(sensor)) : 1;
+        
+        if (sensor.levels.yellow !== null) {
+            layout.shapes.push({
+                type: 'line',
+                xref: 'paper',
+                x0: 0,
+                x1: 1,
+                y0: sensor.levels.yellow * thresholdMultiplier,
+                y1: sensor.levels.yellow * thresholdMultiplier,
+                line: {
+                    color: 'yellow',
+                    width: 1,
+                    dash: 'dash'
+                }
+            });
+        }
+        if (sensor.levels.orange !== null) {
+            layout.shapes.push({
+                type: 'line',
+                xref: 'paper',
+                x0: 0,
+                x1: 1,
+                y0: sensor.levels.orange * thresholdMultiplier,
+                y1: sensor.levels.orange * thresholdMultiplier,
+                line: {
+                    color: 'orange',
+                    width: 1,
+                    dash: 'dash'
+                }
+            });
+        }
+        if (sensor.levels.red !== null) {
+            layout.shapes.push({
+                type: 'line',
+                xref: 'paper',
+                x0: 0,
+                x1: 1,
+                y0: sensor.levels.red * thresholdMultiplier,
+                y1: sensor.levels.red * thresholdMultiplier,
+                line: {
+                    color: 'red',
+                    width: 1,
+                    dash: 'dash'
+                }
+            });
+        }
+
+        // Add weighted average line
+        layout.shapes.push({
+            type: 'line',
+            xref: 'paper',
+            x0: 0,
+            x1: 1,
+            y0: weightedAverage,
+            y1: weightedAverage,
+            line: {
+                color: 'white',
+                width: 2,
+                dash: 'dot'
+            }
+        });
+
+        // Ensure the element exists before calling Plotly
+        requestAnimationFrame(() => {
+            Plotly.newPlot(plotElementId, [trace], layout, plot_config);
+        });
+    }
+
+    // ===== Filter the time series data to show only the latest X hours =====
+    function filterTimeSeries(sensor, hours) {
+        const now = new Date();
+        const cutoffTime = new Date(now.getTime() - (hours * 60 * 60 * 1000)); // Calculate cutoff time
+        return sensor.timeSeries.filter(entry => entry.time >= cutoffTime);
+    }
+
+    // ===== Find the highest non-null soglia (threshold) for a sensor =====
+    function getHighestSoglia(sensor) {
+        const { yellow, orange, red } = sensor.levels;
+        return Math.max(yellow || 0, orange || 0, red || 0); // Get highest non-null soglia
+    }
+
+    // ===== Determine the status color for the sensor (based on the latest non-null water level) =====
+    function getSensorStatus(sensor) {
+        const latestValue = getLatestNonNullValue(sensor); // Use the latest non-null value
+        if (latestValue < sensor.levels.yellow) return 'success';  // Green
+        if (latestValue < sensor.levels.orange) return 'warning';  // Yellow
+        if (latestValue < sensor.levels.red) return 'orange';  // Orange
+        return 'danger';  // Red
+    }
+
+    // ===== Initialize Map (one map with all sensors) and fit bounds with 50px padding =====
+    function initializeMap(sensors) {
+        if (mapInitialized) return; // Skip if the map is already initialized
+
+        map = L.map('map').setView([44.5, 11.3], 8); // Centered in the region
+
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: 'Map data © OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Add custom markers for all sensors
+        markers = sensors.map(sensor => {
+            const customMarker = createCustomMarker(sensor);  // Create the custom marker
+            const marker = L.marker(sensor.coordinates, { icon: customMarker })
+                .bindPopup(`<strong>${sensor.name}</strong><br>Level: ${getLatestNonNullValue(sensor)}m`)
+                .addTo(map);
+            return marker;
+        });
+
+        // Calculate bounds for markers and fit map to bounds
+        bounds = L.latLngBounds(markers.map(marker => marker.getLatLng()));
+        map.fitBounds(bounds, { padding: [50, 50] });
+
+        // Add window resize event listener to recalculate bounds on resize
+        window.addEventListener('resize', () => {
+            map.invalidateSize();  // Update map size
+            map.fitBounds(bounds, { padding: [50, 50] });  // Recalculate fitBounds
+        });
+
+        mapInitialized = true; // Mark map as initialized
+    }
+
     // ===== Render the dashboard with the selected time range =====
-    function renderDashboardWithRange(range) {
+    async function renderDashboardWithRange(range) {
         const dashboardDiv = document.getElementById('dashboard');
         dashboardDiv.innerHTML = ''; // Clear the dashboard before rendering
 
@@ -423,9 +506,9 @@ color: 'white'
                 if (!sensor) return;
 
                 const statusClass = getSensorStatus(sensor);  // Get the status for card color
-                const latestValue = sensor.timeSeries[sensor.timeSeries.length - 1].value; // Get latest value
+                const latestValue = getLatestNonNullValue(sensor); // Get latest non-null value
                 const latestTimestamp = sensor.timeSeries[sensor.timeSeries.length - 1].time;
-                
+
                 // Format the timestamp as HH:MM
                 const formattedTime = `${latestTimestamp.getUTCHours().toString().padStart(2, '0')}:${latestTimestamp.getUTCMinutes().toString().padStart(2, '0')} UTC`;
 
@@ -435,7 +518,7 @@ color: 'white'
 
                 const cardHeader = document.createElement('div');
                 cardHeader.className = 'card-header';
-                cardHeader.textContent = `${sensor.name} (Latest: ${latestValue}m at ${formattedTime})`; // Add latest value and time to header
+                cardHeader.textContent = `${sensor.name} (Latest: ${latestValue}m at ${formattedTime})`;
                 cardHeader.addEventListener('click', () => openZoomedGraph(sensor, range)); // Add event listener to open modal
 
                 const cardBody = document.createElement('div');
@@ -471,7 +554,6 @@ color: 'white'
 
         // Initialize the map (only once) with all sensors
         initializeMap(sensorDataGlobal.data);
-
     }
 
     // Function to open the zoomed graph in the modal
