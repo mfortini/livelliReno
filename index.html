@@ -11,6 +11,11 @@
     <!-- Leaflet.js for map (version 1.9.4) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Leaflet Gesture Handling CSS and JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-gesture-handling/dist/leaflet-gesture-handling.min.css" />
+    <script src="https://unpkg.com/leaflet-gesture-handling"></script>
+
     <!-- Plotly.js for charts -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
@@ -28,7 +33,7 @@
             height: 100%; /* Make map span full height */
         }
 
-        /* For smaller screens, the map moves to the bottom and takes 400px height */
+        /* For smaller screens, the map moves to the top and takes 400px height */
         @media (max-width: 768px) {
             #map-container {
                 height: 400px;
@@ -76,14 +81,14 @@
 
 <div class="container-fluid">
     <div class="row">
-        <!-- Sidebar with map, moved to the bottom on small screens -->
-        <div id="map-container" class="col-12 col-md-3 order-md-1 order-last p-3">
+        <!-- Map on top on small screens -->
+        <div id="map-container" class="col-12 col-md-3 order-1 order-md-1 p-3">
             <h4 class="text-center">Sensor Map</h4>
             <div id="map"></div>
         </div>
 
         <!-- Main Content (sensor plots) -->
-        <div class="col-12 col-md-9 order-md-2">
+        <div class="col-12 col-md-9 order-2 order-md-2">
             <div class="content">
                 <h1 class="text-center my-4">Livelli Fiume Reno 
                     <a href="https://www.arpae.it/it/temi-ambientali/acqua/dati-acque/acque-superficiali/dati-idrometrici-in-tempo-reale-1">(dati ARPAE)</a>
@@ -128,7 +133,7 @@
 <script>
     let currentRange = 48; // Default range in hours (48 hours)
     let isNormalized = false; // Default mode is non-normalized (toggle is off by default)
-    let sensorDataGlobal = []; // Store sensor data globally
+    let sensorDataGlobal = {}; // Store sensor data globally
     let mapInitialized = false; // To prevent re-initializing the map
     let map, markers, bounds;  // Declare map, markers, and bounds globally
 
@@ -187,6 +192,7 @@
 
         return {
             name: nome,
+            id: sensorName, // Use sensorName as a unique identifier
             coordinates: coordinates,
             levels: {
                 yellow: levels ? levels[0] : null,
@@ -252,7 +258,7 @@
     function createCustomMarker(sensor) {
         const latestValue = getLatestNonNullValue(sensor); // Use the latest non-null value
         const latestTimestamp = sensor.timeSeries[sensor.timeSeries.length - 1].time;
-        const color = getSensorColor(sensor);
+        const color = getMarkerColor(sensor);
         const textColor = color === 'yellow' ? 'black' : 'white'; // Use black text for yellow markers
 
         // Format the timestamp as HH:MM
@@ -275,7 +281,7 @@
     }
 
     // ===== Determine the color for the marker based on sensor status =====
-    function getSensorColor(sensor) {
+    function getMarkerColor(sensor) {
         const latestValue = getLatestNonNullValue(sensor); // Use the latest non-null value
         if (latestValue < sensor.levels.yellow) return 'green';  // Green
         if (latestValue < sensor.levels.orange) return 'yellow';  // Yellow
@@ -285,17 +291,17 @@
 
     // ===== Function to normalize a sensor's level =====
     function normalizeLevel(sensor, value) {
-    if (value === null) {
-        return null; // Preserve null values
-    }
+        if (value === null) {
+            return null; // Preserve null values
+        }
 
-    const highestSoglia = getHighestSoglia(sensor);
-    if (highestSoglia > 0) {
-        return value / highestSoglia;
-    } else {
-        return value; // Return the value as-is if no valid soglia exists
+        const highestSoglia = getHighestSoglia(sensor);
+        if (highestSoglia > 0) {
+            return value / highestSoglia;
+        } else {
+            return value; // Return the value as-is if no valid soglia exists
+        }
     }
-}
 
     // ===== Corrected: Calculate the weighted average for the filtered time series (24, 48, 72 hours) using the trapezoidal rule =====
     function calculateWeightedAverage(sensor, filteredData, isNormalized) {
@@ -317,6 +323,11 @@
         }
 
         return totalTime > 0 ? weightedSum / totalTime : 0;
+    }
+
+    // Utility function to detect touch devices
+    function isTouchDevice() {
+        return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     }
 
     // ===== Draw Time Series Chart with Levels and Gridlines using Plotly.js =====
@@ -352,7 +363,10 @@
             height: zoomed ? 500 : 400, // Larger height for zoomed-in chart
             margin: { t: 10, b: 40, r: 10, l: 20 }  // Reduce top margin since there's no title
         };
-        const plot_config = { responsive: true };
+        const plot_config = { 
+            responsive: true,
+            staticPlot: isTouchDevice() && !zoomed // Disable interactions on touch devices for non-zoomed plots
+        };
 
         // Add threshold lines if they are not null (adjust for normalized mode)
         const thresholdMultiplier = isNormalized ? (1 / getHighestSoglia(sensor)) : 1;
@@ -420,7 +434,14 @@
 
         // Ensure the element exists before calling Plotly
         requestAnimationFrame(() => {
-            Plotly.newPlot(plotElementId, [trace], layout, plot_config);
+            // Check if the plot already exists
+            if (document.getElementById(plotElementId).data) {
+                // Update the plot using Plotly.react
+                Plotly.react(plotElementId, [trace], layout, plot_config);
+            } else {
+                // Create the plot for the first time
+                Plotly.newPlot(plotElementId, [trace], layout, plot_config);
+            }
         });
     }
 
@@ -450,7 +471,12 @@
     function initializeMap(sensors) {
         if (mapInitialized) return; // Skip if the map is already initialized
 
-        map = L.map('map').setView([44.5, 11.3], 8); // Centered in the region
+        map = L.map('map', {
+            center: [44.5, 11.3],
+            zoom: 8,
+            gestureHandling: true, // Enable gesture handling
+            touchZoom: false       // Disable touch zoom
+        });
 
         // Add OpenStreetMap tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -471,10 +497,10 @@
         map.fitBounds(bounds, { padding: [50, 50] });
 
         // Add window resize event listener to recalculate bounds on resize
-        window.addEventListener('resize', () => {
+        window.addEventListener('resize', debounce(() => {
             map.invalidateSize();  // Update map size
             map.fitBounds(bounds, { padding: [50, 50] });  // Recalculate fitBounds
-        });
+        }, 200));
 
         mapInitialized = true; // Mark map as initialized
     }
@@ -487,10 +513,10 @@
         const sensorLevels = computeSensorLevels(sensorDataGlobal.config);
 
         const sensorsByLevel = {};
-        Object.keys(sensorLevels).forEach(sensor => {
-            const level = sensorLevels[sensor];
+        Object.keys(sensorLevels).forEach(sensorName => {
+            const level = sensorLevels[sensorName];
             if (!sensorsByLevel[level]) sensorsByLevel[level] = [];
-            sensorsByLevel[level].push(sensor);
+            sensorsByLevel[level].push(sensorName);
         });
 
         Object.keys(sensorsByLevel).forEach(level => {
@@ -502,7 +528,7 @@
             levelRow.className = 'row';
 
             sensorsByLevel[level].forEach(sensorName => {
-                const sensor = sensorDataGlobal.data.find(s => s.name === sensorName);
+                const sensor = sensorDataGlobal.data.find(s => s.id === sensorName);
                 if (!sensor) return;
 
                 const statusClass = getSensorStatus(sensor);  // Get the status for card color
@@ -526,7 +552,7 @@
 
                 // Create a div element for the Plotly chart
                 const plotDiv = document.createElement('div');
-                plotDiv.id = `plot-${sensor.name}`;
+                plotDiv.id = `plot-${sensor.id}`;
                 plotDiv.className = 'sensor-plot';
 
                 cardBody.appendChild(plotDiv);
@@ -534,7 +560,7 @@
                 cardDiv.appendChild(cardBody);
                 levelRow.appendChild(cardDiv);
 
-                // Call drawTimeSeries to draw the plot, ensuring it waits for the DOM to update
+                // Call drawTimeSeries to draw the plot, ensuring the element exists
                 requestAnimationFrame(() => {
                     drawTimeSeries(sensor, plotDiv.id, range);
                 });
@@ -565,8 +591,10 @@
         const zoomedGraphModal = new bootstrap.Modal(document.getElementById('zoomedGraphModal'));
         zoomedGraphModal.show();
 
-        // Render the zoomed chart in the modal
-        drawTimeSeries(sensor, 'zoomed-plot', range, true);
+        // Render the zoomed chart in the modal after the modal is shown
+        zoomedGraphModal._element.addEventListener('shown.bs.modal', () => {
+            drawTimeSeries(sensor, 'zoomed-plot', range, true);
+        }, { once: true });
     }
 
     // ===== Main Function to Render the Dashboard =====
@@ -578,10 +606,10 @@
         const sensorData = await Promise.all(sensorNames.map(sensorName => fetchSensorData(sensorName, config)));
 
         // Store the fetched data globally
-        sensorDataGlobal = { config, data: sensorData };
+        sensorDataGlobal = { config: config, data: sensorData };
 
         // Render dashboard with default 48-hour range
-        renderDashboardWithRange(48);
+        renderDashboardWithRange(currentRange);
     }
 
     // Handle range button clicks
@@ -599,6 +627,15 @@
             renderDashboardWithRange(range);
         }
     });
+
+    // Debounce function to limit the rate of function execution
+    function debounce(func, wait) {
+        let timeout;
+        return function() {
+            clearTimeout(timeout);
+            timeout = setTimeout(func, wait);
+        };
+    }
 
     // Initialize the dashboard on page load
     document.addEventListener('DOMContentLoaded', renderDashboard);
