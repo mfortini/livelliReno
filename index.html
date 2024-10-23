@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>Livelli Fiume Reno e Torrente Samoggia (dati ARPAE)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Livelli Fiume Reno (dati ARPAE)</title>
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
@@ -18,6 +18,9 @@
 
     <!-- Plotly.js for charts -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <!-- Include osmtogeojson Library Locally -->
+    <script src="osmtogeojson.min.js"></script>
 
     <style>
         /* Sidebar */
@@ -75,6 +78,13 @@
             text-align: center;
             line-height: 1.5;
         }
+
+        /* Style for leader lines */
+        .leader-line {
+            color: gray;
+            weight: 1;
+            dashArray: '3';
+        }
     </style>
 </head>
 <body>
@@ -90,7 +100,7 @@
         <!-- Main Content (sensor plots) -->
         <div class="col-12 col-md-9 order-2 order-md-2">
             <div class="content">
-                <h1 class="text-center my-4">Livelli Fiume Reno 
+                <h1 class="text-center my-4">Livelli Fiume Reno e Torrente Samoggia 
                     <a href="https://www.arpae.it/it/temi-ambientali/acqua/dati-acque/acque-superficiali/dati-idrometrici-in-tempo-reale-1">(dati ARPAE)</a>
                 </h1>
 
@@ -257,19 +267,15 @@
     // ===== Create custom marker for the map =====
     function createCustomMarker(sensor) {
         const latestValue = getLatestNonNullValue(sensor); // Use the latest non-null value
-        const latestTimestamp = sensor.timeSeries[sensor.timeSeries.length - 1].time;
         const color = getMarkerColor(sensor);
         const textColor = color === 'yellow' ? 'black' : 'white'; // Use black text for yellow markers
 
-        // Format the timestamp as HH:MM
-        const formattedTime = `${latestTimestamp.getUTCHours().toString().padStart(2, '0')}:${latestTimestamp.getUTCMinutes().toString().padStart(2, '0')} UTC`;
-
-        // Safely create the custom marker using a template literal (no line breaks)
+        // Updated HTML content without the sensor name
         const htmlContent = `
             <div class="map-marker-rect" style="background-color: ${color}; 
             border-radius: 8px; color: ${textColor}; padding: 4px 8px; font-weight: bold; 
             text-align: center; line-height: 1.2;">
-                ${latestValue}m<br><small>${sensor.name}</small>
+                ${latestValue}m
             </div>`;
 
         return L.divIcon({
@@ -342,6 +348,22 @@
         // Calculate the weighted average using only the filtered data
         const weightedAverage = calculateWeightedAverage(sensor, filteredData, isNormalized);
 
+        // Calculate thresholds and data range
+        const thresholds = [sensor.levels.yellow, sensor.levels.orange, sensor.levels.red].filter(v => v !== null);
+        const highestThreshold = thresholds.length ? Math.max(...thresholds) : null;
+        const lowestThreshold = thresholds.length ? Math.min(...thresholds) : null;
+        
+        const padding = 0.5; // Adjust as needed
+        const minValue = Math.min(...values.filter(v => v !== null));
+        const maxValue = Math.max(...values.filter(v => v !== null));
+
+        // Adjust y-axis range to include all thresholds and start at least at -1m
+        let yAxisMin = Math.min(-1, minValue - padding, lowestThreshold !== null ? lowestThreshold - padding : minValue - padding);
+        let yAxisMax = Math.max(maxValue + padding, highestThreshold !== null ? highestThreshold + padding : maxValue + padding);
+
+        // For normalized data, set y-axis from 0 to 1.2
+        const yAxisRange = isNormalized ? [0, 1.2] : [yAxisMin, yAxisMax];
+
         const layout = {
             paper_bgcolor: "rgba(0,0,0,1)",
             plot_bgcolor: "rgba(0,0,0,1)",
@@ -354,7 +376,7 @@
                 showgrid: true // Show grid on x-axis
             },
             yaxis: { 
-                range: [0, isNormalized ? 1.2 : Math.max(sensor.levels.red + 3, Math.max(...values))], // Cap y-axis at 1.2 if normalized
+                range: yAxisRange,
                 gridcolor: "rgba(200,200,200,0.3)",
                 showgrid: true // Show grid on y-axis
             },
@@ -435,7 +457,7 @@
         // Ensure the element exists before calling Plotly
         requestAnimationFrame(() => {
             // Check if the plot already exists
-            if (document.getElementById(plotElementId).data) {
+            if (document.getElementById(plotElementId) && document.getElementById(plotElementId).data) {
                 // Update the plot using Plotly.react
                 Plotly.react(plotElementId, [trace], layout, plot_config);
             } else {
@@ -468,7 +490,7 @@
     }
 
     // ===== Initialize Map (one map with all sensors) and fit bounds with 50px padding =====
-    function initializeMap(sensors) {
+    async function initializeMap(sensors) {
         if (mapInitialized) return; // Skip if the map is already initialized
 
         map = L.map('map', {
@@ -483,13 +505,45 @@
             attribution: 'Map data © OpenStreetMap contributors'
         }).addTo(map);
 
-        // Add custom markers for all sensors
-        markers = sensors.map(sensor => {
-            const customMarker = createCustomMarker(sensor);  // Create the custom marker
-            const marker = L.marker(sensor.coordinates, { icon: customMarker })
-                .bindPopup(`<strong>${sensor.name}</strong><br>Level: ${getLatestNonNullValue(sensor)}m`)
-                .addTo(map);
-            return marker;
+        // Add the River layers under the markers
+        await addRiverLayers();
+
+        // Group markers by their exact coordinates
+        const markerGroups = {};
+        sensors.forEach(sensor => {
+            const key = `${sensor.coordinates[0].toFixed(5)}_${sensor.coordinates[1].toFixed(5)}`;
+            if (!markerGroups[key]) markerGroups[key] = [];
+            markerGroups[key].push(sensor);
+        });
+
+        markers = []; // Initialize markers array
+
+        // Process each group
+        Object.values(markerGroups).forEach(group => {
+            if (group.length === 1) {
+                // Only one marker at this location, no offset needed
+                const sensor = group[0];
+                const marker = createAndAddMarker(sensor, sensor.coordinates);
+                markers.push(marker);
+            } else {
+                // Multiple markers at the same location, arrange them in a circle
+                const center = group[0].coordinates;
+                const angleStep = (2 * Math.PI) / group.length;
+                const radius = 0.0005 * group.length; // Adjust radius based on number of markers
+                group.forEach((sensor, index) => {
+                    const angle = index * angleStep;
+                    const offsetLat = center[0] + radius * Math.cos(angle);
+                    const offsetLng = center[1] + radius * Math.sin(angle);
+                    sensor.offsetCoordinates = [offsetLat, offsetLng];
+
+                    const marker = createAndAddMarker(sensor, sensor.offsetCoordinates);
+
+                    // Draw leader line
+                    L.polyline([sensor.offsetCoordinates, center], { color: 'gray', weight: 1, dashArray: '3' }).addTo(map);
+
+                    markers.push(marker);
+                });
+            }
         });
 
         // Calculate bounds for markers and fit map to bounds
@@ -503,6 +557,59 @@
         }, 200));
 
         mapInitialized = true; // Mark map as initialized
+    }
+
+    // Helper function to create and add marker to map
+    function createAndAddMarker(sensor, coordinates) {
+        const customMarker = createCustomMarker(sensor);  // Create the custom marker
+        const marker = L.marker(coordinates, { icon: customMarker })
+            .addTo(map);
+
+        // Add click event to scroll to the corresponding graph
+        marker.on('click', () => {
+            const plotElement = document.getElementById(`card-${sensor.id}`);
+            if (plotElement) {
+                plotElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+
+        return marker;
+    }
+
+    // ===== Add River Layers to the Map =====
+    async function addRiverLayers() {
+        try {
+            // Fetch the local GeoJSON data for the River Reno
+            const renoResponse = await fetch('river_reno.geojson');
+            if (!renoResponse.ok) throw new Error("Failed to fetch River Reno GeoJSON");
+            const renoGeoJSON = await renoResponse.json();
+
+            // Fetch the local GeoJSON data for the Torrente Samoggia
+            const samoggiaResponse = await fetch('torrente_samoggia.geojson');
+            if (!samoggiaResponse.ok) throw new Error("Failed to fetch Torrente Samoggia GeoJSON");
+            const samoggiaGeoJSON = await samoggiaResponse.json();
+
+            // Add the River Reno GeoJSON layer to the map
+            L.geoJSON(renoGeoJSON, {
+                style: {
+                    color: 'blue',
+                    weight: 4,
+                    opacity: 0.6
+                }
+            }).addTo(map);
+
+            // Add the Torrente Samoggia GeoJSON layer to the map
+            L.geoJSON(samoggiaGeoJSON, {
+                style: {
+                    color: 'blue',
+                    weight: 4,
+                    opacity: 0.6
+                }
+            }).addTo(map);
+
+        } catch (error) {
+            console.error('Error adding river layers:', error);
+        }
     }
 
     // ===== Render the dashboard with the selected time range =====
@@ -541,6 +648,7 @@
                 // Create a Bootstrap card for the sensor plot
                 const cardDiv = document.createElement('div');
                 cardDiv.className = `card text-white bg-${statusClass} col-lg-4 col-md-12 mx-2 mb-2`;
+                cardDiv.id = `card-${sensor.id}`; // Assign unique ID to the card
 
                 const cardHeader = document.createElement('div');
                 cardHeader.className = 'card-header';
