@@ -322,6 +322,9 @@
             const timeDiff = (currentPoint.time - prevPoint.time) / (1000 * 60 * 60); // Time difference in hours
             const prevValue = isNormalized ? prevPoint.value / highestSoglia : prevPoint.value;
             const currentValue = isNormalized ? currentPoint.value / highestSoglia : currentPoint.value;
+            if (!prevValue || !currentValue) {
+                continue;
+            }
             const avgValue = (prevValue + currentValue) / 2;
 
             weightedSum += avgValue * timeDiff;
