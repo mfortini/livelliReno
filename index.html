@@ -194,7 +194,8 @@
                 const day = date.substring(6, 8);
                 const hours = time.substring(0, 2);
                 const minutes = time.substring(2, 4);
-                const timestamp = new Date(`${year}-${month}-${day}T${hours}:${minutes}:00Z`);
+                // Parse the timestamp as UTC
+                const timestamp = new Date(Date.UTC(year, month - 1, day, hours, minutes));
                 timeSeries.push({ time: timestamp, value: value.livello_idro });
             }
         }
@@ -322,9 +323,7 @@
             const timeDiff = (currentPoint.time - prevPoint.time) / (1000 * 60 * 60); // Time difference in hours
             const prevValue = isNormalized ? prevPoint.value / highestSoglia : prevPoint.value;
             const currentValue = isNormalized ? currentPoint.value / highestSoglia : currentPoint.value;
-            if (!prevValue || !currentValue) {
-                continue;
-            }
+            if (prevValue === null || currentValue === null) continue;
             const avgValue = (prevValue + currentValue) / 2;
 
             weightedSum += avgValue * timeDiff;
@@ -343,7 +342,8 @@
     function drawTimeSeries(sensor, plotElementId, range, zoomed = false) {
         // Filter the time series data based on the selected range (24, 48, 72 hours)
         const filteredData = filterTimeSeries(sensor, range);
-        const times = filteredData.map(d => d.time);
+        // Convert times to Europe/Rome timezone
+        const times = filteredData.map(d => convertToEuropeRome(d.time));
         const values = filteredData.map(d => isNormalized ? normalizeLevel(sensor, d.value) : d.value);
 
         const trace = { x: times, y: values, mode: 'lines', name: isNormalized ? 'Normalized Level' : 'Water Level', line: { color: 'lightblue' } };
@@ -376,7 +376,14 @@
             xaxis: { 
                 type: 'date', 
                 gridcolor: "rgba(200,200,200,0.3)",
-                showgrid: true // Show grid on x-axis
+                showgrid: true, // Show grid on x-axis
+                tickformat: '%d %b %H:%M', // Format the date labels
+                tickformatstops: [
+                    {
+                        dtickrange: [null, null],
+                        value: '%d %b %H:%M' // Day Month Hour:Minute
+                    }
+                ]
             },
             yaxis: { 
                 range: yAxisRange,
@@ -386,7 +393,7 @@
             shapes: [], // Placeholder for threshold lines and weighted average
             autosize: !zoomed, // If zoomed, make it a fixed size; otherwise, allow resizing
             height: zoomed ? 500 : 400, // Larger height for zoomed-in chart
-            margin: { t: 10, b: 40, r: 10, l: 20 }  // Reduce top margin since there's no title
+            margin: { t: 10, b: 40, r: 30, l: 20 }  // Reduce top margin since there's no title
         };
         const plot_config = { 
             responsive: true,
@@ -645,8 +652,15 @@
                 const latestValue = getLatestNonNullValue(sensor); // Get latest non-null value
                 const latestTimestamp = sensor.timeSeries[sensor.timeSeries.length - 1].time;
 
-                // Format the timestamp as HH:MM
-                const formattedTime = `${latestTimestamp.getUTCHours().toString().padStart(2, '0')}:${latestTimestamp.getUTCMinutes().toString().padStart(2, '0')} UTC`;
+                // Format the timestamp in Europe/Rome timezone
+                const options = {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    timeZone: 'Europe/Rome',
+                    hourCycle: 'h23'
+                };
+                const formatter = new Intl.DateTimeFormat('it-IT', options);
+                const formattedTime = formatter.format(latestTimestamp);
 
                 // Create a Bootstrap card for the sensor plot
                 const cardDiv = document.createElement('div');
@@ -706,6 +720,15 @@
         zoomedGraphModal._element.addEventListener('shown.bs.modal', () => {
             drawTimeSeries(sensor, 'zoomed-plot', range, true);
         }, { once: true });
+    }
+
+    // Convert a Date object to Europe/Rome timezone Date object
+    function convertToEuropeRome(date) {
+        // Convert the date to ISO string and then to Europe/Rome timezone
+        const isoString = date.toISOString();
+        // Create a new Date object in the Europe/Rome timezone
+        const europeRomeString = new Date(isoString).toLocaleString('en-US', { timeZone: 'Europe/Rome' });
+        return new Date(europeRomeString);
     }
 
     // ===== Main Function to Render the Dashboard =====
