@@ -16,11 +16,11 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet-gesture-handling/dist/leaflet-gesture-handling.min.css" />
     <script src="https://unpkg.com/leaflet-gesture-handling"></script>
 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/mwasil/Leaflet.Rainviewer/leaflet.rainviewer.css"/>
+    <script src="https://cdn.jsdelivr.net/gh/mwasil/Leaflet.Rainviewer/leaflet.rainviewer.js"></script>
+
     <!-- Plotly.js for charts -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-
-    <!-- Include osmtogeojson Library Locally -->
-    <script src="osmtogeojson.min.js"></script>
 
     <style>
         /* Sidebar */
@@ -515,8 +515,23 @@
             attribution: 'Map data © OpenStreetMap contributors'
         }).addTo(map);
 
+        //L.control.layers().addTo(map);
+
+        var rainviewer = L.control.rainviewer({
+        position: 'bottomleft',
+        nextButtonText: '>',
+        playStopButtonText: 'Start/Stop',
+        prevButtonText: '<',
+        positionSliderLabelText: "Time:",
+        opacitySliderLabelText: "Opacity:",
+        animationInterval: 500,
+        opacity: 0.5
+        });
+
         // Add the River layers under the markers
         await addRiverLayers();
+
+        rainviewer.addTo(map);
 
         // Group markers by their exact coordinates
         const markerGroups = {};
