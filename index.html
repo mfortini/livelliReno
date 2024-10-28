@@ -290,10 +290,11 @@
     // ===== Determine the color for the marker based on sensor status =====
     function getMarkerColor(sensor) {
         const latestValue = getLatestNonNullValue(sensor); // Use the latest non-null value
-        if (latestValue < sensor.levels.yellow) return 'green';  // Green
-        if (latestValue < sensor.levels.orange) return 'yellow';  // Yellow
-        if (latestValue < sensor.levels.red) return 'orange';  // Orange
-        return 'red';  // Red for danger
+        if (sensor.levels.red && latestValue >= sensor.levels.red) return 'red';
+        if (sensor.levels.orange && latestValue >= sensor.levels.orange) return 'orange';
+        if (sensor.levels.yellow && latestValue >= sensor.levels.yellow) return 'yellow';
+
+        return 'green';
     }
 
     // ===== Function to normalize a sensor's level =====
