@@ -1,29 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
     <meta charset="UTF-8">
     <title>Livelli Fiume Reno e Torrente Samoggia (dati ARPAE)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#123847">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23123847'/%3E%3Cpath d='M5 12q5-6 11 0t11 0M5 21q5-6 11 0t11 0' fill='none' stroke='%23b5e7ee' stroke-width='3'/%3E%3C/svg%3E">
 
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
 
     <!-- Leaflet.js for map (latest stable version) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
           integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
           crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
             crossorigin=""></script>
 
     <!-- Leaflet Gesture Handling CSS and JS (updated version) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet-gesture-handling@1.2.2/dist/leaflet-gesture-handling.min.css" />
-    <script src="https://unpkg.com/leaflet-gesture-handling@1.2.2/dist/leaflet-gesture-handling.min.js"></script>
+    <script defer src="https://unpkg.com/leaflet-gesture-handling@1.2.2/dist/leaflet-gesture-handling.min.js"></script>
 
     <!-- RainViewer Radar (using direct API integration) -->
 
     <!-- Plotly.js for charts (using specific version) -->
-    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+    <script defer src="https://cdn.plot.ly/plotly-basic-2.35.2.min.js"></script>
+    <!-- Cytoscape DAG for dependency graph -->
+    <meta name="description" content="Livelli osservati del Reno e del Samoggia: misure ARPAE, grafici delle ultime 72 ore e mappa delle stazioni. Dati e soglie, non previsioni di piena.">
 
     <style>
         /* Sidebar */
@@ -150,113 +154,283 @@
         .leaflet-control {
             transition: all 0.3s ease;
         }
+        :root { --ink: #173747; --muted: #536b78; --accent: #086b78; --line: #dce6eb; --surface: #fff; }
+        * { box-sizing: border-box; }
+        body { margin: 0; background: #f3f7f9; color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+        a { color: #086575; text-underline-offset: .2em; }
+        button, summary, a, input { touch-action: manipulation; }
+        :focus-visible { outline: 3px solid #007f95; outline-offset: 4px; }
+        .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 2000; padding: .8rem; background: white; }
+        .skip-link:focus { top: 1rem; }
+        .site-header { padding: 2rem clamp(1rem, 4vw, 4rem) 1.7rem; background: #123847; color: #fff; }
+        .header-inner { max-width: 1600px; margin: auto; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
+        .eyebrow { font-size: .75rem; letter-spacing: .14em; font-weight: 700; text-transform: uppercase; margin-bottom: .6rem; }
+        h1 { font-size: clamp(1.7rem, 3vw, 2.5rem); font-weight: 700; letter-spacing: -.04em; margin: 0 0 .5rem; }
+        .site-header p:last-child { margin: 0; color: #d3e5ec; max-width: 55ch; }
+        .source-link { color: #e5f7fc; border: 1px solid #6b8995; border-radius: .65rem; padding: .75rem 1rem; white-space: nowrap; }
+        .page-shell { max-width: 1680px; margin: auto; padding: 1.5rem clamp(1rem, 3vw, 3rem) 3rem; }
+        .overview { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .overview-item { background: var(--surface); border: 1px solid var(--line); border-radius: .8rem; padding: 1rem 1.2rem; }
+        .overview-item dt { font-size: .8rem; font-weight: 500; color: var(--muted); margin-bottom: .4rem; }
+        .overview-item dd { margin: 0; font-weight: 700; font-size: 1.1rem; font-variant-numeric: tabular-nums; }
+        .dashboard-layout { display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: 1.5rem; align-items: start; }
+        main { min-width: 0; grid-column: 2; grid-row: 1; }
+        .toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+        .toolbar h2 { font-size: 1.35rem; font-weight: 700; margin: 0; }
+        #range-buttons { display: flex; flex-direction: row; gap: .25rem !important; align-items: center; padding: .25rem; background: #e5edf1; border-radius: .7rem; }
+        #range-buttons .btn { width: auto; min-height: 44px; padding: .5rem .85rem; border: 0; border-radius: .5rem; color: var(--muted); font-weight: 600; font-size: .9rem; }
+        #range-buttons .btn.active { background: white; color: var(--ink); box-shadow: 0 1px 4px #17374718; }
+        .secondary-controls { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .75rem; margin-bottom: 1rem; color: var(--muted); font-size: .85rem; }
+        .form-check { margin: 0; }
+        .btn-outline-primary { --bs-btn-color: #086575; --bs-btn-border-color: #086575; --bs-btn-hover-bg: #086575; --bs-btn-hover-border-color: #086575; --bs-btn-disabled-color: #536b78; --bs-btn-disabled-border-color: #b5c8d0; min-height: 44px; font-size: .85rem; }
+        .reading-help { font-size: .85rem; color: var(--muted); margin-bottom: 1.25rem; }
+        .reading-help summary { cursor: pointer; padding: .6rem 0; min-height: 44px; }
+        .reading-help p { max-width: 90ch; margin: .5rem 0; }
+        .legend { display: flex; flex-wrap: wrap; gap: .6rem 1.2rem; margin-top: .8rem; }
+        .legend span { display: inline-flex; align-items: center; gap: .45rem; }
+        .legend i { display: inline-block; width: 22px; height: 3px; background: var(--swatch); }
+        #dashboard { display: flex; flex-direction: column; gap: 1rem; }
+        .level-container { min-width: 0; }
+        .level-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+        .level-row > .sensor-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
+        .sensor-card { background: var(--surface); border: 1px solid var(--line); border-radius: .9rem; overflow: hidden; min-width: 0; scroll-margin-top: 1rem; }
+        .sensor-card:target, .sensor-card:focus { border-color: var(--accent); }
+        .sensor-card-header { padding: 1.15rem 1.15rem .7rem; }
+        .sensor-card h3 { font-size: 1.05rem; font-weight: 700; margin: 0; line-height: 1.35; }
+        .sensor-basin { font-size: .7rem; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); margin: .25rem 0 .8rem; }
+        .sensor-value { font-size: 2rem; letter-spacing: -.05em; font-weight: 650; line-height: 1.2; font-variant-numeric: tabular-nums; }
+        .sensor-value small { font-size: .9rem; font-weight: 400; letter-spacing: 0; color: var(--muted); }
+        .sensor-status { display: inline-flex; align-items: center; gap: .4rem; font-size: .74rem; font-weight: 650; margin: .6rem 0; color: var(--status); }
+        .sensor-status::before { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+        .sensor-time { font-size: .76rem; color: var(--muted); margin: 0; line-height: 1.6; min-height: 2.5em; }
+        .sensor-card-footer { display: flex; justify-content: space-between; gap: .5rem; align-items: center; padding: .35rem 1.1rem .85rem; border-top: 1px solid #eff3f5; }
+        .sensor-card-footer a { font-size: .75rem; }
+        .detail-button { border: 0; background: none; color: #086575; font-size: .8rem; font-weight: 650; padding: .6rem 0; min-height: 44px; text-align: right; }
+        .sensor-plot { border: 0; margin: 0; width: 100%; height: 245px; min-height: 245px; display: block; font-size: .85rem; color: var(--muted); }
+        .sensor-plot > p { padding: 1.5rem; text-align: center; }
+        #map-container { grid-column: 1; grid-row: 1; position: sticky; top: 1rem; height: auto; padding: 0; background: white; border: 1px solid var(--line); border-radius: .9rem; overflow: hidden; min-width: 0; }
+
+        #map { height: min(58vh, 540px); min-height: 320px; width: 100%; background: #e7eff2; }
+        .map-tools { padding: .8rem 1rem; }
+        .map-tools button { min-height: 44px; }
+        .station-tabs { display: flex; gap: .45rem; padding: .7rem .9rem 0; }
+        .station-tab { border: 1px solid var(--line); background: #fff; color: var(--muted); border-radius: 999px; padding: .35rem .85rem; font-size: .78rem; font-weight: 600; min-height: 36px; }
+        .station-tab.active { background: #086575; border-color: #086575; color: #fff; }
+        .mini-dag { border-top: 1px solid #eff3f5; padding: .55rem .4rem .7rem; }
+        .mini-dag-title { margin: 0 0 .2rem .5rem; font-size: .75rem; color: var(--muted); line-height: 1.5; }
+        #station-dag { overflow-x: auto; }
+        #station-dag svg { display: block; margin: 0 auto; }
+        #station-dag .dag-node { cursor: pointer; outline: none; }
+        #station-dag .dag-node:focus-visible rect { stroke: #086575; stroke-width: 2.5; }
+        #station-dag .dag-node:hover rect { stroke: #086575; }
+        #radar-status { font-size: .75rem; color: var(--muted); margin: .7rem 0 0; line-height: 1.5; }
+        .map-marker-rect { border: 2px solid white; box-shadow: 0 1px 5px #17374755; border-radius: .5rem; padding: .25rem .4rem; font-size: .75rem; line-height: 1.4; }
+        .leaflet-control-attribution { font-size: 10px; }
+        #loading-indicator { padding: 2rem; text-align: center; color: var(--muted); }
+        #last-update { color: var(--muted); font-size: .75rem; }
+        .source-notes { margin-top: 2rem; border-top: 1px solid var(--line); padding-top: 1.25rem; font-size: .8rem; color: var(--muted); line-height: 1.7; }
+        .source-notes h2 { font-size: 1rem; font-weight: 700; color: var(--ink); }
+        .source-notes p { margin-bottom: .6rem; }
+        .modal-content { border: 0; border-radius: 1rem; }
+        #zoomed-plot { height: min(60dvh, 500px); min-height: 260px; width: 100%; }
+        #zoomed-meta { color: var(--muted); font-size: .85rem; padding: 0 1rem; }
+        .dependency-panel { background: var(--surface); border: 1px solid var(--line); border-radius: .9rem; padding: 1rem 1.1rem 1.15rem; margin-bottom: 1.25rem; }
+        .dependency-panel h2 { font-size: 1.15rem; font-weight: 700; margin: 0 0 .35rem; }
+        .dependency-panel .panel-lead { margin: 0 0 .85rem; color: var(--muted); font-size: .85rem; max-width: 90ch; }
+        .dependency-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(260px, .85fr); gap: 1rem; align-items: stretch; }
+        #dependency-graph { height: 360px; min-height: 280px; border: 1px solid var(--line); border-radius: .7rem; background: #f8fbfc; }
+        .prediction-pane { display: flex; flex-direction: column; gap: .65rem; min-width: 0; }
+        .prediction-meta { font-size: .82rem; color: var(--muted); line-height: 1.55; margin: 0; }
+        .prediction-meta strong { color: var(--ink); font-weight: 650; }
+        .fork-table { width: 100%; border-collapse: collapse; font-size: .8rem; font-variant-numeric: tabular-nums; }
+        .fork-table th, .fork-table td { padding: .35rem .4rem; border-bottom: 1px solid #eef3f5; text-align: right; }
+        .fork-table th:first-child, .fork-table td:first-child { text-align: left; }
+        .fork-table th { color: var(--muted); font-weight: 600; }
+        #prediction-plot { height: 180px; min-height: 160px; width: 100%; }
+        .prediction-disclaimer { font-size: .75rem; color: var(--muted); margin: 0; line-height: 1.5; }
+        @media (max-width: 900px) { .dependency-grid { grid-template-columns: 1fr; } #dependency-graph { height: 300px; } }
+        [hidden] { display: none !important; }
+        @media (min-width: 1500px) {
+            .level-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .level-row > .sensor-card:last-child:nth-child(odd) { grid-column: auto; }
+            .level-row > .sensor-card:last-child:nth-child(3n + 1) { grid-column: 1 / -1; }
+        }
+        @media (max-width: 1100px) { .dashboard-layout { grid-template-columns: 285px minmax(0, 1fr); } .level-row { grid-template-columns: minmax(0, 1fr); } }
+        @media (max-width: 800px) {
+            .site-header { padding: 1.5rem 1rem; }
+            h1 { font-size: 1.85rem !important; }
+            .header-inner { align-items: start; flex-direction: column; gap: 1rem; }
+            .source-link { padding: .5rem .75rem; font-size: .8rem; }
+            .page-shell { padding: 1rem 1rem 2rem; }
+            .overview { gap: .5rem; }
+            .overview-item { padding: .8rem .65rem; }
+            .overview-item dt { font-size: .7rem; }
+            .overview-item dd { font-size: .9rem; }
+            .dashboard-layout { display: flex; flex-direction: column; gap: 1rem; }
+            #map-container { position: static; height: auto; width: 100%; order: -1; }
+            #map { height: 340px; min-height: 0; }
+            main { width: 100%; }
+            .level-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (max-width: 600px) {
+            .level-row { grid-template-columns: minmax(0, 1fr); }
+            .toolbar { gap: .75rem; }
+            .toolbar h2 { font-size: 1.2rem; }
+            #range-buttons .btn { padding: .5rem .6rem; }
+            .sensor-card-header { padding: 1rem 1rem .5rem; }
+            .sensor-plot { height: 245px; min-height: 245px; }
+            .modal-body { padding: .5rem; }
+            .site-header { padding: 1.25rem 1rem; }
+            .header-inner { gap: .65rem; }
+            h1 { font-size: 1.65rem !important; }
+            .eyebrow { font-size: .65rem; margin-bottom: .4rem; }
+            .source-link { padding: .35rem .6rem; font-size: .75rem; }
+            .secondary-controls { flex-wrap: nowrap; gap: .5rem; }
+            .secondary-controls .form-check { flex: 1; min-width: 0; font-size: .75rem; line-height: 1.5; }
+            #refresh-button { flex: 0 0 125px; font-size: .75rem; line-height: 1.4; }
+        }
+        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
     </style>
 </head>
 <body>
 
-<div class="container-fluid">
-    <div class="row">
-        <!-- Map on top on small screens -->
-        <div id="map-container" class="col-12 col-md-3 order-1 order-md-1 p-3">
-            <h4 class="text-center mb-2">Mappa Sensori</h4>
-            <p class="text-center small text-muted mb-2">🌧️ Clicca "Radar Pioggia" per visualizzare la pioggia in tempo reale</p>
-            <div id="map"></div>
+<a class="skip-link" href="#main-content">Vai alle misure</a>
+<header class="site-header">
+    <div class="header-inner">
+        <div>
+            <p class="eyebrow">Osservatorio dei livelli · Bacino del Reno</p>
+            <h1>Il fiume, a colpo d’occhio.</h1>
+            <p>Livelli e soglie di Reno, Samoggia e affluenti.</p>
         </div>
-
-        <!-- Main Content (sensor plots) -->
-        <div class="col-12 col-md-9 order-2 order-md-2">
-            <div class="content">
-                <h1 class="text-center my-4">Livelli Fiume Reno e Torrente Samoggia 
-                    <a href="https://www.arpae.it/it/temi-ambientali/acqua/dati-acque/acque-superficiali/dati-idrometrici-in-tempo-reale-1">(dati ARPAE)</a>
-                </h1>
-
-                <!-- Range buttons for choosing between 24h, 48h, and 72h, plus toggle switch -->
-                <div id="range-buttons" class="d-flex flex-wrap justify-content-center align-items-center mb-4 gap-2">
-                    <button class="btn btn-secondary range-button" data-range="24">24h</button>
-                    <button class="btn btn-secondary range-button active" data-range="48">48h</button>
-                    <button class="btn btn-secondary range-button" data-range="72">72h</button>
-
-                    <!-- Toggle for Normalized / Non-Normalized Data -->
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="toggleNormalized">
-                        <label class="form-check-label" for="toggleNormalized">Valori Normalizzati</label>
-                    </div>
+        <a class="source-link" href="https://www.arpae.it/it/temi-ambientali/acqua/dati-acque/acque-superficiali/dati-idrometrici-in-tempo-reale-1">Dati originali ARPAE ↗</a>
+    </div>
+</header>
+<div class="page-shell">
+    <dl class="overview" aria-label="Riepilogo delle osservazioni">
+        <div class="overview-item"><dt>Stazioni con misure</dt><dd id="available-count">—</dd></div>
+        <div class="overview-item"><dt>Misura valida più recente</dt><dd id="latest-measurement">—</dd></div>
+        <div class="overview-item"><dt>Misure non recenti</dt><dd id="stale-count">—</dd></div>
+    </dl>
+    <div class="dashboard-layout">
+        <!-- Map on top on small screens -->
+        <div id="map-container">
+            <div class="station-tabs" role="tablist" aria-label="Vista delle stazioni">
+                <button type="button" id="tab-chain" class="station-tab active" role="tab" aria-selected="true" aria-controls="panel-chain">Catena delle stazioni</button>
+                <button type="button" id="tab-map" class="station-tab" role="tab" aria-selected="false" aria-controls="panel-map">Mappa</button>
+            </div>
+            <div id="panel-chain" role="tabpanel" aria-labelledby="tab-chain">
+                <div class="mini-dag">
+                    <p class="mini-dag-title">Da monte a valle. Tocca una stazione per aprire la sua scheda.</p>
+                    <div id="station-dag" role="group" aria-label="Grafo delle dipendenze tra stazioni"></div>
                 </div>
-
-                <!-- Legend for threshold colors -->
-                <div class="card mb-4 mx-auto" style="max-width: 800px;">
-                    <div class="card-body">
-                        <h6 class="card-title mb-3">Legenda Soglie</h6>
-                        <div class="d-flex flex-wrap justify-content-around gap-3">
-                            <div class="d-flex align-items-center">
-                                <div style="width: 30px; height: 4px; background-color: green; margin-right: 8px;"></div>
-                                <small><strong>Verde:</strong> Normale</small>
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <div style="width: 30px; height: 4px; background-color: yellow; margin-right: 8px;"></div>
-                                <small><strong>Giallo:</strong> Attenzione (Soglia 1)</small>
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <div style="width: 30px; height: 4px; background-color: orange; margin-right: 8px;"></div>
-                                <small><strong>Arancione:</strong> Allerta (Soglia 2)</small>
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <div style="width: 30px; height: 4px; background-color: red; margin-right: 8px;"></div>
-                                <small><strong>Rosso:</strong> Allarme (Soglia 3)</small>
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <div style="width: 30px; height: 4px; background-color: white; border: 1px solid #ccc; margin-right: 8px;"></div>
-                                <small><strong>Linea bianca:</strong> Media ponderata</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="loading-indicator" class="text-center my-5" style="display: none;">
-                    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
-                        <span class="visually-hidden">Caricamento dati...</span>
-                    </div>
-                    <p class="mt-3 fs-5">Caricamento dati dai sensori ARPAE...</p>
-                </div>
-
-                <div id="error-message" class="alert alert-warning text-center my-5" style="display: none;">
-                    <h4 class="alert-heading">Attenzione</h4>
-                    <p id="error-text"></p>
-                </div>
-
-                <div id="last-update" class="text-center mb-3" style="display: none;">
-                    <small class="text-muted">Ultimo aggiornamento: <span id="update-time"></span></small>
-                </div>
-
-                <div id="dashboard" class="col-12">
-                    <!-- Dynamic content for time series plots will be inserted here -->
+            </div>
+            <div id="panel-map" role="tabpanel" aria-labelledby="tab-map" hidden>
+                <div id="map" aria-label="Mappa interattiva delle stazioni idrometriche"></div>
+                <div class="map-tools">
+                    <button type="button" id="radar-toggle" class="btn btn-outline-primary" aria-pressed="false" disabled>Mostra radar pioggia</button>
+                    <button type="button" id="radar-play" class="btn btn-outline-primary" hidden aria-pressed="false">Anima radar</button>
+                    <p id="radar-status" role="status">Radar storico su richiesta. Nessuna previsione di pioggia.</p>
                 </div>
             </div>
         </div>
+        <!-- Main Content (sensor plots) -->
+        <main id="main-content" tabindex="-1">
+            <div class="toolbar">
+                <h2>Livelli delle stazioni</h2>
+                <!-- Range buttons for choosing between 24h, 48h, and 72h, plus toggle switch -->
+                <div id="range-buttons" role="group" aria-label="Intervallo dei grafici">
+                    <button type="button" class="btn range-button" data-range="24" aria-pressed="false">24 ore</button>
+                    <button type="button" class="btn range-button active" data-range="48" aria-pressed="true">48 ore</button>
+                    <button type="button" class="btn range-button" data-range="72" aria-pressed="false">72 ore</button>
+                </div>
+            </div>
+            <div class="secondary-controls">
+                <!-- Toggle for Normalized / Non-Normalized Data -->
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="toggleNormalized" aria-describedby="normalization-help" disabled>
+                    <label class="form-check-label" for="toggleNormalized">Rapporto rispetto alla massima soglia</label>
+                </div>
+                <button type="button" id="refresh-button" class="btn btn-outline-primary">Aggiorna dati</button>
+            </div>
+            <!-- Legend for threshold colors -->
+            <details class="reading-help">
+                <summary>Come leggere grafici e soglie</summary>
+                <p>I livelli sono espressi in metri rispetto al riferimento della singola stazione. Valori negativi sono possibili: le misure di stazioni diverse non sono quote direttamente confrontabili e non indicano la portata.</p>
+                <p id="normalization-help">La vista rapporto divide ogni livello per la massima soglia disponibile della stazione. Non è una probabilità di rischio e non rende equivalenti stazioni con riferimenti diversi. Se mancano soglie valide, il rapporto non è calcolabile.</p>
+                <p>Le linee tratteggiate indicano le soglie disponibili; la linea grigia puntinata è la media ponderata nel tempo, calcolata sui segmenti validi senza colmare lacune superiori a un’ora. L’ora dei grafici è quella italiana (Europe/Rome).</p>
+                <div class="legend">
+                    <span><i style="--swatch:#13745a"></i>Sotto soglia 1</span>
+                    <span><i style="--swatch:#a68000"></i>Soglia 1</span>
+                    <span><i style="--swatch:#be5900"></i>Soglia 2</span>
+                    <span><i style="--swatch:#b42332"></i>Soglia 3</span>
+                    <span><i style="--swatch:#64748b"></i>Media / stato non determinabile</span>
+                </div>
+            </details>
+            <div id="loading-indicator" role="status"><span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Recupero delle osservazioni ARPAE…</div>
+            <div id="error-message" class="alert alert-warning" role="status" hidden><p id="error-text" class="mb-0"></p></div>
+            <div id="last-update" class="mb-3" role="status" hidden><span id="update-time"></span></div>
+            <div id="dashboard" aria-label="Misure e grafici delle stazioni">
+                <!-- Dynamic content for time series plots will be inserted here -->
+            </div>
+        </main>
     </div>
+    <footer class="source-notes">
+        <h2>Fonti, aggiornamento e limiti</h2>
+        <p>Osservazioni e soglie: <a href="https://www.arpae.it/">Arpae Emilia-Romagna</a>, <a href="https://creativecommons.org/licenses/by/4.0/deed.it">CC BY 4.0</a>. Questa pagina rielabora i dati per la visualizzazione e il calcolo delle medie; non è un prodotto ufficiale ARPAE né una previsione di piena.</p>
+        <p id="freshness-note">Controllo dei dati ogni 5 minuti mentre la pagina è visibile. Una misura più vecchia di 90 minuti è segnalata come non recente. La cache locale conserva al massimo 24 ore ed è sempre indicata quando utilizzata.</p>
+        <p>Il superamento delle soglie di una stazione non coincide con un’allerta territoriale. Per allerte e indicazioni ufficiali consulta <a href="https://allertameteo.regione.emilia-romagna.it/">Allerta meteo Emilia-Romagna</a>.</p>
+        <p>Cartografia e tracciati fluviali: © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>, ODbL. Radar storico: <a href="https://www.rainviewer.com/">RainViewer</a>, servizio esterno senza garanzia di disponibilità; <a href="https://www.rainviewer.com/api.html">condizioni d’uso</a>.</p>
+    </footer>
+    <noscript><p class="alert alert-warning">Per visualizzare misure e grafici è necessario JavaScript. Puoi comunque consultare le fonti ufficiali dai collegamenti in questa pagina.</p></noscript>
 </div>
 
 <!-- Bootstrap Modal for Zoomed Graph -->
 <div class="modal fade" id="zoomedGraphModal" tabindex="-1" aria-labelledby="zoomedGraphModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-fullscreen-sm-down">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="zoomedGraphModalLabel"></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h2 class="modal-title fs-5" id="zoomedGraphModalLabel"></h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi dettaglio"></button>
             </div>
             <div class="modal-body">
-                <div id="zoomed-plot" style="height: 500px;"></div>
+                <p id="zoomed-meta"></p>
+                <div id="zoomed-plot" role="img" aria-label="Grafico di dettaglio"></div>
             </div>
         </div>
     </div>
 </div>
 
+<script src="dashboard-data.js"></script>
+<script src="predict-transfer.js"></script>
 <script>
     let currentRange = 48; // Default range in hours (48 hours)
     let isNormalized = false; // Default mode is non-normalized (toggle is off by default)
     let sensorDataGlobal = {}; // Store sensor data globally
     let mapInitialized = false; // To prevent re-initializing the map
+    let mapRequested = false; // The map tab loads Leaflet only on demand
     let map, markers, bounds;  // Declare map, markers, and bounds globally
+    const D = RenoData;
+    const P = RenoPredict;
+    const client = D.createClient(window.fetch.bind(window));
+    const cards = new Map();
+    const visiblePlots = new Set();
+    const markerById = new Map();
+    let records = {}, refreshing = false, lastAttempt = 0, refreshTimer, observer, activeSensorId;
+    let renderTime = new Date(), mapHasFitted = false;
+    let storage;
+    let cyGraph = null;
+    let selectedEdge = { upstream: 'Sostegno Reno', downstream: 'Cento' };
+    let selectedPrediction = null;
+    let transferCoeffs = null;
+    let graphReady = false;
+    try { storage = window.localStorage; } catch {}
+    const number = value => value === null ? '—' : new Intl.NumberFormat('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+    const dateTime = date => new Intl.DateTimeFormat('it-IT', { timeZone: 'Europe/Rome', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(date);
+    const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const refreshInterval = () => Math.max(5, sensorDataGlobal.config?.refreshMinutes || 5) * 60000;
+    const staleMinutes = () => sensorDataGlobal.config?.staleMinutes || 90;
+    function sensorById(id) { return sensorDataGlobal.data?.find(sensor => sensor.id === id); }
+    function blankSensor(name) { return { id: name, name, basin: '', coordinates: null, levels: { yellow: null, orange: null, red: null }, timeSeries: [] }; }
 
     // Add event listener to the toggle switch
     document.getElementById('toggleNormalized').addEventListener('change', function(e) {
@@ -267,9 +441,9 @@
     // ===== Fetch the Configuration from config.json =====
     async function fetchConfig() {
         try {
-            const response = await fetch('config.json');
-            if (!response.ok) throw new Error("Failed to load configuration");
-            return await response.json();
+            const config = await client.json('config.json');
+            if (!config?.sensors || !Object.keys(config.sensors).length || Object.values(config.sensors).some(sensor => !sensor.arpaeId || !sensor.url)) throw new Error('Configurazione non valida');
+            return config;
         } catch (error) {
             console.error('Error fetching config.json:', error);
             return null;
@@ -353,48 +527,408 @@
         return latestValidPoint ? latestValidPoint.value : null;
     }
 
-    // ===== Compute Sensor Levels based on dependencies =====
+    // ===== Compute Sensor Levels based on dependencies (shared with RenoPredict) =====
     function computeSensorLevels(config) {
-        const levels = {};
-        const followers = {};  // Track followers for each sensor
+        return P.rankNodes(config);
+    }
 
-        // Initialize followers for each sensor
-        Object.keys(config.sensors).forEach(sensor => {
-            followers[sensor] = [];
-        });
+    function ensureSelectedEdge(config) {
+        const graph = P.buildGraph(config);
+        const has = graph.edges.some(edge => edge.upstream === selectedEdge.upstream && edge.downstream === selectedEdge.downstream);
+        if (has) return selectedEdge;
+        const preferred = graph.edges.find(edge => edge.upstream === 'Sostegno Reno' && edge.downstream === 'Cento');
+        selectedEdge = preferred || graph.edges[0] || selectedEdge;
+        return selectedEdge;
+    }
 
-        // Build the followers tree based on dependencies
-        Object.keys(config.sensors).forEach(sensor => {
-            const dependencies = config.sensors[sensor].dependencies;
-            dependencies.forEach(dep => {
-                if (followers[dep]) {
-                    followers[dep].push(sensor);  // Add the sensor as a follower of its dependency
-                }
+    function updateDependencyGraph() {
+        const config = sensorDataGlobal.config;
+        const container = document.getElementById('dependency-graph');
+        if (!config || !container) return;
+        if (!window.cytoscape) {
+            container.textContent = 'Grafo non disponibile (Cytoscape non caricato).';
+            return;
+        }
+        if (window.cytoscapeDagre && !graphReady) {
+            try { cytoscape.use(cytoscapeDagre); } catch {}
+            graphReady = true;
+        }
+        const edge = ensureSelectedEdge(config);
+        const elements = [
+            ...Object.keys(config.sensors).map(id => {
+                const sensor = sensorById(id) || blankSensor(id);
+                const status = D.status(sensor);
+                return {
+                    data: { id, label: id, color: status.color },
+                    classes: id === edge.downstream || id === edge.upstream ? 'selected-node' : ''
+                };
+            }),
+            ...P.buildGraph(config).edges.map(item => ({
+                data: { id: item.id, source: item.upstream, target: item.downstream },
+                classes: item.upstream === edge.upstream && item.downstream === edge.downstream ? 'selected-edge' : ''
+            }))
+        ];
+        if (!cyGraph) {
+            cyGraph = cytoscape({
+                container,
+                elements,
+                style: [
+                    { selector: 'node', style: {
+                        label: 'data(label)', 'text-valign': 'center', 'text-halign': 'center',
+                        'background-color': 'data(color)', color: '#fff', 'font-size': 9,
+                        'text-wrap': 'wrap', 'text-max-width': 72, width: 78, height: 28,
+                        'border-width': 2, 'border-color': '#fff', 'text-outline-width': 1, 'text-outline-color': '#17374788'
+                    }},
+                    { selector: 'edge', style: {
+                        width: 2, 'line-color': '#9bb0ba', 'target-arrow-color': '#9bb0ba',
+                        'target-arrow-shape': 'triangle', 'curve-style': 'bezier'
+                    }},
+                    { selector: '.selected-edge', style: { width: 4, 'line-color': '#086575', 'target-arrow-color': '#086575' } },
+                    { selector: '.selected-node', style: { 'border-color': '#086575', 'border-width': 3 } }
+                ],
+                layout: { name: window.cytoscapeDagre || typeof dagre !== 'undefined' ? 'dagre' : 'breadthfirst', rankDir: 'TB', nodeSep: 28, rankSep: 42, padding: 16 },
+                userZoomingEnabled: true,
+                userPanningEnabled: true,
+                boxSelectionEnabled: false
             });
-        });
+            cyGraph.on('tap', 'edge', evt => {
+                const data = evt.target.data();
+                selectedEdge = { upstream: data.source, downstream: data.target };
+                refreshPrediction();
+                updateDependencyGraph();
+            });
+            cyGraph.on('tap', 'node', evt => {
+                const downstream = evt.target.id();
+                const incoming = P.buildGraph(config).edges.filter(item => item.downstream === downstream);
+                if (!incoming.length) return;
+                selectedEdge = incoming.find(item => item.upstream === 'Sostegno Reno') || incoming[0];
+                refreshPrediction();
+                updateDependencyGraph();
+            });
+        } else {
+            cyGraph.json({ elements });
+            cyGraph.layout({ name: window.cytoscapeDagre || typeof dagre !== 'undefined' ? 'dagre' : 'breadthfirst', rankDir: 'TB', nodeSep: 28, rankSep: 42, padding: 16 }).run();
+        }
+    }
 
-        // Start from sensors that have no followers (leaves of the tree)
-        const visited = new Set();
-        const sensorsWithNoFollowers = Object.keys(followers).filter(sensor => followers[sensor].length === 0);
+    // ===== Mini dependency DAG under the map: clickable pills, one per station =====
+    function scrollToSensorCard(sensorId) {
+        const plotElement = document.getElementById(`card-${sensorId}`);
+        if (plotElement) {
+            plotElement.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'start' });
+            plotElement.focus({ preventScroll: true });
+        }
+    }
 
-        function assignLevel(sensor, currentLevel) {
-            if (visited.has(sensor)) return;
-            visited.add(sensor);
-            levels[sensor] = Math.max(levels[sensor] || 0, currentLevel);
+    function showStationPanel(panel) {
+        const chain = panel === 'chain';
+        document.getElementById('panel-chain').hidden = !chain;
+        document.getElementById('panel-map').hidden = chain;
+        document.getElementById('tab-chain').classList.toggle('active', chain);
+        document.getElementById('tab-map').classList.toggle('active', !chain);
+        document.getElementById('tab-chain').setAttribute('aria-selected', String(chain));
+        document.getElementById('tab-map').setAttribute('aria-selected', String(!chain));
+        if (chain) return;
+        mapRequested = true;
+        if (mapInitialized && map) {
+            requestAnimationFrame(() => {
+                map.invalidateSize();
+                if (bounds) map.fitBounds(bounds, { padding: [35, 35] });
+            });
+        } else if (sensorDataGlobal.data?.length) {
+            initializeMap(sensorDataGlobal.data).catch(error => console.error('Mappa non disponibile:', error));
+        }
+    }
 
-            // Find all sensors that depend on the current sensor
-            const dependencies = config.sensors[sensor].dependencies;
-            dependencies.forEach(dep => {
-                assignLevel(dep, currentLevel + 1);  // Increase the level for dependencies
+    // Fixed three-column layout for the station chain: 0 = Reno (left),
+    // 1 = confluence/centre, 2 = Samoggia (right); unknown stations go centre.
+    const DAG_COLUMN = {
+        'Sasso Marconi': 0, 'Casalecchio chiusa': 0, 'Casalecchio tiro a volo': 0,
+        'Bonconvento': 0, 'Sostegno Reno': 0, 'Gallo': 0,
+        'Vergato DX': 1, 'Lavino di Sotto': 1, 'Cento': 1, 'Dosso': 1,
+        'Opera Reno Panfilia': 1, 'Secondo Salto': 1,
+        'Paltrone Samoggia': 2, 'Forcelli': 2
+    };
+
+    let dagResizeBound = false;
+    function updateStationDag() {
+        const container = document.getElementById('station-dag');
+        const config = sensorDataGlobal.config;
+        if (!container || !config) return;
+        if (!dagResizeBound) {
+            dagResizeBound = true;
+            window.addEventListener('resize', debounce(() => updateStationDag(), 200));
+            container.addEventListener('click', evt => {
+                const node = evt.target.closest('[data-sensor]');
+                if (node) scrollToSensorCard(node.getAttribute('data-sensor'));
+            });
+            container.addEventListener('keydown', evt => {
+                if (evt.key !== 'Enter' && evt.key !== ' ') return;
+                const node = evt.target.closest('[data-sensor]');
+                if (node) { evt.preventDefault(); scrollToSensorCard(node.getAttribute('data-sensor')); }
             });
         }
+        const svgNS = 'http://www.w3.org/2000/svg';
+        const graph = P.buildGraph(config);
+        const ranks = P.rankNodes(config);
+        const maxRank = Math.max(0, ...Object.values(ranks));
+        const rows = Array.from({ length: maxRank + 1 }, () => []);
+        for (const id of graph.nodes) rows[maxRank - (ranks[id] || 0)].push(id);
+        rows.forEach(row => row.sort());
 
-        // Assign levels starting from sensors with no followers
-        sensorsWithNoFollowers.forEach(sensor => {
-            assignLevel(sensor, 0);  // Sensors with no followers start at level 0
+        const meta = new Map();
+        for (const id of graph.nodes) {
+            const sensor = sensorById(id) || blankSensor(id);
+            meta.set(id, { sensor, status: D.status(sensor), latest: getLatestNonNullValue(sensor) });
+        }
+
+        const ctx = updateStationDag.ctx || (updateStationDag.ctx = document.createElement('canvas').getContext('2d'));
+        updateStationDag.fmt = updateStationDag.fmt || (v => new Intl.NumberFormat('it-IT', { maximumFractionDigits: 1 }).format(v));
+        const valueText = id => {
+            const latest = meta.get(id).latest;
+            return latest === null ? '—' : `${updateStationDag.fmt(latest)} m`;
+        };
+        const PADX = 8, DOT = 14, H = 42, ROWH = 58, COLGAP = 14, TOP = 10, BOTTOM = 10;
+        const containerWidth = Math.max(container.clientWidth || 0, 240);
+        const columns = [[], [], []];
+        for (const id of graph.nodes) columns[DAG_COLUMN[id] ?? 1].push(id);
+
+        const wrapText = (text, maxW) => {
+            if (Math.ceil(ctx.measureText(text).width) <= maxW) return [text];
+            const lines = [];
+            let current = '';
+            for (const word of text.split(' ')) {
+                const candidate = current ? `${current} ${word}` : word;
+                if (current && Math.ceil(ctx.measureText(candidate).width) > maxW) {
+                    lines.push(current);
+                    current = word;
+                } else current = candidate;
+            }
+            if (current) lines.push(current);
+            if (lines.length > 2) lines[1] = `${lines[1]} ${lines.splice(2).join(' ')}`;
+            return lines.slice(0, 2);
+        };
+
+        // Three fixed columns (Reno left, Samoggia right, confluence centre);
+        // station names wrap on two lines and the font shrinks 11→10 px
+        // if the widest column still does not fit the panel
+        let widthOf, colW, needed, nameFontPx = 11, nameLines = new Map();
+        for (const px of [11, 10]) {
+            ctx.font = `600 ${px}px system-ui, -apple-system, "Segoe UI", sans-serif`;
+            const maxName = Math.round(64 * 11 / px);
+            const lines = new Map();
+            const nw = new Map();
+            for (const id of graph.nodes) {
+                const wrapped = wrapText(id, maxName);
+                lines.set(id, wrapped);
+                nw.set(id, Math.max(...wrapped.map(line => Math.ceil(ctx.measureText(line).width))));
+            }
+            ctx.font = `600 ${Math.max(9, px - 1)}px system-ui, -apple-system, "Segoe UI", sans-serif`;
+            const vw = new Map(graph.nodes.map(id => [id, Math.ceil(ctx.measureText(valueText(id)).width)]));
+            const wOf = id => PADX * 2 + Math.max(DOT + nw.get(id), vw.get(id));
+            const cW = [0, 1, 2].map(c => Math.max(0, ...columns[c].map(wOf)));
+            const total = cW[0] + cW[1] + cW[2] + 2 * COLGAP;
+            if (total <= containerWidth || px === 10) {
+                widthOf = wOf; colW = cW; needed = total; nameFontPx = px; nameLines = lines;
+                break;
+            }
+        }
+        const width = Math.max(containerWidth, needed, 240);
+        const colX = [];
+        let bandX = (width - needed) / 2;
+        for (let c = 0; c < 3; c++) { colX[c] = bandX; bandX += colW[c] + COLGAP; }
+
+        const pos = new Map();
+        rows.forEach((row, ri) => {
+            const y = TOP + ri * ROWH;
+            for (const id of row) {
+                const c = DAG_COLUMN[id] ?? 1;
+                const w = widthOf(id);
+                pos.set(id, { x: colX[c] + (colW[c] - w) / 2, y, w, h: H });
+            }
         });
+        const height = TOP + (rows.length - 1) * ROWH + H + BOTTOM;
 
-        return levels;
+        const svg = document.createElementNS(svgNS, 'svg');
+        svg.setAttribute('width', width);
+        svg.setAttribute('height', height);
+        svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+        for (const edge of graph.edges) {
+            const from = pos.get(edge.upstream), to = pos.get(edge.downstream);
+            if (!from || !to) continue;
+            const x1 = from.x + from.w / 2, y1 = from.y + from.h;
+            const x2 = to.x + to.w / 2, y2 = to.y;
+            const midY = (y1 + y2) / 2;
+            const path = document.createElementNS(svgNS, 'path');
+            path.setAttribute('d', `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2 - 4}`);
+            path.setAttribute('fill', 'none');
+            path.setAttribute('stroke', '#9bb0ba');
+            path.setAttribute('stroke-width', '1.5');
+            svg.appendChild(path);
+            const arrow = document.createElementNS(svgNS, 'path');
+            arrow.setAttribute('d', `M ${x2 - 3.5} ${y2 - 4} L ${x2 + 3.5} ${y2 - 4} L ${x2} ${y2 - 0.5} Z`);
+            arrow.setAttribute('fill', '#9bb0ba');
+            svg.appendChild(arrow);
+        }
+
+        for (const [id, p] of pos) {
+            const m = meta.get(id);
+            const statusColor = m.status.color;
+            const label = m.latest === null ? 'nessuna misura' : `${number(m.latest)} m`;
+            const g = document.createElementNS(svgNS, 'g');
+            g.setAttribute('class', 'dag-node');
+            g.setAttribute('data-sensor', id);
+            g.setAttribute('tabindex', '0');
+            g.setAttribute('role', 'button');
+            g.setAttribute('aria-label', `${id}: ${label} · ${m.status.label}. Vai alla scheda della stazione.`);
+            const title = document.createElementNS(svgNS, 'title');
+            title.textContent = `${id} · ${label} · ${m.status.label}`;
+            const rect = document.createElementNS(svgNS, 'rect');
+            rect.setAttribute('x', p.x); rect.setAttribute('y', p.y);
+            rect.setAttribute('width', p.w); rect.setAttribute('height', p.h);
+            rect.setAttribute('rx', p.h / 2);
+            rect.setAttribute('fill', '#ffffff');
+            rect.setAttribute('stroke', '#d8e2e6');
+            rect.setAttribute('stroke-width', '1.25');
+            const textX = p.x + PADX + DOT;
+            const lines = nameLines.get(id) || [id];
+            const nameCys = lines.length === 1 ? [p.y + 16] : [p.y + 10, p.y + 21];
+            const dot = document.createElementNS(svgNS, 'circle');
+            dot.setAttribute('cx', p.x + PADX + 3.5);
+            dot.setAttribute('cy', nameCys[0]);
+            dot.setAttribute('r', '4');
+            dot.setAttribute('fill', statusColor);
+            const texts = lines.map((line, i) => {
+                const name = document.createElementNS(svgNS, 'text');
+                name.setAttribute('x', textX);
+                name.setAttribute('y', nameCys[i]);
+                name.setAttribute('dominant-baseline', 'central');
+                name.setAttribute('font-size', nameFontPx);
+                name.setAttribute('font-weight', '600');
+                name.setAttribute('fill', '#173747');
+                name.textContent = line;
+                return name;
+            });
+            const value = document.createElementNS(svgNS, 'text');
+            value.setAttribute('x', textX);
+            value.setAttribute('y', p.y + H - 9);
+            value.setAttribute('dominant-baseline', 'central');
+            value.setAttribute('font-size', Math.max(9, nameFontPx - 1));
+            value.setAttribute('font-weight', '600');
+            value.setAttribute('fill', m.latest === null ? '#94a3b8' : statusColor);
+            value.textContent = valueText(id);
+            g.append(title, rect, dot, ...texts, value);
+            svg.appendChild(g);
+        }
+        container.replaceChildren(svg);
+    }
+
+    function refreshPrediction() {
+        const config = sensorDataGlobal.config;
+        const meta = document.getElementById('prediction-meta');
+        const forksWrap = document.getElementById('prediction-forks');
+        const forkBody = document.getElementById('prediction-fork-body');
+        const plot = document.getElementById('prediction-plot');
+        if (!config || !meta) return;
+        const edge = ensureSelectedEdge(config);
+        const up = sensorById(edge.upstream) || blankSensor(edge.upstream);
+        const down = sensorById(edge.downstream) || blankSensor(edge.downstream);
+        selectedPrediction = P.predictEdge(up, down, {
+            hours: currentRange,
+            now: renderTime,
+            coeffs: transferCoeffs,
+            horizonHours: 3
+        });
+        if (!selectedPrediction?.ok) {
+            meta.textContent = `${edge.upstream} → ${edge.downstream}: ${selectedPrediction?.reason || 'Predizione non disponibile.'}`;
+            forksWrap.hidden = true;
+            forkBody.replaceChildren();
+            if (window.Plotly && plot.data) Plotly.purge(plot);
+            plot.textContent = 'Seleziona un arco con serie sufficienti.';
+            return;
+        }
+        const lagLabel = `${Math.round(selectedPrediction.lagMinutes)} min`;
+        const rLabel = selectedPrediction.r == null ? 'n/d' : selectedPrediction.r.toFixed(2);
+        const rmseLabel = selectedPrediction.rmse == null ? 'n/d' : number(selectedPrediction.rmse) + ' m';
+        meta.innerHTML = `<strong>${edge.upstream} → ${edge.downstream}</strong> · lag ${lagLabel} · r=${rLabel} · RMSE ${rmseLabel} · fonte ${selectedPrediction.source}${selectedPrediction.reason ? ' · ' + selectedPrediction.reason : ''}. Prossime mezz’ore (min/med/max):`;
+        forkBody.replaceChildren();
+        for (const point of selectedPrediction.next || []) {
+            const row = document.createElement('tr');
+            const cells = [dateTime(point.time), number(point.min), number(point.med), number(point.max)];
+            cells.forEach((text, i) => {
+                const cell = document.createElement(i === 0 ? 'th' : 'td');
+                cell.textContent = text;
+                if (i === 0) { cell.scope = 'row'; cell.style.fontWeight = '500'; }
+                row.appendChild(cell);
+            });
+            forkBody.appendChild(row);
+        }
+        forksWrap.hidden = !(selectedPrediction.next || []).length;
+        drawPredictionPlot(down, selectedPrediction);
+        if (visiblePlots.has(down.id)) drawTimeSeries(down, `plot-${down.id}`, currentRange);
+    }
+
+    function drawPredictionPlot(downstream, prediction) {
+        const element = document.getElementById('prediction-plot');
+        if (!element || !window.Plotly) return;
+        if (!prediction?.ok) {
+            element.textContent = 'Predizione non disponibile.';
+            return;
+        }
+        const observed = D.filter(downstream, currentRange, renderTime).filter(p => p.value !== null);
+        const hist = prediction.predicted || [];
+        const forecast = prediction.forecast || [];
+        const hover = new Intl.DateTimeFormat('it-IT', { timeZone: 'Europe/Rome', dateStyle: 'short', timeStyle: 'short' });
+        const traces = [
+            {
+                x: observed.map(p => +p.time), y: observed.map(p => p.value),
+                type: 'scatter', mode: 'lines', name: 'Osservato',
+                line: { color: '#087e91', width: 2 },
+                customdata: observed.map(p => hover.format(p.time)),
+                hovertemplate: '%{customdata}<br>%{y:.2f} m<extra>Osservato</extra>'
+            },
+            {
+                x: hist.map(p => +p.time), y: hist.map(p => p.med),
+                type: 'scatter', mode: 'lines', name: 'Ricostruito',
+                line: { color: '#64748b', width: 1.5, dash: 'dot' },
+                hovertemplate: '%{y:.2f} m<extra>Ricostruito</extra>'
+            },
+            {
+                x: forecast.map(p => +p.time), y: forecast.map(p => p.max),
+                type: 'scatter', mode: 'lines', name: 'Max',
+                line: { width: 0 }, hoverinfo: 'skip', showlegend: false
+            },
+            {
+                x: forecast.map(p => +p.time), y: forecast.map(p => p.min),
+                type: 'scatter', mode: 'lines', name: 'Forchetta',
+                fill: 'tonexty', fillcolor: 'rgba(8,101,117,.18)',
+                line: { width: 0 },
+                hovertemplate: 'min %{y:.2f} m<extra></extra>'
+            },
+            {
+                x: forecast.map(p => +p.time), y: forecast.map(p => p.med),
+                type: 'scatter', mode: 'lines+markers', name: 'Mediana',
+                line: { color: '#086575', width: 2.5, dash: 'dash' },
+                marker: { size: 5 },
+                customdata: forecast.map(p => [hover.format(p.time), number(p.min), number(p.max)]),
+                hovertemplate: '%{customdata[0]}<br>med %{y:.2f} m<br>min %{customdata[1]} · max %{customdata[2]}<extra></extra>'
+            }
+        ];
+        const start = +renderTime - currentRange * 3600000;
+        const end = +renderTime + 3 * 3600000;
+        const layout = {
+            margin: { t: 10, r: 12, b: 30, l: 42 }, height: 180, showlegend: false,
+            paper_bgcolor: '#fff', plot_bgcolor: '#fff',
+            font: { color: '#536b78', family: 'system-ui, sans-serif', size: 10 },
+            xaxis: { type: 'date', range: [start, end], gridcolor: '#e7eef2' },
+            yaxis: { title: { text: 'm', font: { size: 10 } }, gridcolor: '#e7eef2', zeroline: false },
+            shapes: [{ type: 'line', x0: +renderTime, x1: +renderTime, y0: 0, y1: 1, yref: 'paper', line: { color: '#9bb0ba', width: 1, dash: 'dot' } }]
+        };
+        const config = { responsive: true, displayModeBar: false, staticPlot: isTouchDevice() };
+        element.setAttribute('aria-label', `Previsione ${selectedEdge.upstream} verso ${downstream.name}, forchetta min med max a mezz’ora`);
+        if (element.data) Plotly.react(element, traces, layout, config);
+        else { element.textContent = ''; Plotly.newPlot(element, traces, layout, config); }
     }
 
     // ===== Create custom marker for the map =====
@@ -408,7 +942,7 @@
             <div class="map-marker-rect" style="background-color: ${color}; 
             border-radius: 8px; color: ${textColor}; padding: 4px 8px; font-weight: bold; 
             text-align: center; line-height: 1.2;">
-                ${latestValue}m
+                ${number(latestValue)} m
             </div>`;
 
         return L.divIcon({
@@ -422,11 +956,7 @@
     // ===== Determine the color for the marker based on sensor status =====
     function getMarkerColor(sensor) {
         const latestValue = getLatestNonNullValue(sensor); // Use the latest non-null value
-        if (sensor.levels.red && latestValue >= sensor.levels.red) return 'red';
-        if (sensor.levels.orange && latestValue >= sensor.levels.orange) return 'orange';
-        if (sensor.levels.yellow && latestValue >= sensor.levels.yellow) return 'yellow';
-
-        return 'green';
+        return D.status(sensor).color;
     }
 
     // ===== Function to normalize a sensor's level =====
@@ -474,41 +1004,98 @@
     // ===== Draw Time Series Chart with Levels and Gridlines using Plotly.js =====
     function drawTimeSeries(sensor, plotElementId, range, zoomed = false) {
         // Filter the time series data based on the selected range (24, 48, 72 hours)
-        const filteredData = filterTimeSeries(sensor, range);
+        const filteredData = D.filter(sensor, range, renderTime);
+        const element = document.getElementById(plotElementId);
+        if (!element) return;
+        const version = (element.renderVersion || 0) + 1;
+        element.renderVersion = version;
+        if (!window.Plotly || !filteredData.some(point => point.value !== null) || (isNormalized && !D.highestThreshold(sensor))) {
+            const message = !window.Plotly ? 'Grafici non disponibili. Le misure restano consultabili.' : isNormalized && !D.highestThreshold(sensor) ? 'Rapporto non calcolabile: soglie non disponibili.' : 'Nessuna misura valida nell’intervallo selezionato.';
+            element.renderPromise = (element.renderPromise || Promise.resolve()).catch(() => {}).then(() => {
+                if (element.renderVersion !== version) return;
+                if (element.data && window.Plotly) Plotly.purge(element);
+                element.textContent = message;
+            });
+            return;
+        }
         // Convert times to Europe/Rome timezone
-        const times = filteredData.map(d => convertToEuropeRome(d.time));
-        const values = filteredData.map(d => isNormalized ? normalizeLevel(sensor, d.value) : d.value);
-
-        const trace = { x: times, y: values, mode: 'lines', name: isNormalized ? 'Normalized Level' : 'Water Level', line: { color: 'lightblue' } };
+        const points = D.withGaps(filteredData);
+        const times = points.map(d => +d.time);
+        const values = points.map(d => isNormalized ? D.normalize(sensor, d.value) : d.value);
+        const hoverFormatter = new Intl.DateTimeFormat('it-IT', { timeZone: 'Europe/Rome', dateStyle: 'short', timeStyle: 'long' });
+        const traces = [{
+            x: times, y: values, type: 'scatter', mode: 'lines', name: isNormalized ? 'Rapporto' : 'Livello',
+            customdata: points.map(d => hoverFormatter.format(d.time)), connectgaps: false,
+            hovertemplate: '%{customdata}<br><b>%{y:.2f}' + (isNormalized ? '' : ' m') + '</b><extra></extra>',
+            line: { color: '#087e91', width: 2.5 }
+        }];
+        const canOverlay = !isNormalized && !zoomed && selectedPrediction?.ok &&
+            selectedEdge.downstream === sensor.id && Array.isArray(selectedPrediction.forecast);
+        if (canOverlay) {
+            const forecast = selectedPrediction.forecast;
+            traces.push(
+                {
+                    x: forecast.map(p => +p.time), y: forecast.map(p => p.max),
+                    type: 'scatter', mode: 'lines', name: 'Max', line: { width: 0 }, hoverinfo: 'skip', showlegend: false
+                },
+                {
+                    x: forecast.map(p => +p.time), y: forecast.map(p => p.min),
+                    type: 'scatter', mode: 'lines', name: 'Forchetta', fill: 'tonexty',
+                    fillcolor: 'rgba(8,101,117,.16)', line: { width: 0 }, hoverinfo: 'skip', showlegend: false
+                },
+                {
+                    x: forecast.map(p => +p.time), y: forecast.map(p => p.med),
+                    type: 'scatter', mode: 'lines', name: 'Previsto',
+                    line: { color: '#086575', width: 2, dash: 'dash' },
+                    hovertemplate: 'med %{y:.2f} m<extra>Previsto</extra>'
+                }
+            );
+            const forecastVals = forecast.flatMap(p => [p.min, p.max]).filter(v => v !== null);
+            if (forecastVals.length) {
+                // extend y range below after min/max computed
+                element._forecastExtrema = [Math.min(...forecastVals), Math.max(...forecastVals)];
+            }
+        } else element._forecastExtrema = null;
         
         // Calculate the weighted average using only the filtered data
-        const weightedAverage = calculateWeightedAverage(sensor, filteredData, isNormalized);
+        const weightedAverage = D.weightedAverage(sensor, filteredData, isNormalized);
 
         // Calculate thresholds and data range
-        const thresholds = [sensor.levels.yellow, sensor.levels.orange, sensor.levels.red].filter(v => v !== null);
+        const thresholds = [sensor.levels.yellow, sensor.levels.orange, sensor.levels.red].filter(v => v !== null).map(value => isNormalized ? D.normalize(sensor, value) : value);
         const highestThreshold = thresholds.length ? Math.max(...thresholds) : null;
         const lowestThreshold = thresholds.length ? Math.min(...thresholds) : null;
         
         const padding = 0.5; // Adjust as needed
-        const minValue = Math.min(...values.filter(v => v !== null));
-        const maxValue = Math.max(...values.filter(v => v !== null));
+        const finiteValues = values.filter(v => v !== null);
+        const ext = element._forecastExtrema || [];
+        const rangePool = finiteValues.concat(ext.length ? ext : []);
+        const minValue = rangePool.length ? Math.min(...rangePool) : 0;
+        const maxValue = rangePool.length ? Math.max(...rangePool) : 1;
 
         // Adjust y-axis range to include all thresholds and start at least at -1m
         let yAxisMin = Math.min(-1, minValue - padding, lowestThreshold !== null ? lowestThreshold - padding : minValue - padding);
         let yAxisMax = Math.max(maxValue + padding, highestThreshold !== null ? highestThreshold + padding : maxValue + padding);
 
         // For normalized data, set y-axis from 0 to 1.2
-        const yAxisRange = isNormalized ? [0, 1.2] : [yAxisMin, yAxisMax];
+        const yAxisRange = isNormalized ? [Math.min(0, minValue - .05), Math.max(1.2, maxValue + .05)] : [yAxisMin, yAxisMax];
+        const start = +renderTime - range * 3600000;
+        const tickCount = zoomed ? 7 : 4;
+        const ticks = Array.from({ length: tickCount }, (_, i) => start + i * range * 3600000 / (tickCount - 1));
 
         const layout = {
-            paper_bgcolor: "rgba(0,0,0,1)",
-            plot_bgcolor: "rgba(0,0,0,1)",
-            font: {
-                color: 'white'
-            },
+            paper_bgcolor: '#fff',
+            plot_bgcolor: '#fff',
+            font: { color: '#536b78', family: 'system-ui, sans-serif', size: 10 },
+            showlegend: false,
+            separators: ', ',
+            dragmode: zoomed ? 'zoom' : false,
+            uirevision: `${range}-${isNormalized}`,
             xaxis: { 
-                type: 'date', 
-                gridcolor: "rgba(200,200,200,0.3)",
+                type: 'date', range: [start, +renderTime],
+                tickmode: 'array', tickvals: ticks,
+                ticktext: ticks.map(t => D.romeTime(new Date(t)).slice(8, 10) + '/' + D.romeTime(new Date(t)).slice(5, 7) + '<br>' + D.romeTime(new Date(t)).slice(11, 16)),
+                fixedrange: !zoomed, zeroline: false, automargin: true,
+                gridcolor: '#e7eef2',
                 showgrid: true, // Show grid on x-axis
                 tickformat: '%d %b %H:%M', // Format the date labels
                 tickformatstops: [
@@ -519,17 +1106,19 @@
                 ]
             },
             yaxis: { 
-                range: yAxisRange,
-                gridcolor: "rgba(200,200,200,0.3)",
+                range: yAxisRange, title: { text: isNormalized ? 'Rapporto' : 'm', font: { size: 10 }, standoff: 4 },
+                fixedrange: !zoomed, zeroline: false, automargin: true,
+                gridcolor: '#e7eef2',
                 showgrid: true // Show grid on y-axis
             },
             shapes: [], // Placeholder for threshold lines and weighted average
-            autosize: !zoomed, // If zoomed, make it a fixed size; otherwise, allow resizing
-            height: zoomed ? 500 : 400, // Larger height for zoomed-in chart
-            margin: { t: 10, b: 40, r: 30, l: 20 }  // Reduce top margin since there's no title
+            autosize: true, // If zoomed, make it a fixed size; otherwise, allow resizing
+            height: zoomed ? Math.max(260, Math.min(window.innerHeight * .6, 500)) : 245, // Larger height for zoomed-in chart
+            margin: { t: 15, b: 45, r: 18, l: 48 }  // Reduce top margin since there's no title
         };
         const plot_config = { 
-            responsive: true,
+            responsive: true, displayModeBar: zoomed, displaylogo: false, scrollZoom: false,
+            modeBarButtonsToRemove: ['select2d', 'lasso2d'],
             staticPlot: isTouchDevice() && !zoomed // Disable interactions on touch devices for non-zoomed plots
         };
 
@@ -545,7 +1134,7 @@
                 y0: sensor.levels.yellow * thresholdMultiplier,
                 y1: sensor.levels.yellow * thresholdMultiplier,
                 line: {
-                    color: 'yellow',
+                    color: '#a68000',
                     width: 1,
                     dash: 'dash'
                 }
@@ -560,7 +1149,7 @@
                 y0: sensor.levels.orange * thresholdMultiplier,
                 y1: sensor.levels.orange * thresholdMultiplier,
                 line: {
-                    color: 'orange',
+                    color: '#be5900',
                     width: 1,
                     dash: 'dash'
                 }
@@ -575,7 +1164,7 @@
                 y0: sensor.levels.red * thresholdMultiplier,
                 y1: sensor.levels.red * thresholdMultiplier,
                 line: {
-                    color: 'red',
+                    color: '#b42332',
                     width: 1,
                     dash: 'dash'
                 }
@@ -583,7 +1172,7 @@
         }
 
         // Add weighted average line
-        layout.shapes.push({
+        if (weightedAverage !== null) layout.shapes.push({
             type: 'line',
             xref: 'paper',
             x0: 0,
@@ -591,22 +1180,29 @@
             y0: weightedAverage,
             y1: weightedAverage,
             line: {
-                color: 'white',
-                width: 2,
+                color: '#64748b',
+                width: 1.5,
                 dash: 'dot'
             }
         });
 
         // Ensure the element exists before calling Plotly
-        requestAnimationFrame(() => {
+        element.setAttribute('aria-label', `${sensor.name}: andamento delle ultime ${range} ore, ${isNormalized ? 'rapporto sulla massima soglia' : 'livello in metri'}. Orari italiani.`);
+        element.renderPromise = (element.renderPromise || Promise.resolve()).catch(() => {}).then(async () => {
+            if (element.renderVersion !== version || !element.isConnected) return;
             // Check if the plot already exists
-            if (document.getElementById(plotElementId) && document.getElementById(plotElementId).data) {
+            if (element.data) {
                 // Update the plot using Plotly.react
-                Plotly.react(plotElementId, [trace], layout, plot_config);
+                await Plotly.react(element, traces, layout, plot_config);
             } else {
                 // Create the plot for the first time
-                Plotly.newPlot(plotElementId, [trace], layout, plot_config);
+                element.textContent = '';
+                await Plotly.newPlot(element, traces, layout, plot_config);
             }
+        }).catch(error => {
+            if (element.renderVersion !== version) return;
+            element.textContent = 'Grafico non disponibile. Consulta le misure o la fonte ARPAE.';
+            console.error('Errore nel grafico:', error);
         });
     }
 
@@ -626,10 +1222,11 @@
     // ===== Determine the status color for the sensor (based on the latest non-null water level) =====
     function getSensorStatus(sensor) {
         const latestValue = getLatestNonNullValue(sensor); // Use the latest non-null value
-        if (latestValue < sensor.levels.yellow) return 'success';  // Green
-        if (latestValue < sensor.levels.orange) return 'warning';  // Yellow
-        if (latestValue < sensor.levels.red) return 'orange';  // Orange
-        return 'danger';  // Red
+        const status = D.status(sensor).key;
+        if (status === 'normal') return 'success';  // Green
+        if (status === 'yellow') return 'warning';  // Yellow
+        if (status === 'orange') return 'orange';  // Orange
+        return status === 'red' ? 'danger' : 'secondary';  // Red
     }
 
     // ===== Add RainViewer Radar Layer =====
@@ -638,126 +1235,136 @@
         let animationPosition = 0;
         let animationTimer = null;
         let radarVisible = false;
-        let lastLoadTime = 0;
+        let lastLoadTime = 0, loading = false;
         const RELOAD_INTERVAL = 10 * 60 * 1000; // Reload every 10 minutes
+        const status = document.getElementById('radar-status');
+        const play = document.getElementById('radar-play');
+        const mapPanelVisible = () => !document.getElementById('panel-map').hidden;
 
         // Create control button
-        const RadarControl = L.Control.extend({
-            onAdd: function() {
-                const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
-                container.style.cursor = 'pointer';
-                container.style.backgroundColor = 'white';
-                container.style.padding = '8px 16px';
-                container.style.borderRadius = '6px';
-                container.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
-                container.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                container.style.color = 'white';
-                container.style.fontWeight = 'bold';
-                container.innerHTML = '🌧️ Radar Pioggia';
-
-                container.onclick = function() {
-                    radarVisible = !radarVisible;
-                    if (radarVisible) {
-                        const now = Date.now();
-                        // Only reload if more than 10 minutes have passed
-                        if (radarLayers.length === 0 || (now - lastLoadTime) > RELOAD_INTERVAL) {
-                            loadRadarData();
-                            lastLoadTime = now;
-                        } else {
-                            // Just show existing layers
-                            startAnimation();
-                        }
-                        container.style.opacity = '1';
-                        container.innerHTML = '🌧️ Radar Attivo';
-                    } else {
-                        stopAnimation();
-                        container.style.opacity = '0.7';
-                        container.innerHTML = '🌧️ Radar Pioggia';
-                    }
-                };
-
-                container.onmouseover = function() {
-                    this.style.transform = 'translateY(-2px)';
-                    this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.4)';
-                };
-
-                container.onmouseout = function() {
-                    this.style.transform = 'translateY(0)';
-                    this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
-                };
-
-                return container;
+        const container = document.getElementById('radar-toggle');
+        container.disabled = false;
+        container.addEventListener('click', async () => {
+            radarVisible = !radarVisible;
+            container.setAttribute('aria-pressed', String(radarVisible));
+            container.textContent = radarVisible ? 'Nascondi radar' : 'Mostra radar pioggia';
+            play.hidden = !radarVisible;
+            if (radarVisible) {
+                // Only reload if more than 10 minutes have passed
+                if (!radarLayers.length || Date.now() - lastLoadTime > RELOAD_INTERVAL) await loadRadarData();
+                else {
+                    // Just show existing layers
+                    showFrame(radarLayers.length - 1);
+                }
+            } else {
+                stopAnimation();
+                radarLayers.forEach(({ layer }) => map.removeLayer(layer));
+                status.textContent = 'Radar disattivato. Nessuna previsione di pioggia.';
             }
         });
-
-        const radarControl = new RadarControl({ position: 'topleft' });
-        radarControl.addTo(map);
+        play.addEventListener('click', () => animationTimer ? stopAnimation() : startAnimation());
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                stopAnimation();
+                radarLayers.forEach(({ layer }) => map.removeLayer(layer));
+            } else if (radarVisible && mapPanelVisible()) showFrame(animationPosition);
+        });
 
         function stopAnimation() {
-            if (animationTimer) {
-                clearInterval(animationTimer);
-                animationTimer = null;
-            }
+            if (animationTimer) clearInterval(animationTimer);
+            animationTimer = null;
+            play.textContent = 'Anima radar';
+            play.setAttribute('aria-pressed', 'false');
             // Hide all layers
-            radarLayers.forEach(layer => layer.setOpacity(0));
+            radarLayers.forEach(({ layer }, i) => { if (i !== animationPosition) map.removeLayer(layer); });
+        }
+
+        function showFrame(index) {
+            if (!radarVisible || document.hidden || !mapPanelVisible() || !radarLayers.length) return;
+            animationPosition = index;
+            radarLayers.forEach(({ layer, time }, i) => {
+                if (i === index) {
+                    if (!map.hasLayer(layer)) layer.addTo(map);
+                    status.textContent = `Radar storico · frame generato il ${dateTime(new Date(time * 1000))}. Non è una previsione.`;
+                } else if (map.hasLayer(layer)) map.removeLayer(layer);
+            });
         }
 
         function startAnimation() {
-            if (radarLayers.length === 0) return;
-
-            animationPosition = 0;
+            if (!radarLayers.length || document.hidden || !mapPanelVisible() || !radarVisible) return;
             if (animationTimer) clearInterval(animationTimer);
-
-            animationTimer = setInterval(() => {
-                radarLayers.forEach((layer, index) => {
-                    layer.setOpacity(index === animationPosition ? 0.6 : 0);
-                });
-                animationPosition = (animationPosition + 1) % radarLayers.length;
-            }, 500);
+            play.textContent = 'Ferma animazione';
+            play.setAttribute('aria-pressed', 'true');
+            animationTimer = setInterval(() => showFrame((animationPosition + 1) % radarLayers.length), 1200);
         }
 
         async function loadRadarData() {
+            if (loading) return;
+            loading = true;
+            status.textContent = 'Caricamento radar storico…';
+            play.disabled = true;
             try {
-                const response = await fetch('https://api.rainviewer.com/public/weather-maps.json');
-                const data = await response.json();
-
+                const data = await client.json('https://api.rainviewer.com/public/weather-maps.json');
+                if (new URL(data.host).origin !== 'https://tilecache.rainviewer.com' || !Array.isArray(data.radar?.past)) throw new Error('Risposta radar non valida');
                 // Remove old layers but keep them in memory for reuse
-                radarLayers.forEach(layer => map.removeLayer(layer));
+                radarLayers.forEach(({ layer }) => map.removeLayer(layer));
                 radarLayers = [];
-
                 // Get only last 5 frames to reduce requests
-                const frames = data.radar.past.slice(-5);
-
-                frames.forEach((frame, index) => {
-                    const layer = L.tileLayer(
-                        `https://tilecache.rainviewer.com${frame.path}/256/{z}/{x}/{y}/2/1_1.png`,
-                        {
-                            opacity: 0,
-                            zIndex: 500,
-                            maxNativeZoom: 12 // Limit zoom to reduce tile requests
-                        }
-                    );
-                    radarLayers.push(layer);
-                    layer.addTo(map);
+                const frames = data.radar.past.filter(frame => typeof frame.path === 'string' && /^\/v2\/radar\/[a-zA-Z0-9_-]+$/.test(frame.path) && Number.isFinite(frame.time)).slice(-5);
+                if (!frames.length) throw new Error('Nessun frame disponibile');
+                frames.forEach(frame => {
+                    const layer = L.tileLayer(`${data.host}${frame.path}/256/{z}/{x}/{y}/2/1_1.png`, {
+                        opacity: .6, zIndex: 500, attribution: 'Radar: <a href="https://www.rainviewer.com/">RainViewer</a>',
+                        maxNativeZoom: 7, maxZoom: 19, // Limit zoom to reduce tile requests
+                        updateWhenIdle: true
+                    });
+                    layer.on('tileerror', () => { status.textContent = 'Alcune tessere radar non sono disponibili. La mappa delle stazioni resta utilizzabile.'; });
+                    radarLayers.push({ layer, time: frame.time });
                 });
-
+                lastLoadTime = Date.now();
                 // Start animation
-                startAnimation();
-
-                console.log(`Rain radar loaded successfully (${frames.length} frames)`);
+                showFrame(radarLayers.length - 1);
             } catch (error) {
+                status.textContent = 'Radar non disponibile. Riprova disattivandolo e riattivandolo.';
                 console.error('Error loading rain radar:', error);
+            } finally {
+                loading = false;
+                play.disabled = !radarLayers.length;
             }
         }
     }
 
     // ===== Initialize Map (one map with all sensors) and fit bounds with 50px padding =====
     async function initializeMap(sensors) {
-        if (mapInitialized) return; // Skip if the map is already initialized
-
+        if (mapInitialized) { // Skip if the map is already initialized
+            sensors.forEach(sensor => {
+                if (!sensor.coordinates) {
+                    const previous = markerById.get(sensor.id);
+                    if (previous) map.removeLayer(previous);
+                    markerById.delete(sensor.id);
+                    return;
+                }
+                let marker = markerById.get(sensor.id);
+                if (!marker) marker = createAndAddMarker(sensor, sensor.coordinates);
+                marker.setIcon(createCustomMarker(sensor));
+                updateMarkerLabel(marker, sensor);
+            });
+            if (!mapHasFitted && markerById.size) {
+                bounds = L.latLngBounds([...markerById.values()].map(marker => marker.getLatLng()));
+                map.fitBounds(bounds, { padding: [35, 35] });
+                mapHasFitted = true;
+            }
+            return;
+        }
+        if (!window.L) {
+            document.getElementById('map').textContent = 'Mappa non disponibile. Le misure restano consultabili.';
+            return;
+        }
+        mapInitialized = true;
         map = L.map('map', {
             center: [44.5, 11.3],
-            zoom: 8
+            zoom: 8, gestureHandling: true,
+            gestureHandlingOptions: { text: { touch: 'Usa due dita per spostare la mappa', scroll: 'Usa Ctrl + scorrimento per ingrandire la mappa', scrollMac: 'Usa il tasto Comando + scorrimento per ingrandire la mappa' } }
             //touchZoom: false       // Disable touch zoom
         });
 
@@ -769,7 +1376,7 @@
         //L.control.layers().addTo(map);
 
         // Add the River layers under the markers
-        await addRiverLayers();
+        addRiverLayers();
 
         // Add RainViewer radar layer with custom control
         addRainRadar(map);
@@ -778,8 +1385,7 @@
         const markerGroups = {};
         sensors.forEach(sensor => {
             // Skip sensors without valid timeSeries data
-            if (!sensor.timeSeries || sensor.timeSeries.length === 0) {
-                console.warn(`Skipping marker for sensor ${sensor.name} - no time series data`);
+            if (!sensor.coordinates) {
                 return;
             }
             const key = `${sensor.coordinates[0].toFixed(5)}_${sensor.coordinates[1].toFixed(5)}`;
@@ -819,12 +1425,15 @@
 
         // Calculate bounds for markers and fit map to bounds
         bounds = L.latLngBounds(markers.map(marker => marker.getLatLng()));
-        map.fitBounds(bounds, { padding: [50, 50] });
+        if (bounds.isValid()) {
+            map.fitBounds(bounds, { padding: [35, 35] });
+            mapHasFitted = true;
+        }
 
         // Add window resize event listener to recalculate bounds on resize
         window.addEventListener('resize', debounce(() => {
             map.invalidateSize();  // Update map size
-            map.fitBounds(bounds, { padding: [50, 50] });  // Recalculate fitBounds
+            bounds = L.latLngBounds([...markerById.values()].map(marker => marker.getLatLng()));  // Recalculate fitBounds
         }, 200));
 
         mapInitialized = true; // Mark map as initialized
@@ -837,28 +1446,35 @@
             .addTo(map);
 
         // Add click event to scroll to the corresponding graph
-        marker.on('click', () => {
-            const plotElement = document.getElementById(`card-${sensor.id}`);
-            if (plotElement) {
-                plotElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        });
+        marker.on('click', () => scrollToSensorCard(sensor.id));
 
+        markerById.set(sensor.id, marker);
+        updateMarkerLabel(marker, sensor);
         return marker;
+    }
+
+    function updateMarkerLabel(marker, sensor) {
+        const point = D.latestPoint(sensor);
+        const label = document.createElement('span');
+        label.textContent = `${sensor.name} · ${point ? number(point.value) + ' m · ' + dateTime(point.time) : 'nessuna misura'} · ${D.status(sensor).label}${D.isStale(sensor, renderTime, staleMinutes()) ? ' · misura non recente' : ''}${sensor.cached ? ' · da cache' : ''}`;
+        if (marker.getTooltip()) marker.setTooltipContent(label);
+        else marker.bindTooltip(label);
+        const icon = marker.getElement();
+        if (icon) {
+            icon.setAttribute('aria-label', label.textContent + '. Vai alla stazione.');
+            icon.setAttribute('title', label.textContent);
+        }
     }
 
     // ===== Add River Layers to the Map =====
     async function addRiverLayers() {
         try {
             // Fetch the local GeoJSON data for the River Reno
-            const renoResponse = await fetch('river_reno.geojson');
-            if (!renoResponse.ok) throw new Error("Failed to fetch River Reno GeoJSON");
-            const renoGeoJSON = await renoResponse.json();
-
+            const renoRequest = client.json('river_reno.geojson');
             // Fetch the local GeoJSON data for the Torrente Samoggia
-            const samoggiaResponse = await fetch('torrente_samoggia.geojson');
-            if (!samoggiaResponse.ok) throw new Error("Failed to fetch Torrente Samoggia GeoJSON");
-            const samoggiaGeoJSON = await samoggiaResponse.json();
+            const [renoResult, samoggiaResult] = await Promise.allSettled([renoRequest, client.json('torrente_samoggia.geojson')]);
+            const renoGeoJSON = renoResult.status === 'fulfilled' ? renoResult.value : { type: 'FeatureCollection', features: [] };
+            const samoggiaGeoJSON = samoggiaResult.status === 'fulfilled' ? samoggiaResult.value : { type: 'FeatureCollection', features: [] };
 
             // Add the River Reno GeoJSON layer to the map
             L.geoJSON(renoGeoJSON, {
@@ -884,109 +1500,135 @@
     }
 
     // ===== Render the dashboard with the selected time range =====
-    async function renderDashboardWithRange(range) {
+    function renderDashboardWithRange(range) {
+        if (!sensorDataGlobal.config) return;
+        renderTime = new Date();
         const dashboardDiv = document.getElementById('dashboard');
-        dashboardDiv.innerHTML = ''; // Clear the dashboard before rendering
-
+        if (!cards.size) dashboardDiv.replaceChildren(); // Clear the dashboard before rendering
         const sensorLevels = computeSensorLevels(sensorDataGlobal.config);
-
         const sensorsByLevel = {};
-        Object.keys(sensorLevels).forEach(sensorName => {
-            const level = sensorLevels[sensorName];
+        Object.keys(sensorDataGlobal.config.sensors).forEach(sensorName => {
+            const level = sensorLevels[sensorName] || 0;
             if (!sensorsByLevel[level]) sensorsByLevel[level] = [];
             sensorsByLevel[level].push(sensorName);
         });
-
-        Object.keys(sensorsByLevel).forEach(level => {
-            const levelContainer = document.createElement('div');
+        Object.keys(sensorsByLevel).sort((a, b) => Number(b) - Number(a)).forEach(level => {
+            const levelContainer = document.getElementById(`level-${level}`) || document.createElement('div');
+            levelContainer.id = `level-${level}`;
             levelContainer.className = 'level-container';
-
             // Create a row for sensor plots (time series)
-            const levelRow = document.createElement('div');
-            levelRow.className = 'row';
-
+            const levelRow = levelContainer.firstElementChild || document.createElement('div');
+            levelRow.className = 'level-row';
             sensorsByLevel[level].forEach(sensorName => {
-                const sensor = sensorDataGlobal.data.find(s => s.id === sensorName);
-                if (!sensor) return;
-
+                const sensor = sensorById(sensorName) || blankSensor(sensorName);
                 // Skip sensors with empty timeSeries
-                if (!sensor.timeSeries || sensor.timeSeries.length === 0) {
-                    console.warn(`Sensor ${sensor.name} has no time series data, skipping...`);
-                    return;
-                }
-
-                const statusClass = getSensorStatus(sensor);  // Get the status for card color
-                const latestValue = getLatestNonNullValue(sensor); // Get latest non-null value
-                const latestTimestamp = sensor.timeSeries[sensor.timeSeries.length - 1].time;
-
+                const hasData = sensor.timeSeries.some(point => point.value !== null);
+                const statusClass = D.status(sensor);  // Get the status for card color
+                const latestValue = D.latestPoint(sensor)?.value ?? null; // Get latest non-null value
+                const latestTimestamp = D.latestPoint(sensor)?.time;
                 // Format the timestamp in Europe/Rome timezone
-                const options = {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    timeZone: 'Europe/Rome',
-                    hourCycle: 'h23'
-                };
-                const formatter = new Intl.DateTimeFormat('it-IT', options);
-                const formattedTime = formatter.format(latestTimestamp);
-
+                const formattedTime = latestTimestamp ? dateTime(latestTimestamp) : 'Nessuna lettura valida';
                 // Create a Bootstrap card for the sensor plot
-                const cardDiv = document.createElement('div');
-                cardDiv.className = `card text-white bg-${statusClass} col-lg-4 col-md-12 mx-2 mb-2`;
-                cardDiv.id = `card-${sensor.id}`; // Assign unique ID to the card
-
-                const cardHeader = document.createElement('div');
-                cardHeader.className = 'card-header';
-                cardHeader.textContent = `${sensor.name} (Latest: ${latestValue}m at ${formattedTime})`;
-                cardHeader.addEventListener('click', () => openZoomedGraph(sensor, range)); // Add event listener to open modal
-
-                const cardBody = document.createElement('div');
-                cardBody.className = 'card-body';
-
-                // Create a div element for the Plotly chart
-                const plotDiv = document.createElement('div');
-                plotDiv.id = `plot-${sensor.id}`;
-                plotDiv.className = 'sensor-plot';
-
-                cardBody.appendChild(plotDiv);
-                cardDiv.appendChild(cardHeader);
-                cardDiv.appendChild(cardBody);
-                levelRow.appendChild(cardDiv);
-
+                let cardDiv = cards.get(sensor.id);
+                if (!cardDiv) {
+                    cardDiv = document.createElement('article');
+                    cardDiv.className = 'sensor-card';
+                    cardDiv.id = `card-${sensor.id}`; // Assign unique ID to the card
+                    cardDiv.tabIndex = -1;
+                    const cardHeader = document.createElement('div');
+                    cardHeader.className = 'sensor-card-header';
+                    cardHeader.innerHTML = '<h3></h3><p class="sensor-basin"></p><div class="sensor-value"></div><div class="sensor-status"></div><p class="sensor-time"></p>';
+                    const cardBody = document.createElement('div');
+                    // Create a div element for the Plotly chart
+                    const plotDiv = document.createElement('div');
+                    plotDiv.id = `plot-${sensor.id}`;
+                    plotDiv.className = 'sensor-plot';
+                    plotDiv.dataset.sensorId = sensor.id;
+                    plotDiv.setAttribute('role', 'img');
+                    plotDiv.setAttribute('aria-label', `Grafico del livello di ${sensor.id}. Misura e orario nella scheda; grafico caricato quando visibile.`);
+                    plotDiv.textContent = 'Le misure sono pronte. Il grafico viene disegnato quando è visibile.';
+                    cardBody.appendChild(plotDiv);
+                    const footer = document.createElement('div');
+                    footer.className = 'sensor-card-footer';
+                    const source = document.createElement('a');
+                    source.href = sensorDataGlobal.config.sensors[sensor.id].url;
+                    source.textContent = 'Dati ARPAE ↗';
+                    source.setAttribute('aria-label', `Dati originali ARPAE di ${sensor.id}`);
+                    const detail = document.createElement('button');
+                    detail.type = 'button';
+                    detail.className = 'detail-button';
+                    detail.textContent = 'Apri dettaglio ↗';
+                    detail.setAttribute('aria-label', `Apri dettaglio di ${sensor.id}`);
+                    detail.addEventListener('click', () => openZoomedGraph(sensorById(sensor.id) || blankSensor(sensor.id), currentRange)); // Add event listener to open modal
+                    footer.append(source, detail);
+                    cardDiv.append(cardHeader, cardBody, footer);
+                    cards.set(sensor.id, cardDiv);
+                    levelRow.appendChild(cardDiv);
+                    if (observer) observer.observe(plotDiv);
+                    else visiblePlots.add(sensor.id);
+                }
+                cardDiv.style.setProperty('--status', statusClass.color);
+                cardDiv.querySelector('h3').textContent = sensor.name;
+                cardDiv.querySelector('.sensor-basin').textContent = sensor.basin || 'Stazione idrometrica';
+                const value = cardDiv.querySelector('.sensor-value');
+                value.replaceChildren(document.createTextNode(number(latestValue) + ' '));
+                const unit = document.createElement('small');
+                unit.textContent = latestValue === null ? '' : 'm';
+                value.appendChild(unit);
+                cardDiv.querySelector('.sensor-status').textContent = statusClass.label;
+                const stale = latestTimestamp && D.isStale(sensor, renderTime, staleMinutes());
+                const notes = [hasData ? `Misura del ${formattedTime}` : 'Stazione senza dati disponibili', stale ? 'Misura non recente' : '', sensor.cached ? `Da cache del ${dateTime(new Date(sensor.fetchedAt))}` : '', Object.values(sensor.levels).some(v => v === null) && hasData ? 'Soglie non tutte disponibili' : ''].filter(Boolean);
+                cardDiv.querySelector('.sensor-time').textContent = notes.join(' · ');
                 // Call drawTimeSeries to draw the plot, ensuring the element exists
-                requestAnimationFrame(() => {
-                    drawTimeSeries(sensor, plotDiv.id, range);
-                });
+                if (visiblePlots.has(sensor.id)) requestAnimationFrame(() => drawTimeSeries(sensorById(sensor.id) || sensor, `plot-${sensor.id}`, currentRange));
             });
-
             // Append the row for plots to the level container
-            levelContainer.appendChild(levelRow);
-
+            if (!levelRow.parentElement) levelContainer.appendChild(levelRow);
             // Add a divider line between rows
-            const divider = document.createElement('div');
-            divider.className = 'row-divider';
-            levelContainer.appendChild(divider);
-
+            if (levelContainer.children.length === 1) {
+                const divider = document.createElement('div');
+                divider.hidden = true;
+                levelContainer.appendChild(divider);
+            }
             // Append the level container to the dashboard
-            dashboardDiv.appendChild(levelContainer);
+            if (!levelContainer.parentElement) dashboardDiv.appendChild(levelContainer);
         });
-
-        // Initialize the map (only once) with all sensors
-        initializeMap(sensorDataGlobal.data);
+        // Initialize the map (only once) with all sensors, when its tab is shown
+        if (mapRequested) initializeMap(sensorDataGlobal.data).catch(error => console.error('Mappa non disponibile:', error));
+        updateDependencyGraph();
+        updateStationDag();
+        refreshPrediction();
+        if (activeSensorId && document.getElementById('zoomedGraphModal').classList.contains('show')) {
+            const sensor = sensorById(activeSensorId) || blankSensor(activeSensorId);
+            updateZoomedMeta(sensor);
+            drawTimeSeries(sensor, 'zoomed-plot', range, true);
+        }
+        updateOverview();
     }
 
     // Function to open the zoomed graph in the modal
     function openZoomedGraph(sensor, range) {
         const modalTitle = document.getElementById('zoomedGraphModalLabel');
-        modalTitle.textContent = `${sensor.name}`;
-
+        modalTitle.textContent = sensor.name;
+        activeSensorId = sensor.id;
+        updateZoomedMeta(sensor);
+        const modalElement = document.getElementById('zoomedGraphModal');
         // Show the modal
-        const zoomedGraphModal = new bootstrap.Modal(document.getElementById('zoomedGraphModal'));
-        zoomedGraphModal.show();
-
-        // Render the zoomed chart in the modal after the modal is shown
-        zoomedGraphModal._element.addEventListener('shown.bs.modal', () => {
-            drawTimeSeries(sensor, 'zoomed-plot', range, true);
+        if (!window.bootstrap) {
+            document.getElementById('error-text').textContent = 'Dettaglio non disponibile. Consulta il grafico nella scheda o la fonte ARPAE.';
+            document.getElementById('error-message').hidden = false;
+            return;
+        }
+        const zoomedGraphModal = bootstrap.Modal.getOrCreateInstance(modalElement);
+        const opener = document.activeElement;
+        modalElement.addEventListener('hidden.bs.modal', () => {
+            if (opener instanceof HTMLElement && opener.isConnected) opener.focus();
         }, { once: true });
+        // Render the zoomed chart in the modal after the modal is shown
+        modalElement.addEventListener('shown.bs.modal', () => {
+            drawTimeSeries(sensorById(activeSensorId) || sensor, 'zoomed-plot', currentRange, true);
+        }, { once: true });
+        zoomedGraphModal.show();
     }
 
     // Convert a Date object to Europe/Rome timezone Date object
@@ -1000,75 +1642,111 @@
 
     // ===== Main Function to Render the Dashboard =====
     async function renderDashboard() {
+        if (refreshing || (lastAttempt && Date.now() - lastAttempt < refreshInterval())) return;
+        refreshing = true;
         const loadingIndicator = document.getElementById('loading-indicator');
         const errorMessage = document.getElementById('error-message');
         const errorText = document.getElementById('error-text');
         const lastUpdate = document.getElementById('last-update');
         const updateTime = document.getElementById('update-time');
-
+        updateRefreshButton();
         try {
             // Show loading indicator
-            loadingIndicator.style.display = 'block';
-            errorMessage.style.display = 'none';
-
-            const config = await fetchConfig();
-            if (!config) {
-                throw new Error('Impossibile caricare la configurazione dei sensori');
-            }
-
+            loadingIndicator.hidden = cards.size > 0;
+            errorMessage.hidden = true;
+            const config = sensorDataGlobal.config || await fetchConfig();
+            if (!config) throw new Error('Impossibile caricare la configurazione dei sensori. Riprova con il pulsante Aggiorna dati.');
             const sensorNames = Object.keys(config.sensors);
-            const sensorData = await Promise.all(sensorNames.map(sensorName => fetchSensorData(sensorName, config)));
-
+            if (!sensorDataGlobal.config) {
+                sensorDataGlobal = { config, data: [] };
+                records = D.readCache(storage, config);
+                syncRecords(new Set());
+                renderDashboardWithRange(currentRange);
+                document.getElementById('toggleNormalized').disabled = false;
+                document.getElementById('freshness-note').textContent = `Controllo dei dati ogni ${refreshInterval() / 60000} minuti mentre la pagina è visibile. Una misura più vecchia di ${staleMinutes()} minuti è segnalata come non recente (la cadenza ordinaria della rete è circa 30 minuti). La cache locale conserva al massimo 24 ore ed è indicata quando utilizzata.`;
+                if (sensorNames.every(name => records[name] && Date.now() - records[name].fetchedAt < refreshInterval())) {
+                    lastAttempt = Math.max(...Object.values(records).map(record => record.fetchedAt));
+                    updateTime.textContent = `Dati dalla cache locale · ultimo recupero ${dateTime(new Date(lastAttempt))}. Prossimo controllo entro ${refreshInterval() / 60000} minuti.`;
+                    lastUpdate.hidden = false;
+                    return;
+                }
+            }
+            lastAttempt = Date.now();
+            const result = await client.load(config);
             // Filter out null sensors (those that failed to fetch or parse)
-            const validSensorData = sensorData.filter(sensor => sensor !== null);
-
-            if (validSensorData.length === 0) {
-                throw new Error('Nessun dato disponibile dai sensori. Riprova più tardi.');
-            }
-
+            const validSensorData = Object.entries(result.items).filter(([name, item]) => D.parseSensorData(name, item));
+            const now = Date.now();
+            validSensorData.forEach(([name, item]) => { records[name] = { item, fetchedAt: now }; });
+            D.saveCache(storage, records);
             // Store the fetched data globally
-            sensorDataGlobal = { config: config, data: validSensorData };
-
+            syncRecords(new Set(validSensorData.map(([name]) => name)));
             // Show last update time
-            const now = new Date();
-            const timeFormatter = new Intl.DateTimeFormat('it-IT', {
-                hour: '2-digit',
-                minute: '2-digit',
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                timeZone: 'Europe/Rome'
-            });
-            updateTime.textContent = timeFormatter.format(now);
-            lastUpdate.style.display = 'block';
-
+            updateTime.textContent = `Ultimo tentativo di recupero: ${dateTime(new Date(lastAttempt))} · ${validSensorData.length}/${sensorNames.length} stazioni recuperate. Orari delle misure nelle schede.`;
+            lastUpdate.hidden = false;
             // Show warning if some sensors failed
-            const failedCount = sensorNames.length - validSensorData.length;
+            const failedCount = result.failed.length;
             if (failedCount > 0) {
-                errorText.textContent = `Attenzione: ${failedCount} sensore/i non disponibile/i. Visualizzati ${validSensorData.length} su ${sensorNames.length} sensori.`;
-                errorMessage.style.display = 'block';
+                errorText.textContent = `${failedCount} stazioni non recuperate: ${result.failed.join(', ')}. Dove disponibili sono mantenuti i dati precedenti, indicati come cache; le altre stazioni restano senza misura.`;
+                errorMessage.hidden = false;
             }
-
             // Hide loading indicator
-            loadingIndicator.style.display = 'none';
-
+            loadingIndicator.hidden = true;
             // Render dashboard with default 48-hour range
             renderDashboardWithRange(currentRange);
-
         } catch (error) {
             console.error('Error rendering dashboard:', error);
-            loadingIndicator.style.display = 'none';
             errorText.textContent = error.message || 'Errore nel caricamento dei dati. Riprova più tardi.';
-            errorMessage.className = 'alert alert-danger text-center my-5';
-            errorMessage.style.display = 'block';
+            errorMessage.hidden = false;
+        } finally {
+            loadingIndicator.hidden = true;
+            refreshing = false;
+            updateRefreshButton();
         }
+    }
+
+    function syncRecords(freshIds) {
+        const now = Date.now();
+        sensorDataGlobal.data = Object.keys(sensorDataGlobal.config.sensors).map(name => {
+            const record = records[name];
+            if (!record || now - record.fetchedAt > 24 * 3600000) {
+                delete records[name];
+                return blankSensor(name);
+            }
+            const sensor = D.parseSensorData(name, record.item) || blankSensor(name);
+            return { ...sensor, fetchedAt: record.fetchedAt, cached: !freshIds.has(name) };
+        });
+    }
+
+    function updateRefreshButton() {
+        const remaining = Math.max(0, refreshInterval() - (Date.now() - lastAttempt));
+        const button = document.getElementById('refresh-button');
+        button.disabled = refreshing || remaining > 0;
+        button.textContent = refreshing ? 'Recupero in corso…' : remaining ? `Aggiornamento tra ${Math.ceil(remaining / 60000)} min` : 'Aggiorna dati';
+    }
+
+    function updateOverview() {
+        const data = sensorDataGlobal.data || [];
+        const points = data.map(D.latestPoint).filter(Boolean);
+        const total = Object.keys(sensorDataGlobal.config?.sensors || {}).length;
+        document.getElementById('available-count').textContent = `${points.length} / ${total}`;
+        document.getElementById('stale-count').textContent = `${data.filter(sensor => D.latestPoint(sensor) && D.isStale(sensor, new Date(), staleMinutes())).length}`;
+        document.getElementById('latest-measurement').textContent = points.length ? dateTime(new Date(Math.max(...points.map(point => +point.time)))) : 'Nessuna misura';
+    }
+
+    function updateZoomedMeta(sensor) {
+        const point = D.latestPoint(sensor);
+        const thresholds = ['yellow', 'orange', 'red'].map((key, i) => `Soglia ${i + 1}: ${sensor.levels[key] === null ? 'non disponibile' : number(sensor.levels[key]) + ' m'}`).join(' · ');
+        document.getElementById('zoomed-meta').textContent = `${point ? number(point.value) + ' m · misura del ' + dateTime(point.time) : 'Nessuna misura valida'} · ${D.status(sensor).label}${D.isStale(sensor, new Date(), staleMinutes()) ? ' · misura non recente' : ''}${sensor.cached ? ' · dati da cache' : ''}. ${thresholds}.`;
     }
 
     // Handle range button clicks
     document.getElementById('range-buttons').addEventListener('click', (e) => {
         if (e.target.classList.contains('range-button')) {
             // Remove 'active' class from all buttons and add it to the clicked one
-            document.querySelectorAll('.range-button').forEach(button => button.classList.remove('active'));
+            document.querySelectorAll('.range-button').forEach(button => {
+                button.classList.remove('active');
+                button.setAttribute('aria-pressed', String(button === e.target));
+            });
             e.target.classList.add('active');
 
             // Get the range from the clicked button's data attribute
@@ -1090,12 +1768,45 @@
     }
 
     // Initialize the dashboard on page load
-    document.addEventListener('DOMContentLoaded', renderDashboard);
+    document.addEventListener('DOMContentLoaded', () => {
+        if ('IntersectionObserver' in window) {
+            observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    const id = entry.target.dataset.sensorId;
+                    if (entry.isIntersecting) {
+                        visiblePlots.add(id);
+                        const sensor = sensorById(id);
+                        if (sensor) drawTimeSeries(sensor, entry.target.id, currentRange);
+                    } else visiblePlots.delete(id);
+                });
+            }, { rootMargin: '100px 0px' });
+        }
+        document.getElementById('refresh-button').addEventListener('click', renderDashboard);
+        document.getElementById('tab-chain').addEventListener('click', () => showStationPanel('chain'));
+        document.getElementById('tab-map').addEventListener('click', () => showStationPanel('map'));
+        document.getElementById('zoomedGraphModal').addEventListener('hidden.bs.modal', () => {
+            activeSensorId = null;
+            const plot = document.getElementById('zoomed-plot');
+            plot.renderVersion = (plot.renderVersion || 0) + 1;
+            if (window.Plotly && plot.data) Plotly.purge(plot);
+        });
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) { updateRefreshButton(); renderDashboard(); }
+        });
+        refreshTimer = setInterval(() => {
+            if (!document.hidden) { updateRefreshButton(); updateOverview(); renderDashboard(); }
+        }, 30000);
+        if (document.getElementById('dependency-graph')) P.loadCoeffs(window.fetch.bind(window)).then(coeffs => {
+            transferCoeffs = coeffs;
+            if (sensorDataGlobal.config) refreshPrediction();
+        });
+        renderDashboard();
+    });
 
 </script>
 
 <!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
