@@ -1,0 +1,105 @@
+{
+  "source": "https://apps.arpae.it/REST/meteo_osservati",
+  "fetchedAt": "2026-11-12T11:12:12Z",
+  "stations": {
+    "Cento": {
+      "arpaeId": "3098",
+      "yellow": 5.5,
+      "orange": 7.0,
+      "red": 8.7,
+      "soglie": [
+        5.5,
+        7.0,
+        8.7
+      ]
+    },
+    "Forcelli": {
+      "arpaeId": "3123",
+      "yellow": 9.5,
+      "orange": 11.5,
+      "red": 13.3,
+      "soglie": [
+        9.5,
+        11.5,
+        13.3
+      ]
+    },
+    "Sostegno Reno": {
+      "arpaeId": "5314",
+      "yellow": 23.9,
+      "orange": 26.5,
+      "red": 28.2,
+      "soglie": [
+        23.9,
+        26.5,
+        28.2
+      ]
+    },
+    "Bonconvento": {
+      "arpaeId": "3141",
+      "yellow": 7.5,
+      "orange": 10.0,
+      "red": 11.5,
+      "soglie": [
+        7.5,
+        10.0,
+        11.5
+      ]
+    },
+    "Casalecchio tiro a volo": {
+      "arpaeId": "3101",
+      "yellow": 0.7,
+      "orange": 2.3,
+      "red": 3.4,
+      "soglie": [
+        0.7,
+        2.3,
+        3.4
+      ]
+    },
+    "Dosso": {
+      "arpaeId": "3116",
+      "yellow": 8.3,
+      "orange": 10.8,
+      "red": 12.3,
+      "soglie": [
+        8.3,
+        10.8,
+        12.3
+      ]
+    },
+    "Opera Reno Panfilia": {
+      "arpaeId": "3117",
+      "yellow": 20.0,
+      "orange": 21.8,
+      "red": 23.4,
+      "soglie": [
+        20.0,
+        21.8,
+        23.4
+      ]
+    },
+    "Secondo Salto": {
+      "arpaeId": "3118",
+      "yellow": 10.5,
+      "orange": null,
+      "red": null,
+      "soglie": [
+        10.5,
+        null,
+        null
+      ]
+    },
+    "Gallo": {
+      "arpaeId": "3120",
+      "yellow": 9.3,
+      "orange": 12.0,
+      "red": 13.7,
+      "soglie": [
+        9.3,
+        12.0,
+        13.7
+      ]
+    }
+  }
+}

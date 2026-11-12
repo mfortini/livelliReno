@@ -189,6 +189,61 @@ function predictCandidate(name, down, ups, now, horizonHours, sensorMap, rainSen
         }
         return { ok: true, forecast: [{ time: anchor.time, med: anchor.value }, ...points], next: points };
     }
+    if (name === 'poly2') {
+        // Stupid predictor: quadratic OLS on the last 3–4 levels, extrapolate per horizon step.
+        const anchor = P.latestFinite(down.timeSeries);
+        if (!anchor) return null;
+        const end = +anchor.time;
+        const vals = [];
+        for (let k = 3; k >= 0; k--) {
+            vals.push(P.sampleAt(down.timeSeries, end - k * STEP));
+        }
+        let window = vals.every(Number.isFinite) ? vals : vals.slice(1);
+        if (!window.every(Number.isFinite) || window.length < 3) {
+            // Fall back to persistence if history is too thin.
+            return predictCandidate('persist', down, ups, now, horizonHours, sensorMap, rainSensors, payload);
+        }
+        const n = window.length;
+        const x = window.map((_, i) => i);
+        // Solve least-squares for a + b x + c x² via normal equations (3×3).
+        let sx = 0, sx2 = 0, sx3 = 0, sx4 = 0, sy = 0, sxy = 0, sx2y = 0;
+        for (let i = 0; i < n; i++) {
+            const xi = x[i], yi = window[i], xi2 = xi * xi;
+            sx += xi; sx2 += xi2; sx3 += xi2 * xi; sx4 += xi2 * xi2;
+            sy += yi; sxy += xi * yi; sx2y += xi2 * yi;
+        }
+        const A = [
+            [n, sx, sx2],
+            [sx, sx2, sx3],
+            [sx2, sx3, sx4]
+        ];
+        const b = [sy, sxy, sx2y];
+        // Gaussian elimination
+        const M = A.map((row, i) => row.concat([b[i]]));
+        for (let col = 0; col < 3; col++) {
+            let piv = col;
+            for (let r = col + 1; r < 3; r++) if (Math.abs(M[r][col]) > Math.abs(M[piv][col])) piv = r;
+            [M[col], M[piv]] = [M[piv], M[col]];
+            const div = M[col][col];
+            if (!Number.isFinite(div) || Math.abs(div) < 1e-12) {
+                return predictCandidate('persist', down, ups, now, horizonHours, sensorMap, rainSensors, payload);
+            }
+            for (let c = col; c < 4; c++) M[col][c] /= div;
+            for (let r = 0; r < 3; r++) {
+                if (r === col) continue;
+                const f = M[r][col];
+                for (let c = col; c < 4; c++) M[r][c] -= f * M[col][c];
+            }
+        }
+        const [a0, a1, a2] = [M[0][3], M[1][3], M[2][3]];
+        const at = (xi) => a0 + a1 * xi + a2 * xi * xi;
+        const points = [];
+        for (let h = 1; h <= Math.round(horizonHours * 2); h++) {
+            const med = at((n - 1) + h);
+            points.push({ time: new Date(+now + h * STEP), med, min: med, max: med });
+        }
+        return { ok: true, forecast: [{ time: anchor.time, med: anchor.value }, ...points], next: points };
+    }
     return P.predictNode(down, ups, {
         hours: 72,
         now: new Date(now),
@@ -221,6 +276,7 @@ if (compareNode) {
     const candidates = {
         persist: { kind: 'baseline' },
         local_trend: { kind: 'baseline' },
+        poly2: { kind: 'baseline' },
         mlp_novalle: mlpNovalle ? { coeffs: { nodes: { [compareNode]: force(mlpNovalle) } }, smooth: 0 } : null,
         mlp_valle: mlpValle ? { coeffs: { nodes: { [compareNode]: force(mlpValle) } }, smooth: 0 } : null,
         mlp_valle_ema065: mlpValle ? { coeffs: { nodes: { [compareNode]: force(mlpValle) } }, smooth: 0.65 } : null,
@@ -255,10 +311,20 @@ if (compareNode) {
     }
     const nows = collectNows(compareNode);
     const t0 = Date.now();
+    const candKeys = Object.keys(candidates).filter(k => candidates[k]);
+    console.log(`[backtest] compare-candidates ${compareNode}: ${nows.length} timestamps, candidates=${candKeys.join(',')}`);
+    let doneNows = 0;
+    let usedNows = 0;
     for (const now of nows) {
+        doneNows++;
+        if (doneNows === 1 || doneNows % 250 === 0 || doneNows === nows.length) {
+            const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
+            console.log(`[backtest] progress ${doneNows}/${nows.length} (~${elapsed}s, used=${usedNows})`);
+        }
         const down = windowSensor(compareNode, data[compareNode], now);
         const anchor = P.latestFinite(down.timeSeries);
         if (!anchor || now - +anchor.time > STEP) continue;
+        usedNows++;
         const rainSensors = rainGauges
             .map(name => windowSensor(name, rainData[name], now))
             .filter(s => s.timeSeries.length);

@@ -5,6 +5,7 @@ storico/raw/
 storico/manifest.json
 !storico/.gitkeep
 models/backtest-summary.json
+models/_fit*.log
 
 # uv / Python
 .venv/

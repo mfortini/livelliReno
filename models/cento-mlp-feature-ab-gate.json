@@ -1,0 +1,49 @@
+{
+  "version": 6,
+  "kind": "cento_mlp_feature_ab",
+  "ab": "poly_window_p6_vs_p12",
+  "report": "models/cento-metodi-report.md",
+  "disclaimer": "Sperimentale: non allertistico. Holdout eventi n=32. holdPoly2 non è confrontabile tra p6 e p12 (baseline diversa); usare holdPersist per A/B finestra.",
+  "notePolyBaseline": "Sweep predittore stupido: poly2 skill vs persist picca a n=6 (0.45) e scende a n=12 (0.27). A n=12 la baseline è più debole → holdEvt/poly2 gonfiato.",
+  "skill120": {
+    "A_novalle_p6": {
+      "polyPoints": 6,
+      "polyHours": 2.5,
+      "validateEvents": 0.819711,
+      "holdoutEventsPoly2": 0.747703,
+      "holdoutEventsPersist": 0.725738,
+      "weights": "models/cento-dnn-novalle.json"
+    },
+    "B_yellow_ratio_p6": {
+      "polyPoints": 6,
+      "polyHours": 2.5,
+      "validateEvents": 0.82129,
+      "holdoutEventsPoly2": 0.751554,
+      "holdoutEventsPersist": 0.729924,
+      "weights": "models/cento-dnn-valle-yellow-p6.json"
+    },
+    "A_novalle_p12": {
+      "polyPoints": 12,
+      "polyHours": 5.5,
+      "validateEvents": 0.819852,
+      "holdoutEventsPoly2": 0.835795,
+      "holdoutEventsPersist": 0.778281,
+      "weights": "models/cento-dnn-novalle-p12.json"
+    },
+    "B_yellow_ratio_p12": {
+      "polyPoints": 12,
+      "polyHours": 5.5,
+      "validateEvents": 0.806176,
+      "holdoutEventsPoly2": 0.796153,
+      "holdoutEventsPersist": 0.724753,
+      "weights": "models/cento-dnn-valle-yellow-p12.json"
+    }
+  },
+  "decision": {
+    "promoteToTransferCoeffs": false,
+    "winnerHoldPersist": "A_novalle_p12",
+    "winnerValidate": "B_yellow_ratio_p6",
+    "reason": "Raddoppio 6→12 pt: novalle-p12 migliora holdPersist (0.778 vs 0.726) a validate pari (~0.820). Yellow-p12 perde sul validate (0.806). Non promuovere: holdout n=32 e tradeoff validate/hold.",
+    "keepOperational": "window_delta_mlp senza valle (transfer-coeffs / cento-dnn)"
+  }
+}

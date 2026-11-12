@@ -660,6 +660,96 @@ test('rc_gru rejects unreliable and rolls when reliable with acceptors', () => {
     assert.ok(Math.abs(ok.forecast[0].med - values.at(-1)) < 1e-6);
 });
 
+test('buildWindowFeatureVector supports yellow headroom and chain deltas', () => {
+    const start = new Date('2026-11-11T00:00:00Z');
+    const now = new Date('2026-11-11T04:30:00Z');
+    const cento = sensor('Cento', Array.from({ length: 10 }, () => 1.0), start);
+    const dosso = sensor('Dosso', Array.from({ length: 10 }, () => 3.0), start);
+    const values = P.buildWindowFeatureVector(
+        { Cento: cento, Dosso: dosso },
+        ['Cento', 'Dosso'],
+        2,
+        +now,
+        STEP,
+        [],
+        false,
+        {
+            useSogliaHeadroom: true,
+            sogliaKind: 'yellow',
+            sogliaLevels: { Cento: 5.5, Dosso: 8.3 },
+            chainPairs: [['Cento', 'Dosso']]
+        }
+    );
+    // headroom = yellow - level → Cento 5.5-1=4.5, Dosso 8.3-3=5.3
+    assert.ok(Math.abs(values.headroom_yellow_Cento_lag0 - 4.5) < 1e-9);
+    assert.ok(Math.abs(values.headroom_yellow_Dosso_lag0 - 5.3) < 1e-9);
+    assert.ok(Math.abs(values.chain_Cento__Dosso_lag0 - (1.0 - 3.0)) < 1e-9);
+    assert.equal(values.chain_miss_Cento__Dosso_lag0, 0);
+});
+
+test('localPolyDerivatives recovers linear and quadratic kinematics', () => {
+    const start = new Date('2026-11-11T00:00:00Z');
+    // y = 2 + 0.5 t + 0.25 t² at t=0,1,2,3 → at end (t=3): d1=0.5+2*0.25*3=2.0, d2=0.5
+    const ys = [0, 1, 2, 3].map(t => 2 + 0.5 * t + 0.25 * t * t);
+    const series = [];
+    for (let i = 0; i < 4; i++) {
+        series.push({ time: new Date(+start + i * STEP), value: ys[i] });
+    }
+    const end = +start + 3 * STEP;
+    const { d1, d2 } = P.localPolyDerivatives(series, end, STEP, 4);
+    assert.ok(Math.abs(d1 - 2.0) < 1e-6, `d1=${d1}`);
+    assert.ok(Math.abs(d2 - 0.5) < 1e-6, `d2=${d2}`);
+    const flat = Array.from({ length: 4 }, (_, i) => ({ time: new Date(+start + i * STEP), value: 3 }));
+    const z = P.localPolyDerivatives(flat, end, STEP, 4);
+    assert.ok(Math.abs(z.d1) < 1e-9 && Math.abs(z.d2) < 1e-9);
+});
+
+test('buildWindowFeatureVector emits d1/d2 poly derivative features', () => {
+    const start = new Date('2026-11-11T00:00:00Z');
+    const levels = Array.from({ length: 10 }, (_, i) => 1 + 0.1 * i);
+    const cento = sensor('Cento', levels, start);
+    const now = new Date(+start + 9 * STEP);
+    const values = P.buildWindowFeatureVector(
+        { Cento: cento },
+        ['Cento'],
+        2,
+        +now,
+        STEP,
+        [],
+        false,
+        { usePolyDerivatives: true }
+    );
+    assert.ok(Number.isFinite(values.d1_Cento_lag0));
+    assert.ok(Number.isFinite(values.d2_Cento_lag0));
+    // linear → d2 ≈ 0, d1 ≈ 0.1
+    assert.ok(Math.abs(values.d1_Cento_lag0 - 0.1) < 1e-6, `d1=${values.d1_Cento_lag0}`);
+    assert.ok(Math.abs(values.d2_Cento_lag0) < 1e-6, `d2=${values.d2_Cento_lag0}`);
+});
+
+test('buildWindowFeatureVector adds yellow fill ratio beside headroom', () => {
+    const start = new Date('2026-11-11T00:00:00Z');
+    const now = new Date('2026-11-11T04:30:00Z');
+    const cento = sensor('Cento', Array.from({ length: 10 }, () => 1.1), start);
+    const values = P.buildWindowFeatureVector(
+        { Cento: cento },
+        ['Cento'],
+        2,
+        +now,
+        STEP,
+        [],
+        false,
+        {
+            useSogliaHeadroom: true,
+            useSogliaRatio: true,
+            sogliaKind: 'yellow',
+            sogliaLevels: { Cento: 5.5 }
+        }
+    );
+    assert.ok(Math.abs(values.headroom_yellow_Cento_lag0 - (5.5 - 1.1)) < 1e-9);
+    assert.ok(Math.abs(values.ratio_yellow_Cento_lag0 - (1.1 / 5.5)) < 1e-9);
+    assert.ok(Math.abs(values.ratio_delta_Cento_lag0 - 0) < 1e-9);
+});
+
 test('window_delta_mlp parse keeps acceptors list', () => {
     const node = P.parseWindowMlpNode({
         kind: 'window_delta_mlp',

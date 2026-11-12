@@ -401,20 +401,106 @@
         return String(station).replace(/ /g, '_');
     }
 
-    function buildWindowFeatureVector(sensorMap, stations, lookback, nowMs, stepMs, rainSensors, useRain) {
+    function localPolyDerivatives(series, endMs, stepMs, nPoints = 4) {
+        // OLS y ≈ a0 + a1 x + a2 x² with x = -(n-1)..0 → d1=a1, d2=2 a2 (per step).
+        const tryN = [nPoints, 3];
+        for (const n of tryN) {
+            if (n < 3) continue;
+            const y = [];
+            let complete = true;
+            for (let i = 0; i < n; i++) {
+                const v = sampleAt(series, endMs - (n - 1 - i) * stepMs);
+                if (!finite(v)) { complete = false; break; }
+                y.push(v);
+            }
+            if (!complete) continue;
+            const x = [];
+            for (let i = 0; i < n; i++) x.push(i - (n - 1));
+            let sx = 0, sx2 = 0, sx3 = 0, sx4 = 0, sy = 0, sxy = 0, sx2y = 0;
+            for (let i = 0; i < n; i++) {
+                const xi = x[i], yi = y[i], xi2 = xi * xi;
+                sx += xi; sx2 += xi2; sx3 += xi2 * xi; sx4 += xi2 * xi2;
+                sy += yi; sxy += xi * yi; sx2y += xi2 * yi;
+            }
+            const M = [
+                [n, sx, sx2, sy],
+                [sx, sx2, sx3, sxy],
+                [sx2, sx3, sx4, sx2y]
+            ];
+            let singular = false;
+            for (let col = 0; col < 3; col++) {
+                let piv = col;
+                for (let r = col + 1; r < 3; r++) if (Math.abs(M[r][col]) > Math.abs(M[piv][col])) piv = r;
+                [M[col], M[piv]] = [M[piv], M[col]];
+                const div = M[col][col];
+                if (!finite(div) || Math.abs(div) < 1e-12) { singular = true; break; }
+                for (let c = col; c < 4; c++) M[col][c] /= div;
+                for (let r = 0; r < 3; r++) {
+                    if (r === col) continue;
+                    const f = M[r][col];
+                    for (let c = col; c < 4; c++) M[r][c] -= f * M[col][c];
+                }
+            }
+            if (singular) continue;
+            return { d1: M[1][3], d2: 2 * M[2][3] };
+        }
+        return { d1: null, d2: null };
+    }
+
+    function buildWindowFeatureVector(sensorMap, stations, lookback, nowMs, stepMs, rainSensors, useRain, recipe = null) {
         const values = {};
+        const sogliaLevels = recipe?.sogliaLevels || {};
+        const useHeadroom = recipe?.useSogliaHeadroom === true;
+        const useRatio = recipe?.useSogliaRatio === true;
+        const usePolyD = recipe?.usePolyDerivatives !== false;
+        const polyPoints = Number(recipe?.polyDerivPoints) > 0 ? Number(recipe.polyDerivPoints) : 6;
+        const sogliaKind = recipe?.sogliaKind || 'yellow';
+        const levelPrefix = useHeadroom ? `headroom_${sogliaKind}` : 'level';
+        const ratioPrefix = `ratio_${sogliaKind}`;
         for (const station of stations) {
             const series = sensorMap?.[station]?.timeSeries;
             const tag = safeFeatureName(station);
+            const ref = sogliaLevels[station];
+            const head = useHeadroom && finite(ref) && ref > 0;
+            const ratioOn = useRatio && finite(ref) && ref > 0;
             for (let k = 0; k < lookback; k++) {
                 const t = nowMs - k * stepMs;
                 const level = sampleAt(series, t);
                 const prev = sampleAt(series, t - stepMs);
                 const miss = finite(level) ? 0 : 1;
-                const delta = finite(level) && finite(prev) ? level - prev : null;
-                values[`level_${tag}_lag${k}`] = finite(level) ? level : null;
+                const signal = head && finite(level) ? ref - level : level;
+                const signalPrev = head && finite(prev) ? ref - prev : prev;
+                const delta = finite(signal) && finite(signalPrev) ? signal - signalPrev : null;
+                values[`${head ? levelPrefix : 'level'}_${tag}_lag${k}`] = finite(signal) ? signal : null;
                 values[`delta_${tag}_lag${k}`] = delta;
                 values[`miss_${tag}_lag${k}`] = miss;
+                if (usePolyD) {
+                    const { d1, d2 } = localPolyDerivatives(series, t, stepMs, polyPoints);
+                    values[`d1_${tag}_lag${k}`] = d1;
+                    values[`d2_${tag}_lag${k}`] = d2;
+                }
+                if (ratioOn) {
+                    const r = finite(level) ? level / ref : null;
+                    const rp = finite(prev) ? prev / ref : null;
+                    values[`${ratioPrefix}_${tag}_lag${k}`] = r;
+                    values[`ratio_delta_${tag}_lag${k}`] = finite(r) && finite(rp) ? r - rp : null;
+                }
+            }
+        }
+        const pairs = Array.isArray(recipe?.chainPairs) ? recipe.chainPairs : [];
+        for (const pair of pairs) {
+            if (!Array.isArray(pair) || pair.length < 2) continue;
+            const [a, b] = pair;
+            const tag = `${safeFeatureName(a)}__${safeFeatureName(b)}`;
+            const seriesA = sensorMap?.[a]?.timeSeries;
+            const seriesB = sensorMap?.[b]?.timeSeries;
+            for (let k = 0; k < lookback; k++) {
+                const t = nowMs - k * stepMs;
+                const va = sampleAt(seriesA, t);
+                const vb = sampleAt(seriesB, t);
+                const miss = (finite(va) && finite(vb)) ? 0 : 1;
+                values[`chain_${tag}_lag${k}`] = miss ? null : va - vb;
+                values[`chain_miss_${tag}_lag${k}`] = miss;
             }
         }
         if (useRain) {
@@ -755,6 +841,7 @@
             upstreams: Array.isArray(node.upstreams) ? node.upstreams.slice() : node.stations.filter(s => s !== (node.downstream || 'Cento')),
             acceptors: Array.isArray(node.acceptors) ? node.acceptors.slice() : [],
             featureNames: node.featureNames.slice(),
+            featureRecipe: node.featureRecipe && typeof node.featureRecipe === 'object' ? node.featureRecipe : null,
             lookbackSteps,
             stepMinutes: finite(Number(node.stepMinutes)) ? Number(node.stepMinutes) : 30,
             useRain: node.useRain === true,
@@ -810,7 +897,8 @@
             const target = Math.ceil((nowMs + blockMinutes * MINUTE) / stepMs) * stepMs;
             if (target > end + 1) continue;
             const raw = buildWindowFeatureVector(
-                sensorMap, model.stations, model.lookbackSteps, nowMs, stepMs, rainSensors, model.useRain
+                sensorMap, model.stations, model.lookbackSteps, nowMs, stepMs, rainSensors, model.useRain,
+                model.featureRecipe
             );
             const x = standardizeWindowFeatures(raw, model.featureNames, block.mean, block.std);
             if (!x) continue;
@@ -1910,7 +1998,7 @@
         parseWindowMlpNode, parseMuskingumGruNode, parseRcGruNode, gruForward, muskingumStep, muskingumCoeffs,
         muskingumWarmup, decodeMuskingumTheta, decodeKX, decodeRcTheta, rcStep, softplus, mlpForward,
         sampleAt, sampleNormLevel, buildMuskingumSeq, buildRcSeq,
-        buildWindowFeatureVector, standardizeWindowFeatures, nextHalfHourForks, forkAround, withFork, loadCoeffs,
+        buildWindowFeatureVector, localPolyDerivatives, standardizeWindowFeatures, nextHalfHourForks, forkAround, withFork, loadCoeffs,
         pearson, residuals, estimateRecentBias, driverIsHigh, basinRainAt, DEFAULT_STEP_MS, FORK_K, SKILL_KEEP
     };
     if (typeof module !== 'undefined' && module.exports) module.exports = api;
