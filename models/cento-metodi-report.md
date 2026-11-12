@@ -30,6 +30,37 @@ Skill@120 su eventi (`|Δy|≥0.10 m`). Train/validate vs **persistenza**; holdo
 
 Pesi A/B finestra: `cento-dnn-novalle.json` (p6), `cento-dnn-novalle-p12.json`, `cento-dnn-valle-yellow-p6.json`, `cento-dnn-valle-yellow-p12.json`. Gate: `cento-mlp-feature-ab-gate.json`.
 
+## Sequenza end-to-end (GRU / 1D-CNN)
+
+Stesso protocollo MLP novalle; Δy su `[N,L=48,C]`. Pesi: `seq-cento-gru.json` / `seq-cento-cnn.json` (`reliable: false`).
+
+### Fit (month-block)
+
+| Metodo | valEvt@120 | holdPersist@120 | vs prod hold 0.77 |
+|---|---:|---:|---|
+| GRU h=64 | **0.854** | 0.637 | no |
+| CNN 32→64 k5 | 0.845 | 0.696 | no |
+| MLP prod | 0.826 | 0.772 | — |
+
+### Backtest runtime (`--compare-candidates Cento`, n≈13414 @120′)
+
+| Candidato | skill120 | highAcc | lowAcc |
+|---|---:|---:|---:|
+| **seq_gru** | **0.717** | **0.840** | 0.673 |
+| mlp_prod | 0.697 | 0.777 | 0.664 |
+| mlp_novalle | 0.690 | 0.754 | 0.662 |
+| seq_cnn | 0.680 | 0.722 | 0.661 |
+| poly2 | 0.394 | 0.597 | 0.315 |
+| muskingum_gru | 0.075 | 0.336 | −0.030 |
+
+GRU end-to-end batte la MLP prod sul backtest (soprattutto highAcc). **In pagina** via soft-load `models/seq-cento-gru.json` (`reliable: true`) in `loadCoeffs`. CNN resta offline. Holdout fit ancora sottile (n≈32) — sperimentale.
+
+```bash
+uv run python -u tools/fit-seq-cento.py --data ./storico
+node tools/backtest.js --compare-candidates Cento --every 120 \
+  --candidates-json models/cento-candidates-backtest.json
+```
+
 ## Ibridi (gate holdout eventi)
 
 | Metodo | skill120 evt | vs MLP | Adopt |

@@ -30,7 +30,7 @@ import pandas as pd
 
 STEP_MINUTES = 30
 HORIZONS = [1, 2, 3, 4]  # steps of 30 min (always)
-HORIZONS_EXTENDED = [5, 6, 7, 8]  # only when max lag ≥ 360 min
+HORIZONS_EXTENDED = [5, 6, 7, 8, 9, 10, 11, 12]  # 150′–360′ when max lag ≥ 360 min
 EXTEND_LAG_MIN = 360
 WEAK_POINTS = 48
 RIDGE_LAMBDA = 1e-2
@@ -499,9 +499,19 @@ def fit_node(
     if not horizons:
         return None
 
-    skill120 = (horizons.get("120") or {}).get("validateEvents", {}).get("skill")
-    holdout120 = (horizons.get("120") or {}).get("holdoutEvents", {}).get("skill")
-    reliable = skill120 is not None and skill120 >= SKILL_KEEP
+    h120 = horizons.get("120") or {}
+    skill120 = (h120.get("validateEvents") or {}).get("skill")
+    holdout_block = h120.get("holdoutEvents") or {}
+    holdout120 = holdout_block.get("skill")
+    holdout_n = int(holdout_block.get("n") or 0)
+    # Both validate and holdout must clear the bar. Thin holdout (n<30) is not a free pass.
+    reliable = (
+        skill120 is not None
+        and skill120 >= SKILL_KEEP
+        and holdout_n >= 30
+        and holdout120 is not None
+        and holdout120 >= SKILL_KEEP
+    )
     trained_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     return {
         "upstreams": present,
@@ -578,8 +588,18 @@ def fit_config(
     }
 
 
+def holdout_clears(node: dict, keep: float) -> bool:
+    """Fat holdout must clear keep; thin holdout (n<30) does not block backtest promotion."""
+    block = ((node.get("horizons") or {}).get("120") or {}).get("holdoutEvents") or {}
+    n = int(block.get("n") or 0)
+    if n < 30:
+        return True
+    skill = block.get("skill")
+    return skill is not None and float(skill) >= keep
+
+
 def apply_backtest_reliable(payload: dict, summary_path: Path) -> dict:
-    """Override reliable from backtest event skill@120 when summary exists."""
+    """Set reliable from backtest skill@120, still blocked by failed fat holdout."""
     if not summary_path.exists():
         return payload
     try:
@@ -592,8 +612,8 @@ def apply_backtest_reliable(payload: dict, summary_path: Path) -> dict:
         skill = (nodes_sum.get(name) or {}).get("skill120")
         if skill is None:
             continue
-        node["backtestSkill120"] = None if skill is None else round(float(skill), 6)
-        node["reliable"] = float(skill) >= keep
+        node["backtestSkill120"] = round(float(skill), 6)
+        node["reliable"] = float(skill) >= keep and holdout_clears(node, keep)
         for up in node.get("upstreams") or []:
             edge = payload.get("edges", {}).get(f"{up}->{name}")
             if edge:

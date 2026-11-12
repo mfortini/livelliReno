@@ -9,6 +9,7 @@
 //                             [--no-update-reliable]
 //                             [--compare-candidates Cento] [--mlp models/cento-dnn.json]
 //                             [--muskingum models/hybrid-muskingum-cento.json]
+//                             [--seq-gru models/seq-cento-gru.json] [--seq-cnn models/seq-cento-cnn.json]
 //                             [--candidates-json models/cento-candidates-backtest.json]
 //
 // --compare-candidates runs an experimental side-by-side on one node without writing
@@ -144,8 +145,13 @@ function collectNows(node) {
     return [...set].sort((a, b) => a - b);
 }
 
+const PHASE_SHIFTS = [-4, -2, -1, 0, 1, 2, 4]; // step da 30′; s<0 ⇒ obs anticipato
+
 function emptyCandidateStats(horizons) {
-    return Object.fromEntries(horizons.map(h => [h, { n: 0, se: 0, ae: 0, sePersist: 0 }]));
+    return Object.fromEntries(horizons.map(h => [h, {
+        n: 0, se: 0, ae: 0, sePersist: 0,
+        seShift: Object.fromEntries(PHASE_SHIFTS.map(s => [s, { n: 0, se: 0 }]))
+    }]));
 }
 
 function finalizeCandidate(stats) {
@@ -157,11 +163,20 @@ function finalizeCandidate(stats) {
         }
         const rmse = Math.sqrt(bucket.se / bucket.n);
         const rmseP = Math.sqrt(bucket.sePersist / bucket.n);
+        let bestShift = null;
+        let bestShiftRmse = Infinity;
+        for (const [s, acc] of Object.entries(bucket.seShift || {})) {
+            if (acc.n < 20) continue;
+            const r = Math.sqrt(acc.se / acc.n);
+            if (r < bestShiftRmse) { bestShiftRmse = r; bestShift = Number(s); }
+        }
         out[h] = {
             n: bucket.n,
             rmse,
             mae: bucket.ae / bucket.n,
-            skillPersist: rmseP ? 1 - rmse / rmseP : null
+            skillPersist: rmseP ? 1 - rmse / rmseP : null,
+            phaseLagMin: bestShift === null ? null : -bestShift * 30,
+            phaseRmseGain: bestShift === null ? null : 1 - bestShiftRmse / rmse
         };
     }
     return out;
@@ -244,7 +259,7 @@ function predictCandidate(name, down, ups, now, horizonHours, sensorMap, rainSen
         }
         return { ok: true, forecast: [{ time: anchor.time, med: anchor.value }, ...points], next: points };
     }
-    return P.predictNode(down, ups, {
+    const result = P.predictNode(down, ups, {
         hours: 72,
         now: new Date(now),
         coeffs: payload.coeffs,
@@ -255,6 +270,13 @@ function predictCandidate(name, down, ups, now, horizonHours, sensorMap, rainSen
         smooth: payload.smooth,
         maxStep: payload.maxStep
     });
+    const phaseMs = Number(payload.phaseShiftMin) * 60000;
+    if (result?.ok && Number.isFinite(phaseMs) && phaseMs !== 0) {
+        // Display-level phase correction: same values, relabelled earlier.
+        result.forecast = (result.forecast || []).map(p => ({ ...p, time: new Date(+p.time - phaseMs) }));
+        result.next = (result.next || []).map(p => ({ ...p, time: new Date(+p.time - phaseMs) }));
+    }
+    return result;
 }
 
 if (compareNode) {
@@ -270,16 +292,43 @@ if (compareNode) {
     const musk = fs.existsSync(muskPath) ? JSON.parse(fs.readFileSync(muskPath, 'utf8')) : null;
     const rcPath = path.resolve(root, opt('rc', 'models/hybrid-rc-cento.json'));
     const rc = fs.existsSync(rcPath) ? JSON.parse(fs.readFileSync(rcPath, 'utf8')) : null;
-    const horizons = [1, 2, 3, 4];
+    const seqGruPath = path.resolve(root, opt('seq-gru', 'models/seq-cento-gru.json'));
+    const seqCnnPath = path.resolve(root, opt('seq-cnn', 'models/seq-cento-cnn.json'));
+    const seqGru = fs.existsSync(seqGruPath) ? JSON.parse(fs.readFileSync(seqGruPath, 'utf8')) : null;
+    const seqCnn = fs.existsSync(seqCnnPath) ? JSON.parse(fs.readFileSync(seqCnnPath, 'utf8')) : null;
+    const mlpLagshiftPath = path.resolve(root, opt('mlp-lagshift', 'models/cento-dnn-lagalign.json'));
+    const mlpLagaugmentPath = path.resolve(root, opt('mlp-lagaugment', 'models/cento-dnn-lagaugment.json'));
+    const mlpLagshift = fs.existsSync(mlpLagshiftPath) ? JSON.parse(fs.readFileSync(mlpLagshiftPath, 'utf8')) : null;
+    const mlpLagaugment = fs.existsSync(mlpLagaugmentPath) ? JSON.parse(fs.readFileSync(mlpLagaugmentPath, 'utf8')) : null;
+    const prodNode = useCoeffs && fs.existsSync(coeffsPath)
+        ? (JSON.parse(fs.readFileSync(coeffsPath, 'utf8')).nodes || {})[compareNode]
+        : null;
+    const chOpt = opt('chs', null);
+    const horizons = chOpt
+        ? chOpt.split(',').map(Number).filter(h => Number.isFinite(h) && h > 0)
+        : [1, 2, 4, 8, 12];
     const horizonHours = Math.max(...horizons) * 0.5;
     const force = (node) => ({ ...node, reliable: true });
     const candidates = {
         persist: { kind: 'baseline' },
         local_trend: { kind: 'baseline' },
         poly2: { kind: 'baseline' },
+        mlp_prod: prodNode ? { coeffs: { nodes: { [compareNode]: force(prodNode) } }, smooth: 0 } : null,
         mlp_novalle: mlpNovalle ? { coeffs: { nodes: { [compareNode]: force(mlpNovalle) } }, smooth: 0 } : null,
         mlp_valle: mlpValle ? { coeffs: { nodes: { [compareNode]: force(mlpValle) } }, smooth: 0 } : null,
         mlp_valle_ema065: mlpValle ? { coeffs: { nodes: { [compareNode]: force(mlpValle) } }, smooth: 0.65 } : null,
+        mlp_lagshift: mlpLagshift ? { coeffs: { nodes: { [compareNode]: force(mlpLagshift) } }, smooth: 0 } : null,
+        mlp_lagaugment: mlpLagaugment ? { coeffs: { nodes: { [compareNode]: force(mlpLagaugment) } }, smooth: 0 } : null,
+        mlp_phase30: prodNode ? { coeffs: { nodes: { [compareNode]: force(prodNode) } }, smooth: 0, phaseShiftMin: 30 } : null,
+        mlp_phase60: prodNode ? { coeffs: { nodes: { [compareNode]: force(prodNode) } }, smooth: 0, phaseShiftMin: 60 } : null,
+        seq_gru: seqGru ? {
+            coeffs: { nodes: { [compareNode]: force(seqGru) } },
+            note: 'forced reliable for experimental compare only; does not promote runtime'
+        } : null,
+        seq_cnn: seqCnn ? {
+            coeffs: { nodes: { [compareNode]: force(seqCnn) } },
+            note: 'forced reliable for experimental compare only; does not promote runtime'
+        } : null,
         muskingum_gru: musk ? {
             coeffs: { nodes: { [compareNode]: force(musk) } },
             note: 'forced reliable for experimental compare only; does not promote runtime'
@@ -342,7 +391,8 @@ if (compareNode) {
                 node: compareNode,
                 coeffs: cfg.coeffs,
                 smooth: cfg.smooth,
-                maxStep: cfg.maxStep
+                maxStep: cfg.maxStep,
+                phaseShiftMin: cfg.phaseShiftMin
             });
             if (!result?.ok) continue;
             const byTime = new Map((result.forecast || []).map(point => [+point.time, point]));
@@ -357,6 +407,14 @@ if (compareNode) {
                     bucket.se += (point.med - actual) ** 2;
                     bucket.ae += Math.abs(point.med - actual);
                     bucket.sePersist += (anchor.value - actual) ** 2;
+                }
+                for (const s of PHASE_SHIFTS) {
+                    if (s === 0) continue;
+                    const shifted = data[compareNode].byTime.get(now + (h + s) * STEP);
+                    if (!Number.isFinite(shifted)) continue;
+                    const acc = stats[key].all[h].seShift[s];
+                    acc.n++;
+                    acc.se += (point.med - shifted) ** 2;
                 }
             }
         }
@@ -382,6 +440,9 @@ if (compareNode) {
         acceptorThr85: acceptorThr,
         mlpPath: mlpNovalle ? path.relative(root, mlpNovallePath) : null,
         mlpVallePath: mlpValle ? path.relative(root, mlpVallePath) : null,
+        mlpProdPath: prodNode ? path.relative(root, coeffsPath) : null,
+        seqGruPath: seqGru ? path.relative(root, seqGruPath) : null,
+        seqCnnPath: seqCnn ? path.relative(root, seqCnnPath) : null,
         muskingumPath: musk ? path.relative(root, muskPath) : null,
         rcPath: rc ? path.relative(root, rcPath) : null,
         summary,
@@ -395,6 +456,10 @@ if (compareNode) {
                 skill120: v.all?.[4]?.skillPersist,
                 rmse120: v.all?.[4]?.rmse,
                 n120: v.all?.[4]?.n,
+                skill240: v.all?.[8]?.skillPersist,
+                skill360: v.all?.[12]?.skillPersist,
+                lag120: v.all?.[4]?.phaseLagMin,
+                lag360: v.all?.[12]?.phaseLagMin,
                 skill120HighAcc: v.highAcceptor?.[4]?.skillPersist,
                 skill120LowAcc: v.lowAcceptor?.[4]?.skillPersist
             }])

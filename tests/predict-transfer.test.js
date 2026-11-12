@@ -255,6 +255,97 @@ test('direct-horizon offline forecasts deltas and rejects unreliable nodes', () 
     assert.match(rejected.reason, /persistenza/i);
 });
 
+test('hindcastSeries replays +2h without peeking and returns residuals', () => {
+    const start = new Date('2026-11-10T00:00:00Z');
+    const n = 96; // 48 h @ 30′
+    const up = sensor('A', Array.from({ length: n }, (_, i) => 1 + 0.01 * i), start);
+    const down = sensor('B', Array.from({ length: n }, (_, i) => 2 + 0.005 * i), start);
+    const now = down.timeSeries.at(-1).time;
+    const horizon = () => ({
+        b: 0, wLocal: 0.2, wWindow: [0.4], wRate: [0],
+        wWindow2: [0], wRate2: [0],
+        spreadLow: 0.05, spreadHigh: 0.05,
+        spreadLowHigh: 0.1, spreadHighHigh: 0.1
+    });
+    const coeffs = {
+        nodes: {
+            B: {
+                upstreams: ['A'],
+                lagMinutes: [60],
+                reliable: true,
+                skill120: 0.3,
+                kind: 'direct_horizon_delta_ridge',
+                thresholds: { A: { mean: 0, std: 1, z85: 1.0 } },
+                horizons: {
+                    '30': horizon(), '60': horizon(), '90': horizon(), '120': horizon()
+                },
+                trainedAt: '2026-01-01'
+            }
+        },
+        edges: {}
+    };
+    const hc = P.hindcastSeries(down, [up], {
+        hours: 24, now, coeffs, horizonHours: 2, downstreamId: 'B', stepMs: P.DEFAULT_STEP_MS
+    });
+    assert.equal(hc.ok, true);
+    assert.ok(hc.points.length >= 20, `expected many hindcast points, got ${hc.points.length}`);
+    for (const p of hc.points) {
+        assert.ok(Number.isFinite(p.observed));
+        assert.ok(Number.isFinite(p.predicted));
+        assert.ok(Math.abs(p.residual - (p.predicted - p.observed)) < 1e-9);
+        assert.ok(+p.time <= +now + 1);
+        assert.ok(+p.origin < +p.time);
+    }
+});
+
+test('direct-horizon densifies every 30′ with maxStep continuity from anchor', () => {
+    const start = new Date('2026-11-11T00:00:00Z');
+    const up = sensor('A', Array.from({ length: 48 }, (_, i) => 1 + 0.02 * i), start);
+    const down = sensor('B', Array.from({ length: 48 }, (_, i) => 2 + 0.01 * i), start);
+    const now = down.timeSeries.at(-1).time;
+    const horizon = () => ({
+        b: 0.5, wLocal: 0, wWindow: [0], wRate: [0],
+        wWindow2: [0], wRate2: [0],
+        spreadLow: 0.05, spreadHigh: 0.05,
+        spreadLowHigh: 0.1, spreadHighHigh: 0.1
+    });
+    // Sparse knots only at 60′ and 120′ — densifier must fill 30′ and 90′.
+    const coeffs = {
+        nodes: {
+            B: {
+                upstreams: ['A'],
+                lagMinutes: [60],
+                reliable: true,
+                skill120: 0.3,
+                kind: 'direct_horizon_delta_ridge',
+                thresholds: { A: { mean: 0, std: 1, z85: 1.0 } },
+                horizons: {
+                    '60': horizon(),
+                    '120': horizon()
+                },
+                trainedAt: '2026-01-01'
+            }
+        },
+        edges: {}
+    };
+    const maxStep = P.maxStepFromSeries(down.timeSeries);
+    const raw = P.forecastDirectHorizon([up], coeffs.nodes.B, 2, now, P.DEFAULT_STEP_MS, {
+        anchor: P.latestFinite(down.timeSeries),
+        maxStep,
+        downstream: down,
+        bias: 0,
+        smooth: 0.35
+    });
+    assert.ok(raw.length >= 5, `expected dense path, got ${raw.length}`);
+    assert.equal(raw[0].regime, 'anchor');
+    assert.ok(Math.abs(raw[0].value - down.timeSeries.at(-1).value) < 1e-9);
+    for (let i = 1; i < raw.length; i++) {
+        const dt = +raw[i].time - +raw[i - 1].time;
+        assert.ok(Math.abs(dt - P.DEFAULT_STEP_MS) < 1, `step ${i} dt=${dt}`);
+        assert.ok(Math.abs(raw[i].value - raw[i - 1].value) <= maxStep + 1e-9);
+    }
+});
+
 test('mlpForward applies ReLU then linear', () => {
     const layers = [
         { W: [[1, 0], [0, 1]], b: [0, -2], activation: 'relu' },
@@ -263,6 +354,113 @@ test('mlpForward applies ReLU then linear', () => {
     // relu(I·[1,3]+[0,-2]) = [1,1] → linear sum + 0.5 = 2.5
     assert.equal(P.mlpForward([1, 3], layers), 2.5);
     assert.equal(P.mlpForward([0, 0], layers), 0.5);
+});
+
+test('window_delta_gru / cnn forecast from sequence tensor', () => {
+    const start = new Date('2026-11-10T00:00:00Z');
+    const now = new Date('2026-11-11T12:00:00Z');
+    const n = 60;
+    const values = Array.from({ length: n }, (_, i) => 1 + 0.01 * i);
+    const cento = sensor('Cento', values, start);
+    const forcelli = sensor('Forcelli', values.map(v => v + 0.2), start);
+    const stations = ['Cento', 'Forcelli'];
+    const channelNames = [];
+    for (const station of stations) {
+        const tag = station.replace(/ /g, '_');
+        channelNames.push(`level_${tag}`, `delta_${tag}`, `miss_${tag}`);
+    }
+    const nC = channelNames.length;
+    const mean = Array(nC).fill(0);
+    const std = Array(nC).fill(1);
+    const hidden = 2;
+    // Identity-ish GRU: zero weights → h stays 0; head bias → constant delta.
+    const gru = {
+        inputSize: nC,
+        hiddenSize: hidden,
+        weightIh: Array.from({ length: 3 * hidden }, () => Array(nC).fill(0)),
+        weightHh: Array.from({ length: 3 * hidden }, () => Array(hidden).fill(0)),
+        biasIh: Array(3 * hidden).fill(0),
+        biasHh: Array(3 * hidden).fill(0)
+    };
+    const headLayers = [{ W: [[0, 0]], b: [0.07], activation: 'linear' }];
+    const gruNode = {
+        kind: 'window_delta_gru',
+        stations,
+        upstreams: ['Forcelli'],
+        channelNames,
+        lookbackSteps: 4,
+        stepMinutes: 30,
+        useRain: false,
+        reliable: true,
+        skill120: 0.5,
+        horizons: {
+            '30': { mean, std, gru, headLayers, spreadLow: 0.02, spreadHigh: 0.03 },
+            '60': { mean, std, gru, headLayers, spreadLow: 0.02, spreadHigh: 0.03 },
+            '90': { mean, std, gru, headLayers, spreadLow: 0.02, spreadHigh: 0.03 },
+            '120': { mean, std, gru, headLayers, spreadLow: 0.02, spreadHigh: 0.03, validate: { skill: 0.5 } }
+        }
+    };
+    const sensorMap = { Cento: cento, Forcelli: forcelli };
+    const gruResult = P.predictNode(cento, [forcelli], {
+        hours: 24, now, coeffs: { nodes: { Cento: gruNode } },
+        horizonHours: 2, downstreamId: 'Cento', sensorMap, rainSensors: []
+    });
+    assert.equal(gruResult.ok, true);
+    assert.equal(gruResult.kind, 'window_delta_gru');
+    const y0 = cento.timeSeries.at(-1).value;
+    assert.ok(Math.abs(gruResult.next[0].med - (y0 + 0.07)) < 1e-6);
+
+    // Conv1d zero weights + bias → constant channel; head bias → delta.
+    const convLayers = [{
+        W: [[[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]]],
+        b: [0],
+        kernelSize: 3,
+        padding: 1,
+        activation: 'relu'
+    }];
+    // Fix: W shape (out=1, in=6, k=3)
+    convLayers[0].W = [Array.from({ length: nC }, () => [0, 0, 0])];
+    const cnnNode = {
+        kind: 'window_delta_cnn',
+        stations,
+        upstreams: ['Forcelli'],
+        channelNames,
+        lookbackSteps: 4,
+        stepMinutes: 30,
+        useRain: false,
+        reliable: true,
+        skill120: 0.4,
+        horizons: {
+            '30': {
+                mean, std, convLayers,
+                headLayers: [{ W: [[0]], b: [0.04], activation: 'linear' }],
+                spreadLow: 0.01, spreadHigh: 0.02
+            },
+            '60': {
+                mean, std, convLayers,
+                headLayers: [{ W: [[0]], b: [0.04], activation: 'linear' }],
+                spreadLow: 0.01, spreadHigh: 0.02
+            },
+            '90': {
+                mean, std, convLayers,
+                headLayers: [{ W: [[0]], b: [0.04], activation: 'linear' }],
+                spreadLow: 0.01, spreadHigh: 0.02
+            },
+            '120': {
+                mean, std, convLayers,
+                headLayers: [{ W: [[0]], b: [0.04], activation: 'linear' }],
+                spreadLow: 0.01, spreadHigh: 0.02,
+                validate: { skill: 0.4 }
+            }
+        }
+    };
+    const cnnResult = P.predictNode(cento, [forcelli], {
+        hours: 24, now, coeffs: { nodes: { Cento: cnnNode } },
+        horizonHours: 2, downstreamId: 'Cento', sensorMap, rainSensors: []
+    });
+    assert.equal(cnnResult.ok, true);
+    assert.equal(cnnResult.kind, 'window_delta_cnn');
+    assert.ok(Math.abs(cnnResult.next[0].med - (y0 + 0.04)) < 1e-6);
 });
 
 test('window_delta_mlp forecasts Cento from feature window', () => {
@@ -750,6 +948,118 @@ test('buildWindowFeatureVector adds yellow fill ratio beside headroom', () => {
     assert.ok(Math.abs(values.ratio_delta_Cento_lag0 - 0) < 1e-9);
 });
 
+test('buildWindowFeatureVector aligns upstream window to horizon via tau', () => {
+    const start = new Date('2026-11-11T00:00:00Z');
+    const levels = Array.from({ length: 30 }, (_, i) => 1 + 0.1 * i);
+    const up = sensor('Forcelli', levels, start);
+    const now = new Date(+start + 29 * STEP);
+    const recipe = {
+        upstreamLagAlign: true,
+        upstreamLagMinutes: { Forcelli: 480 }, // 16 step × 30′
+        usePolyDerivatives: false
+    };
+    // horizon 0 → lag k reads x(t - 16 - k); lag0 = level at index 29-16=13 → 2.3
+    const v0 = P.buildWindowFeatureVector(
+        { Forcelli: up }, ['Forcelli'], 4, +now, STEP, [], false, recipe, 0
+    );
+    assert.ok(Math.abs(v0.level_Forcelli_lag0 - (1 + 0.1 * 13)) < 1e-9, `lag0=${v0.level_Forcelli_lag0}`);
+    // horizon 480′ = tau → lag0 reads x(t + 16 - 16) = x(now) → index 29 → 3.9
+    const vh = P.buildWindowFeatureVector(
+        { Forcelli: up }, ['Forcelli'], 4, +now, STEP, [], false, recipe, 480
+    );
+    assert.ok(Math.abs(vh.level_Forcelli_lag0 - (1 + 0.1 * 29)) < 1e-9, `h lag0=${vh.level_Forcelli_lag0}`);
+    assert.equal(vh.miss_Forcelli_lag0, 0);
+    // horizon 600′ > tau → lag0 peeks in the future → miss=1, level null
+    const vf = P.buildWindowFeatureVector(
+        { Forcelli: up }, ['Forcelli'], 6, +now, STEP, [], false, recipe, 600
+    );
+    assert.equal(vf.level_Forcelli_lag0, null);
+    assert.equal(vf.miss_Forcelli_lag0, 1);
+    assert.equal(vf.delta_Forcelli_lag0, null);
+    assert.equal(vf.d1_Forcelli_lag0 ?? null, null);
+    // lag1 (k=1 → s=1+16-20=-3 <0) still missing; lag4 → s=0 → x(now)
+    assert.equal(vf.miss_Forcelli_lag1, 1);
+    assert.ok(Math.abs(vf.level_Forcelli_lag4 - (1 + 0.1 * 29)) < 1e-9, `lag4=${vf.level_Forcelli_lag4}`);
+    // lag5 → s=1 → x(now-30′) = index 28
+    assert.ok(Math.abs(vf.level_Forcelli_lag5 - (1 + 0.1 * 28)) < 1e-9, `lag5=${vf.level_Forcelli_lag5}`);
+    // downstream station in the same call stays unshifted
+    const cento = sensor('Cento', levels.map(v => v + 5), start);
+    const vmix = P.buildWindowFeatureVector(
+        { Cento: cento, Forcelli: up }, ['Cento', 'Forcelli'], 2, +now, STEP, [], false, recipe, 0
+    );
+    assert.ok(Math.abs(vmix.level_Cento_lag0 - (6 + 0.1 * 29)) < 1e-9);
+    assert.ok(Math.abs(vmix.level_Forcelli_lag0 - (1 + 0.1 * 13)) < 1e-9);
+    // recipe without upstreamLagAlign → behaviour unchanged
+    const vflat = P.buildWindowFeatureVector(
+        { Forcelli: up }, ['Forcelli'], 2, +now, STEP, [], false, { usePolyDerivatives: false }, 480
+    );
+    assert.ok(Math.abs(vflat.level_Forcelli_lag0 - (1 + 0.1 * 29)) < 1e-9);
+});
+
+test('buildWindowFeatureVector augment adds arriving-wave block without shifting', () => {
+    const start = new Date('2026-11-11T00:00:00Z');
+    const levels = Array.from({ length: 30 }, (_, i) => 1 + 0.1 * i);
+    const up = sensor('Forcelli', levels, start);
+    const now = new Date(+start + 29 * STEP);
+    const recipe = {
+        upstreamLagAlign: true,
+        upstreamLagMode: 'augment',
+        upstreamLagAlignWindow: 3,
+        upstreamLagMinutes: { Forcelli: 480 },
+        usePolyDerivatives: false
+    };
+    const v = P.buildWindowFeatureVector(
+        { Forcelli: up }, ['Forcelli'], 2, +now, STEP, [], false, recipe, 120
+    );
+    // flat window untouched: lag0 = x(now) → index 29
+    assert.ok(Math.abs(v.level_Forcelli_lag0 - (1 + 0.1 * 29)) < 1e-9);
+    // a-block: j=0 → x(t + 4 - 16) = index 29+4-16 = 17; j=2 → index 15
+    assert.ok(Math.abs(v.alevel_Forcelli_lag0 - (1 + 0.1 * 17)) < 1e-9, `a0=${v.alevel_Forcelli_lag0}`);
+    assert.ok(Math.abs(v.alevel_Forcelli_lag2 - (1 + 0.1 * 15)) < 1e-9, `a2=${v.alevel_Forcelli_lag2}`);
+    assert.equal(v.amiss_Forcelli_lag0, 0);
+    // h > tau: s = -4 + j → j<4 miss; j=4 → x(now)
+    const vf = P.buildWindowFeatureVector(
+        { Forcelli: up }, ['Forcelli'], 2, +now, STEP, [], false, recipe, 600
+    );
+    assert.equal(vf.alevel_Forcelli_lag0, null);
+    assert.equal(vf.amiss_Forcelli_lag0, 1);
+    assert.equal(vf.amiss_Forcelli_lag2, 1);
+});
+
+test('window_delta_mlp parse uses real upstream lags from recipe', () => {
+    const parsed = P.parseWindowMlpNode({
+        kind: 'window_delta_mlp',
+        stations: ['Cento', 'Forcelli', 'Sostegno Reno'],
+        upstreams: ['Forcelli', 'Sostegno Reno'],
+        lookbackSteps: 48,
+        stepMinutes: 30,
+        featureNames: ['level_Cento_lag0'],
+        featureRecipe: {
+            upstreamLagAlign: true,
+            upstreamLagMinutes: { Forcelli: 480, 'Sostegno Reno': 150 }
+        },
+        horizons: {
+            '30': {
+                mean: [0], std: [1],
+                layers: [{ W: [[0]], b: [0], activation: 'linear' }],
+                validate: { skill: 0.4, rmse: 0.1 }
+            }
+        }
+    });
+    assert.deepEqual(parsed.lagMinutes, [480, 150]);
+    const flat = P.parseWindowMlpNode({
+        kind: 'window_delta_mlp',
+        stations: ['Cento', 'Forcelli'],
+        upstreams: ['Forcelli'],
+        lookbackSteps: 48,
+        featureNames: ['x'],
+        horizons: {
+            '30': { mean: [0], std: [1], layers: [{ W: [[0]], b: [0], activation: 'linear' }] }
+        }
+    });
+    assert.deepEqual(flat.lagMinutes, [48 * 30]);
+});
+
 test('window_delta_mlp parse keeps acceptors list', () => {
     const node = P.parseWindowMlpNode({
         kind: 'window_delta_mlp',
@@ -781,10 +1091,102 @@ test('loadCoeffs soft-fails on missing file', async () => {
     assert.ok(ok.edges['A->B']);
 });
 
+test('loadCoeffs soft-adopts reliable seq GRU over MLP Cento', async () => {
+    const files = {
+        'models/transfer-coeffs.json': {
+            nodes: {
+                Cento: { kind: 'window_delta_mlp', stations: ['Cento'], featureNames: ['x'], horizons: {} },
+                Gallo: { kind: 'direct_horizon_delta_ridge', reliable: true, horizons: {} }
+            }
+        },
+        'models/seq-cento-gru.json': {
+            kind: 'window_delta_gru',
+            downstream: 'Cento',
+            reliable: true,
+            stations: ['Cento', 'Forcelli'],
+            channelNames: ['level_Cento'],
+            lookbackSteps: 4,
+            horizons: {}
+        },
+        'models/seq-gallo-gru.json': {
+            kind: 'window_delta_gru',
+            downstream: 'Gallo',
+            reliable: true,
+            stations: ['Gallo', 'Opera Reno Panfilia'],
+            channelNames: ['level_Gallo'],
+            lookbackSteps: 4,
+            horizons: {}
+        }
+    };
+    const data = await P.loadCoeffs(async (url) => {
+        const body = files[url];
+        if (!body) return { ok: false, status: 404 };
+        return { ok: true, json: async () => body };
+    });
+    assert.equal(data.nodes.Cento.kind, 'window_delta_gru');
+    assert.equal(data.nodes.Cento.reliable, true);
+    assert.equal(data.nodes.Gallo.kind, 'window_delta_gru');
+    assert.equal(P.seqGruUrl('Casalecchio chiusa'), 'models/seq-casalecchio-chiusa-gru.json');
+});
+
 test('config dependencies form a connected DAG used by rankNodes', () => {
     const cfg = JSON.parse(readFileSync(new URL('../config.json', `file://${__filename}`), 'utf8'));
     const ranks = P.rankNodes(cfg);
     assert.equal(ranks.Cento > ranks.Dosso, true);
     assert.equal(ranks['Sostegno Reno'] > ranks.Cento, true);
     assert.equal(ranks['Vergato DX'] > ranks['Casalecchio chiusa'], true);
+});
+
+test('maxReliableHorizonMinutes cuts below SKILL_KEEP and respects cap', () => {
+    const model = {
+        horizons: {
+            '60': { validateEvents: { skill: 0.5 } },
+            '120': { validateEvents: { skill: 0.4 } },
+            '180': { validateEvents: { skill: 0.05 } },
+            '240': { validate: { skill: 0.5 } },
+            '360': { validateEvents: { skill: 0.5 } }
+        }
+    };
+    // 180 under threshold → best reliable is 120; cap default still allows longer if skilled
+    assert.equal(P.maxReliableHorizonMinutes(model, { capMinutes: 240 }), 240);
+    assert.equal(P.maxReliableHorizonMinutes({
+        horizons: {
+            '60': { validateEvents: { skill: 0.5 } },
+            '120': { validateEvents: { skill: 0.4 } },
+            '180': { validateEvents: { skill: 0.05 } },
+            '240': { validateEvents: { skill: 0.05 } }
+        }
+    }, { capMinutes: 240 }), 120);
+    // No skilled horizons → still minMinutes
+    assert.equal(P.maxReliableHorizonMinutes({
+        horizons: { '30': { skill: 0.01 }, '240': { skill: 0.02 } }
+    }, { capMinutes: 240, minMinutes: 120 }), 120);
+    // Cap clamps a skilled long horizon
+    assert.equal(P.maxReliableHorizonMinutes(model, { capMinutes: 200 }), 120);
+    assert.equal(P.maxReliableHorizonMinutes(null), 120);
+    // Ridge-style 6 h knots with flat .skill fields
+    assert.equal(P.maxReliableHorizonMinutes({
+        horizons: {
+            '120': { skill: 0.77 },
+            '240': { skill: 0.67 },
+            '360': { skill: 0.58 }
+        }
+    }), 360);
+});
+
+test('estimatePredictedLag recovers a shifted hindcast series', () => {
+    const n = 40;
+    const obs = Array.from({ length: n }, (_, i) => Math.sin(i / 4) + 0.1 * i);
+    // Predicted lags observed by 2 steps → best d = -2 → lagMin = +60
+    const k = 2;
+    const points = Array.from({ length: n }, (_, i) => ({
+        predicted: i >= k ? obs[i - k] : obs[0],
+        observed: obs[i]
+    }));
+    const lag = P.estimatePredictedLag(points, P.DEFAULT_STEP_MS);
+    assert.ok(lag);
+    assert.equal(lag.lagSteps, k);
+    assert.equal(lag.lagMin, k * 30);
+    assert.ok(Math.abs(lag.r) > 0.9);
+    assert.equal(P.estimatePredictedLag(points.slice(0, 5)), null);
 });

@@ -27,6 +27,21 @@ node tools/backtest.js --compare-candidates Cento --candidates-json models/cento
 
 Gate corrente: MLP+valle e RC **non** battono la MLP senza valle → non promuovere (`models/cento-valle-gate.json`).
 
+## Sequenza end-to-end (GRU / 1D-CNN, offline)
+
+Stesso split/eventi della MLP novalle; predice Δy su `[N, L=48, C]`. Default Cento; altre stazioni con `--downstream NAME` (upstream da `config.dependencies`). **Non** patcha `transfer-coeffs` — export `models/seq-{slug}-gru.json`. Soft-load in `loadCoeffs` se `reliable: true`.
+
+```bash
+uv run python -u tools/fit-seq-cento.py --data ./storico
+# → models/seq-cento-compare.json + seq-cento-gru.json + seq-cento-cnn.json
+uv run python -u tools/fit-seq-cento.py --downstream Gallo --arch gru --data ./storico
+uv run python -u tools/fit-seq-cento.py --arch gru --horizons 4   # smoke @120′
+node tools/backtest.js --compare-candidates Cento --every 120 \
+  --candidates-json models/cento-candidates-backtest.json
+```
+
+Soft-load browser: `models/seq-cento-gru.json` con `reliable: true` (preferito su MLP Cento in `loadCoeffs`). CNN resta offline finché non batte la prod.
+
 ### Spezzata sulla curva Cento (DNN)
 
 La spezzata rossa non è dinamica idraulica: `forecastWindowMlp` in `predict-transfer.js` valuta quattro MLP indipendenti a 30/60/90/120′ sulla stessa finestra e Plotly unisce i nodi con segmenti. Non c’è vincolo di tasso tra orizzonti (il path affine legacy aveva uno smooth EMA; il path MLP usa solo `maxStep` + smooth leggero). Densificare i passi o un filtro di stato (EnKF) evitano il kink per costruzione.

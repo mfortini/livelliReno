@@ -1,0 +1,478 @@
+{
+  "version": 1,
+  "kind": "seq_e2e",
+  "downstream": "Gallo",
+  "upstreams": [
+    "Opera Reno Panfilia"
+  ],
+  "stations": [
+    "Gallo",
+    "Opera Reno Panfilia"
+  ],
+  "lookbackSteps": 48,
+  "lookbackMinutes": 1440,
+  "stepMinutes": 30,
+  "channelNames": [
+    "level_Gallo",
+    "delta_Gallo",
+    "miss_Gallo",
+    "level_Opera_Reno_Panfilia",
+    "delta_Opera_Reno_Panfilia",
+    "miss_Opera_Reno_Panfilia",
+    "rain6h",
+    "rain24h"
+  ],
+  "useRain": true,
+  "rainGauges": [
+    "Sasso Marconi Arpa",
+    "Vergato",
+    "Riola di Vergato",
+    "Padulle Sala Bolognese",
+    "Finale Emilia",
+    "Zola Predosa",
+    "Lavino di Sopra",
+    "Anzola"
+  ],
+  "arches": [
+    "gru"
+  ],
+  "disclaimer": "Sperimentale: non operativo, non allertistico. Offline only.",
+  "mlpRef": "/data/ComuneDiCento/livelliReno/models/transfer-coeffs.json",
+  "gate": {
+    "gru": {
+      "validateEventsSkill120": 0.863488,
+      "holdoutEventsSkillPersist120": 0.687218,
+      "mlpValidateEventsSkill120": 0.767782,
+      "mlpHoldoutEventsSkillPersist120": 0.621681,
+      "prodValidateEventsSkill120": 0.767782,
+      "prodHoldoutEventsSkillPersist120": 0.621681,
+      "beatsMlpValidate": true,
+      "beatsProdValidate": true,
+      "beatsProdHoldoutPersist": true,
+      "adoptRuntime": true,
+      "reason": [
+        "beats production MLP on validate+holdout — still needs browser export + backtest"
+      ]
+    }
+  },
+  "trainedAt": "2026-11-12T15:39:56Z",
+  "horizons": {
+    "30": {
+      "horizonMinutes": 30,
+      "nChannels": 8,
+      "channelNames": [
+        "level_Gallo",
+        "delta_Gallo",
+        "miss_Gallo",
+        "level_Opera_Reno_Panfilia",
+        "delta_Opera_Reno_Panfilia",
+        "miss_Opera_Reno_Panfilia",
+        "rain6h",
+        "rain24h"
+      ],
+      "nSamples": {
+        "train": 15816,
+        "validate": 14771,
+        "holdout": 3443
+      },
+      "channelStats": {
+        "level_Gallo": {
+          "mean": 4.50948118,
+          "std": 1.70347333
+        },
+        "delta_Gallo": {
+          "mean": -0.00013501,
+          "std": 0.0234581
+        },
+        "miss_Gallo": {
+          "mean": 0.0,
+          "std": 1.0
+        },
+        "level_Opera_Reno_Panfilia": {
+          "mean": 15.30021845,
+          "std": 1.95356822
+        },
+        "delta_Opera_Reno_Panfilia": {
+          "mean": -0.00029846,
+          "std": 0.05328162
+        },
+        "miss_Opera_Reno_Panfilia": {
+          "mean": 0.0,
+          "std": 1.0
+        },
+        "rain6h": {
+          "mean": 1.39639592,
+          "std": 5.17060057
+        },
+        "rain24h": {
+          "mean": 5.48961798,
+          "std": 13.85779183
+        }
+      },
+      "gru": {
+        "train": {
+          "rmse": 0.007855,
+          "skill": 0.668757,
+          "mae": 0.005619,
+          "n": 15816,
+          "baseline": "persist",
+          "rmseBaseline": 0.023713
+        },
+        "validate": {
+          "rmse": 0.008026,
+          "skill": 0.645429,
+          "mae": 0.005774,
+          "n": 14771,
+          "baseline": "persist",
+          "rmseBaseline": 0.022637
+        },
+        "validateEvents": {
+          "rmse": 0.009473,
+          "skill": 0.932445,
+          "mae": 0.007345,
+          "n": 169,
+          "baseline": "persist",
+          "rmseBaseline": 0.140224
+        },
+        "holdout": {
+          "rmse": 0.00817,
+          "skill": 0.363965,
+          "mae": 0.005909,
+          "n": 3443,
+          "baseline": "poly2",
+          "rmseBaseline": 0.012846,
+          "skillPersist": 0.39162,
+          "rmsePersist": 0.01343
+        },
+        "holdoutEvents": {
+          "rmse": 0.027758,
+          "skill": 0.441095,
+          "mae": 0.019727,
+          "n": 12,
+          "baseline": "poly2",
+          "rmseBaseline": 0.049666,
+          "skillPersist": 0.838584,
+          "rmsePersist": 0.171968
+        },
+        "architecture": "GRU(h=64)",
+        "earlyStopping": {
+          "best_epoch": 27,
+          "best_val_mse": 6.442e-05
+        }
+      }
+    },
+    "60": {
+      "horizonMinutes": 60,
+      "nChannels": 8,
+      "channelNames": [
+        "level_Gallo",
+        "delta_Gallo",
+        "miss_Gallo",
+        "level_Opera_Reno_Panfilia",
+        "delta_Opera_Reno_Panfilia",
+        "miss_Opera_Reno_Panfilia",
+        "rain6h",
+        "rain24h"
+      ],
+      "nSamples": {
+        "train": 15812,
+        "validate": 14768,
+        "holdout": 3442
+      },
+      "channelStats": {
+        "level_Gallo": {
+          "mean": 4.50967599,
+          "std": 1.70363028
+        },
+        "delta_Gallo": {
+          "mean": -0.00013452,
+          "std": 0.02346059
+        },
+        "miss_Gallo": {
+          "mean": 0.0,
+          "std": 1.0
+        },
+        "level_Opera_Reno_Panfilia": {
+          "mean": 15.3002584,
+          "std": 1.95383574
+        },
+        "delta_Opera_Reno_Panfilia": {
+          "mean": -0.00029845,
+          "std": 0.0532887
+        },
+        "miss_Opera_Reno_Panfilia": {
+          "mean": 0.0,
+          "std": 1.0
+        },
+        "rain6h": {
+          "mean": 1.39674627,
+          "std": 5.17120752
+        },
+        "rain24h": {
+          "mean": 5.49095452,
+          "std": 13.85928938
+        }
+      },
+      "gru": {
+        "train": {
+          "rmse": 0.010947,
+          "skill": 0.761955,
+          "mae": 0.007704,
+          "n": 15812,
+          "baseline": "persist",
+          "rmseBaseline": 0.045986
+        },
+        "validate": {
+          "rmse": 0.011613,
+          "skill": 0.734956,
+          "mae": 0.008153,
+          "n": 14768,
+          "baseline": "persist",
+          "rmseBaseline": 0.043817
+        },
+        "validateEvents": {
+          "rmse": 0.021912,
+          "skill": 0.888251,
+          "mae": 0.014394,
+          "n": 491,
+          "baseline": "persist",
+          "rmseBaseline": 0.196082
+        },
+        "holdout": {
+          "rmse": 0.011896,
+          "skill": 0.517405,
+          "mae": 0.008186,
+          "n": 3442,
+          "baseline": "poly2",
+          "rmseBaseline": 0.024651,
+          "skillPersist": 0.508173,
+          "rmsePersist": 0.024188
+        },
+        "holdoutEvents": {
+          "rmse": 0.062462,
+          "skill": 0.402662,
+          "mae": 0.041807,
+          "n": 19,
+          "baseline": "poly2",
+          "rmseBaseline": 0.104567,
+          "skillPersist": 0.783029,
+          "rmsePersist": 0.28788
+        },
+        "architecture": "GRU(h=64)",
+        "earlyStopping": {
+          "best_epoch": 20,
+          "best_val_mse": 0.00013487
+        }
+      }
+    },
+    "90": {
+      "horizonMinutes": 90,
+      "nChannels": 8,
+      "channelNames": [
+        "level_Gallo",
+        "delta_Gallo",
+        "miss_Gallo",
+        "level_Opera_Reno_Panfilia",
+        "delta_Opera_Reno_Panfilia",
+        "miss_Opera_Reno_Panfilia",
+        "rain6h",
+        "rain24h"
+      ],
+      "nSamples": {
+        "train": 15810,
+        "validate": 14766,
+        "holdout": 3441
+      },
+      "channelStats": {
+        "level_Gallo": {
+          "mean": 4.50978891,
+          "std": 1.70369891
+        },
+        "delta_Gallo": {
+          "mean": -0.00013441,
+          "std": 0.02346175
+        },
+        "miss_Gallo": {
+          "mean": 0.0,
+          "std": 1.0
+        },
+        "level_Opera_Reno_Panfilia": {
+          "mean": 15.30027284,
+          "std": 1.95397061
+        },
+        "delta_Opera_Reno_Panfilia": {
+          "mean": -0.00029836,
+          "std": 0.05329217
+        },
+        "miss_Opera_Reno_Panfilia": {
+          "mean": 0.0,
+          "std": 1.0
+        },
+        "rain6h": {
+          "mean": 1.39692165,
+          "std": 5.17151104
+        },
+        "rain24h": {
+          "mean": 5.49163227,
+          "std": 13.86003481
+        }
+      },
+      "gru": {
+        "train": {
+          "rmse": 0.013446,
+          "skill": 0.803135,
+          "mae": 0.009583,
+          "n": 15810,
+          "baseline": "persist",
+          "rmseBaseline": 0.068301
+        },
+        "validate": {
+          "rmse": 0.015375,
+          "skill": 0.763742,
+          "mae": 0.010596,
+          "n": 14766,
+          "baseline": "persist",
+          "rmseBaseline": 0.065079
+        },
+        "validateEvents": {
+          "rmse": 0.027738,
+          "skill": 0.87167,
+          "mae": 0.017368,
+          "n": 1105,
+          "baseline": "persist",
+          "rmseBaseline": 0.216146
+        },
+        "holdout": {
+          "rmse": 0.014953,
+          "skill": 0.619097,
+          "mae": 0.009671,
+          "n": 3441,
+          "baseline": "poly2",
+          "rmseBaseline": 0.039258,
+          "skillPersist": 0.569154,
+          "rmsePersist": 0.034707
+        },
+        "holdoutEvents": {
+          "rmse": 0.096488,
+          "skill": 0.471568,
+          "mae": 0.065719,
+          "n": 23,
+          "baseline": "poly2",
+          "rmseBaseline": 0.182594,
+          "skillPersist": 0.754464,
+          "rmsePersist": 0.392971
+        },
+        "architecture": "GRU(h=64)",
+        "earlyStopping": {
+          "best_epoch": 22,
+          "best_val_mse": 0.0002364
+        }
+      }
+    },
+    "120": {
+      "horizonMinutes": 120,
+      "nChannels": 8,
+      "channelNames": [
+        "level_Gallo",
+        "delta_Gallo",
+        "miss_Gallo",
+        "level_Opera_Reno_Panfilia",
+        "delta_Opera_Reno_Panfilia",
+        "miss_Opera_Reno_Panfilia",
+        "rain6h",
+        "rain24h"
+      ],
+      "nSamples": {
+        "train": 15811,
+        "validate": 14766,
+        "holdout": 3440
+      },
+      "channelStats": {
+        "level_Gallo": {
+          "mean": 4.50975445,
+          "std": 1.70366323
+        },
+        "delta_Gallo": {
+          "mean": -0.00013445,
+          "std": 0.02346133
+        },
+        "miss_Gallo": {
+          "mean": 0.0,
+          "std": 1.0
+        },
+        "level_Opera_Reno_Panfilia": {
+          "mean": 15.30025816,
+          "std": 1.95389757
+        },
+        "delta_Opera_Reno_Panfilia": {
+          "mean": -0.00029846,
+          "std": 0.05329021
+        },
+        "miss_Opera_Reno_Panfilia": {
+          "mean": 0.0,
+          "std": 1.0
+        },
+        "rain6h": {
+          "mean": 1.39683303,
+          "std": 5.17135948
+        },
+        "rain24h": {
+          "mean": 5.49129601,
+          "std": 13.85966107
+        }
+      },
+      "gru": {
+        "train": {
+          "rmse": 0.014766,
+          "skill": 0.836927,
+          "mae": 0.010517,
+          "n": 15811,
+          "baseline": "persist",
+          "rmseBaseline": 0.090551
+        },
+        "validate": {
+          "rmse": 0.019069,
+          "skill": 0.778991,
+          "mae": 0.012587,
+          "n": 14766,
+          "baseline": "persist",
+          "rmseBaseline": 0.08628
+        },
+        "validateEvents": {
+          "rmse": 0.033565,
+          "skill": 0.863488,
+          "mae": 0.018899,
+          "n": 1633,
+          "baseline": "persist",
+          "rmseBaseline": 0.245877
+        },
+        "holdout": {
+          "rmse": 0.019339,
+          "skill": 0.660162,
+          "mae": 0.01075,
+          "n": 3440,
+          "baseline": "poly2",
+          "rmseBaseline": 0.056906,
+          "skillPersist": 0.570546,
+          "rmsePersist": 0.045031
+        },
+        "holdoutEvents": {
+          "rmse": 0.156082,
+          "skill": 0.435182,
+          "mae": 0.089033,
+          "n": 25,
+          "baseline": "poly2",
+          "rmseBaseline": 0.27634,
+          "skillPersist": 0.687218,
+          "rmsePersist": 0.499012
+        },
+        "architecture": "GRU(h=64)",
+        "earlyStopping": {
+          "best_epoch": 37,
+          "best_val_mse": 0.00036362
+        }
+      }
+    }
+  },
+  "note": "End-to-end Δy su finestra L×C (non ibrido Muskingum/RC). Stesso split/eventi della MLP; non patcha transfer-coeffs."
+}

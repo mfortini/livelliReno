@@ -365,7 +365,7 @@
                 <!-- Toggle for Normalized / Non-Normalized Data -->
                 <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" id="toggleNormalized" aria-describedby="normalization-help" disabled>
-                    <label class="form-check-label" for="toggleNormalized">Rapporto rispetto alla massima soglia</label>
+                    <label class="form-check-label" for="toggleNormalized">Scarto rispetto al giallo (liv−giallo)/giallo</label>
                 </div>
                 <button type="button" id="refresh-button" class="btn btn-outline-primary">Aggiorna dati</button>
             </div>
@@ -373,7 +373,7 @@
             <details class="reading-help">
                 <summary>Come leggere grafici e soglie</summary>
                 <p>I livelli sono espressi in metri rispetto al riferimento della singola stazione. Valori negativi sono possibili: le misure di stazioni diverse non sono quote direttamente confrontabili e non indicano la portata.</p>
-                <p id="normalization-help">La vista rapporto divide ogni livello per la massima soglia disponibile della stazione. Non è una probabilità di rischio e non rende equivalenti stazioni con riferimenti diversi. Se mancano soglie valide, il rapporto non è calcolabile.</p>
+                <p id="normalization-help">La vista normalizzata usa la soglia gialla (sempre presente): (livello − giallo) / giallo. Zero al giallo, sotto zero verso i livelli bassi, sopra zero verso arancio e rosso. Non è una probabilità di rischio. Senza soglia gialla valida non è calcolabile.</p>
                 <p>Le linee tratteggiate indicano le soglie disponibili; la linea grigia puntinata è la media ponderata nel tempo, calcolata sui segmenti validi senza colmare lacune superiori a un’ora. L’ora dei grafici è quella italiana (Europe/Rome).</p>
                 <div class="legend">
                     <span><i style="--swatch:#13745a"></i>Sotto soglia 1</span>
@@ -405,6 +405,7 @@
 
 <script src="dashboard-data.js"></script>
 <script src="predict-transfer.js"></script>
+<script src="station-dag.js"></script>
 <script>
     let currentRange = 48; // Default range in hours (48 hours)
     let isNormalized = false; // Default mode is non-normalized (toggle is off by default)
@@ -646,192 +647,23 @@
 
     // Fixed three-column layout for the station chain: 0 = Reno (left),
     // 1 = confluence/centre, 2 = Samoggia (right); unknown stations go centre.
-    const DAG_COLUMN = {
-        'Sasso Marconi': 0, 'Casalecchio chiusa': 0, 'Casalecchio tiro a volo': 0,
-        'Bonconvento': 0, 'Sostegno Reno': 0, 'Gallo': 0,
-        'Vergato DX': 1, 'Lavino di Sotto': 1, 'Cento': 1, 'Dosso': 1,
-        'Opera Reno Panfilia': 1, 'Secondo Salto': 1,
-        'Paltrone Samoggia': 2, 'Forcelli': 2
-    };
-
-    let dagResizeBound = false;
     function updateStationDag() {
         const container = document.getElementById('station-dag');
         const config = sensorDataGlobal.config;
-        if (!container || !config) return;
-        if (!dagResizeBound) {
-            dagResizeBound = true;
-            window.addEventListener('resize', debounce(() => updateStationDag(), 200));
-            container.addEventListener('click', evt => {
-                const node = evt.target.closest('[data-sensor]');
-                if (!node) return;
-                navigate({ view: 'sensore', sensorId: node.getAttribute('data-sensor') });
-            });
-            container.addEventListener('keydown', evt => {
-                if (evt.key !== 'Enter' && evt.key !== ' ') return;
-                const node = evt.target.closest('[data-sensor]');
-                if (!node) return;
-                evt.preventDefault();
-                navigate({ view: 'sensore', sensorId: node.getAttribute('data-sensor') });
-            });
-        }
-        const svgNS = 'http://www.w3.org/2000/svg';
-        const graph = P.buildGraph(config);
-        const ranks = P.rankNodes(config);
-        const maxRank = Math.max(0, ...Object.values(ranks));
-        const rows = Array.from({ length: maxRank + 1 }, () => []);
-        for (const id of graph.nodes) rows[maxRank - (ranks[id] || 0)].push(id);
-        rows.forEach(row => row.sort());
-
-        const meta = new Map();
-        for (const id of graph.nodes) {
-            const sensor = sensorById(id) || blankSensor(id);
-            meta.set(id, { sensor, status: D.status(sensor), latest: getLatestNonNullValue(sensor) });
-        }
-
-        const ctx = updateStationDag.ctx || (updateStationDag.ctx = document.createElement('canvas').getContext('2d'));
-        updateStationDag.fmt = updateStationDag.fmt || (v => new Intl.NumberFormat('it-IT', { maximumFractionDigits: 1 }).format(v));
-        const valueText = id => {
-            const latest = meta.get(id).latest;
-            return latest === null ? '—' : `${updateStationDag.fmt(latest)} m`;
-        };
-        const PADX = 5, DOT = 12, H = 42, ROWH = 58, COLGAP = 10, TOP = 10, BOTTOM = 10;
-        const containerWidth = Math.max(container.clientWidth || 0, 240);
-        const columns = [[], [], []];
-        for (const id of graph.nodes) columns[DAG_COLUMN[id] ?? 1].push(id);
-
-        const wrapText = (text, maxW) => {
-            if (Math.ceil(ctx.measureText(text).width) <= maxW) return [text];
-            const lines = [];
-            let current = '';
-            for (const word of text.split(' ')) {
-                const candidate = current ? `${current} ${word}` : word;
-                if (current && Math.ceil(ctx.measureText(candidate).width) > maxW) {
-                    lines.push(current);
-                    current = word;
-                } else current = candidate;
-            }
-            if (current) lines.push(current);
-            if (lines.length > 2) lines[1] = `${lines[1]} ${lines.splice(2).join(' ')}`;
-            return lines.slice(0, 2);
-        };
-
-        // Three fixed columns (Reno left, Samoggia right, confluence centre);
-        // station names wrap on two lines and the font shrinks 11→10 px
-        // if the widest column still does not fit the panel
-        let widthOf, colW, needed, nameFontPx = 11, nameLines = new Map();
-        for (const px of [11, 10]) {
-            ctx.font = `600 ${px}px system-ui, -apple-system, "Segoe UI", sans-serif`;
-            const maxName = Math.round(64 * 11 / px);
-            const lines = new Map();
-            const nw = new Map();
-            for (const id of graph.nodes) {
-                const wrapped = wrapText(id, maxName);
-                lines.set(id, wrapped);
-                nw.set(id, Math.max(...wrapped.map(line => Math.ceil(ctx.measureText(line).width))));
-            }
-            ctx.font = `600 ${Math.max(9, px - 1)}px system-ui, -apple-system, "Segoe UI", sans-serif`;
-            const vw = new Map(graph.nodes.map(id => [id, Math.ceil(ctx.measureText(valueText(id)).width)]));
-            const wOf = id => PADX * 2 + Math.max(DOT + nw.get(id), vw.get(id));
-            const cW = [0, 1, 2].map(c => Math.max(0, ...columns[c].map(wOf)));
-            const total = cW[0] + cW[1] + cW[2] + 2 * COLGAP;
-            if (total <= containerWidth || px === 10) {
-                widthOf = wOf; colW = cW; needed = total; nameFontPx = px; nameLines = lines;
-                break;
-            }
-        }
-        const width = Math.max(containerWidth, needed, 240);
-        const colX = [];
-        let bandX = (width - needed) / 2;
-        for (let c = 0; c < 3; c++) { colX[c] = bandX; bandX += colW[c] + COLGAP; }
-
-        const pos = new Map();
-        rows.forEach((row, ri) => {
-            const y = TOP + ri * ROWH;
-            for (const id of row) {
-                const c = DAG_COLUMN[id] ?? 1;
-                const w = widthOf(id);
-                pos.set(id, { x: colX[c] + (colW[c] - w) / 2, y, w, h: H });
-            }
+        if (!container || !config || !window.RenoStationDag) return;
+        const dagFmt = v => new Intl.NumberFormat('it-IT', { maximumFractionDigits: 1 }).format(v);
+        RenoStationDag.renderStationDag(container, {
+            config,
+            buildGraph: P.buildGraph,
+            rankNodes: P.rankNodes,
+            getSensor: sensorById,
+            blankSensor,
+            status: s => D.status(s),
+            latestValue: getLatestNonNullValue,
+            formatNumber: dagFmt,
+            debounce,
+            onSelect: sensorId => navigate({ view: 'sensore', sensorId })
         });
-        const height = TOP + Math.max(0, rows.length - 1) * ROWH + H + BOTTOM;
-
-        const svg = document.createElementNS(svgNS, 'svg');
-        svg.setAttribute('width', width);
-        svg.setAttribute('height', height);
-        svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
-
-        for (const edge of graph.edges) {
-            const from = pos.get(edge.upstream), to = pos.get(edge.downstream);
-            if (!from || !to) continue;
-            const x1 = from.x + from.w / 2, y1 = from.y + from.h;
-            const x2 = to.x + to.w / 2, y2 = to.y;
-            const midY = (y1 + y2) / 2;
-            const g = document.createElementNS(svgNS, 'g');
-            g.setAttribute('class', 'dag-edge');
-            g.setAttribute('aria-hidden', 'true');
-            const path = document.createElementNS(svgNS, 'path');
-            path.setAttribute('d', `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2 - 4}`);
-            path.setAttribute('fill', 'none');
-            path.setAttribute('stroke', '#9bb0ba');
-            path.setAttribute('stroke-width', '1.5');
-            const arrow = document.createElementNS(svgNS, 'path');
-            arrow.setAttribute('d', `M ${x2 - 3.5} ${y2 - 4} L ${x2 + 3.5} ${y2 - 4} L ${x2} ${y2 - 0.5} Z`);
-            arrow.setAttribute('fill', '#9bb0ba');
-            g.append(path, arrow);
-            svg.appendChild(g);
-        }
-
-        for (const [id, p] of pos) {
-            const m = meta.get(id);
-            const statusColor = m.status.color;
-            const label = m.latest === null ? 'nessuna misura' : `${number(m.latest)} m`;
-            const g = document.createElementNS(svgNS, 'g');
-            g.setAttribute('class', 'dag-node');
-            g.setAttribute('data-sensor', id);
-            g.setAttribute('tabindex', '0');
-            g.setAttribute('role', 'button');
-            g.setAttribute('aria-label', `${id}: ${label} · ${m.status.label}. Vai alla scheda della stazione.`);
-            const title = document.createElementNS(svgNS, 'title');
-            title.textContent = `${id} · ${label} · ${m.status.label}`;
-            const rect = document.createElementNS(svgNS, 'rect');
-            rect.setAttribute('x', p.x); rect.setAttribute('y', p.y);
-            rect.setAttribute('width', p.w); rect.setAttribute('height', p.h);
-            rect.setAttribute('rx', p.h / 2);
-            rect.setAttribute('fill', '#ffffff');
-            rect.setAttribute('stroke', '#d8e2e6');
-            rect.setAttribute('stroke-width', '1.25');
-            const textX = p.x + PADX + DOT;
-            const lines = nameLines.get(id) || [id];
-            const nameCys = lines.length === 1 ? [p.y + 16] : [p.y + 10, p.y + 21];
-            const dot = document.createElementNS(svgNS, 'circle');
-            dot.setAttribute('cx', p.x + PADX + 3.5);
-            dot.setAttribute('cy', nameCys[0]);
-            dot.setAttribute('r', '4');
-            dot.setAttribute('fill', statusColor);
-            const texts = lines.map((line, i) => {
-                const name = document.createElementNS(svgNS, 'text');
-                name.setAttribute('x', textX);
-                name.setAttribute('y', nameCys[i]);
-                name.setAttribute('dominant-baseline', 'central');
-                name.setAttribute('font-size', nameFontPx);
-                name.setAttribute('font-weight', '600');
-                name.setAttribute('fill', '#173747');
-                name.textContent = line;
-                return name;
-            });
-            const value = document.createElementNS(svgNS, 'text');
-            value.setAttribute('x', textX);
-            value.setAttribute('y', p.y + H - 9);
-            value.setAttribute('dominant-baseline', 'central');
-            value.setAttribute('font-size', Math.max(9, nameFontPx - 1));
-            value.setAttribute('font-weight', '600');
-            value.setAttribute('fill', m.latest === null ? '#94a3b8' : statusColor);
-            value.textContent = valueText(id);
-            g.append(title, rect, dot, ...texts, value);
-            svg.appendChild(g);
-        }
-        container.replaceChildren(svg);
     }
 
     // ===== Create custom marker for the map =====
@@ -861,41 +693,14 @@
         return D.status(sensor).color;
     }
 
-    // ===== Function to normalize a sensor's level =====
+    // ===== Function to normalize a sensor's level (yellow headroom ratio) =====
     function normalizeLevel(sensor, value) {
-        if (value === null) {
-            return null; // Preserve null values
-        }
-
-        const highestSoglia = getHighestSoglia(sensor);
-        if (highestSoglia > 0) {
-            return value / highestSoglia;
-        } else {
-            return value; // Return the value as-is if no valid soglia exists
-        }
+        return D.normalize(sensor, value);
     }
 
     // ===== Corrected: Calculate the weighted average for the filtered time series (24, 48, 72 hours) using the trapezoidal rule =====
     function calculateWeightedAverage(sensor, filteredData, isNormalized) {
-        const highestSoglia = getHighestSoglia(sensor);
-        let weightedSum = 0;
-        let totalTime = 0;
-
-        for (let i = 1; i < filteredData.length; i++) {
-            const prevPoint = filteredData[i - 1];
-            const currentPoint = filteredData[i];
-
-            const timeDiff = (currentPoint.time - prevPoint.time) / (1000 * 60 * 60); // Time difference in hours
-            const prevValue = isNormalized ? prevPoint.value / highestSoglia : prevPoint.value;
-            const currentValue = isNormalized ? currentPoint.value / highestSoglia : currentPoint.value;
-            if (prevValue === null || currentValue === null) continue;
-            const avgValue = (prevValue + currentValue) / 2;
-
-            weightedSum += avgValue * timeDiff;
-            totalTime += timeDiff;
-        }
-
-        return totalTime > 0 ? weightedSum / totalTime : 0;
+        return D.weightedAverage(sensor, filteredData, isNormalized);
     }
 
     // Utility function to detect touch devices
@@ -911,8 +716,8 @@
         if (!element) return;
         const version = (element.renderVersion || 0) + 1;
         element.renderVersion = version;
-        if (!window.Plotly || !filteredData.some(point => point.value !== null) || (isNormalized && !D.highestThreshold(sensor))) {
-            const message = !window.Plotly ? 'Grafici non disponibili. Le misure restano consultabili.' : isNormalized && !D.highestThreshold(sensor) ? 'Rapporto non calcolabile: soglie non disponibili.' : 'Nessuna misura valida nell’intervallo selezionato.';
+        if (!window.Plotly || !filteredData.some(point => point.value !== null) || (isNormalized && !D.yellowThreshold(sensor))) {
+            const message = !window.Plotly ? 'Grafici non disponibili. Le misure restano consultabili.' : isNormalized && !D.yellowThreshold(sensor) ? 'Rapporto non calcolabile: soglia gialla non disponibile.' : 'Nessuna misura valida nell’intervallo selezionato.';
             element.renderPromise = (element.renderPromise || Promise.resolve()).catch(() => {}).then(() => {
                 if (element.renderVersion !== version) return;
                 if (element.data && window.Plotly) Plotly.purge(element);
@@ -926,7 +731,7 @@
         const values = points.map(d => isNormalized ? D.normalize(sensor, d.value) : d.value);
         const hoverFormatter = new Intl.DateTimeFormat('it-IT', { timeZone: 'Europe/Rome', dateStyle: 'short', timeStyle: 'long' });
         const traces = [{
-            x: times, y: values, type: 'scatter', mode: 'lines', name: isNormalized ? 'Rapporto' : 'Livello',
+            x: times, y: values, type: 'scatter', mode: 'lines', name: isNormalized ? '(liv−giallo)/giallo' : 'Livello',
             customdata: points.map(d => hoverFormatter.format(d.time)), connectgaps: false,
             hovertemplate: '%{customdata}<br><b>%{y:.2f}' + (isNormalized ? '' : ' m') + '</b><extra></extra>',
             line: { color: '#087e91', width: 2.5 }
@@ -934,27 +739,11 @@
         
         // Calculate the weighted average using only the filtered data
         const weightedAverage = D.weightedAverage(sensor, filteredData, isNormalized);
-
-        // Calculate thresholds and data range
-        const thresholds = [sensor.levels.yellow, sensor.levels.orange, sensor.levels.red].filter(v => v !== null).map(value => isNormalized ? D.normalize(sensor, value) : value);
-        const highestThreshold = thresholds.length ? Math.max(...thresholds) : null;
-        const lowestThreshold = thresholds.length ? Math.min(...thresholds) : null;
-        
-        const padding = 0.5; // Adjust as needed
-        const finiteValues = values.filter(v => v !== null);
-        const minValue = finiteValues.length ? Math.min(...finiteValues) : 0;
-        const maxValue = finiteValues.length ? Math.max(...finiteValues) : 1;
-
-        // Adjust y-axis range to include all thresholds and start at least at -1m
-        let yAxisMin = Math.min(-1, minValue - padding, lowestThreshold !== null ? lowestThreshold - padding : minValue - padding);
-        let yAxisMax = Math.max(maxValue + padding, highestThreshold !== null ? highestThreshold + padding : maxValue + padding);
-
-        // For normalized data, set y-axis from 0 to 1.2
-        const yAxisRange = isNormalized ? [Math.min(0, minValue - .05), Math.max(1.2, maxValue + .05)] : [yAxisMin, yAxisMax];
+        const yAxisRange = D.yRangeFor(sensor, values, { normalized: isNormalized });
         const start = +renderTime - range * 3600000;
         const end = +renderTime;
         const tickCount = zoomed ? 7 : 4;
-        const ticks = Array.from({ length: tickCount }, (_, i) => start + i * range * 3600000 / (tickCount - 1));
+        const ticks = D.romeTickVals(start, end, tickCount);
 
         const layout = {
             paper_bgcolor: '#fff',
@@ -964,103 +753,36 @@
             separators: ', ',
             dragmode: zoomed ? 'zoom' : false,
             uirevision: `${range}-${isNormalized}`,
-            xaxis: { 
+            xaxis: {
                 type: 'date', range: [start, end],
-                tickmode: 'array', tickvals: ticks,
-                ticktext: ticks.map(t => D.romeTime(new Date(t)).slice(8, 10) + '/' + D.romeTime(new Date(t)).slice(5, 7) + '<br>' + D.romeTime(new Date(t)).slice(11, 16)),
+                tickmode: 'array', tickvals: ticks.tickvals, ticktext: ticks.ticktext,
                 fixedrange: !zoomed, zeroline: false, automargin: true,
                 gridcolor: '#e7eef2',
-                showgrid: true, // Show grid on x-axis
-                tickformat: '%d %b %H:%M', // Format the date labels
-                tickformatstops: [
-                    {
-                        dtickrange: [null, null],
-                        value: '%d %b %H:%M' // Day Month Hour:Minute
-                    }
-                ]
+                showgrid: true,
+                tickformat: '%d %b %H:%M',
+                tickformatstops: [{ dtickrange: [null, null], value: '%d %b %H:%M' }]
             },
-            yaxis: { 
-                range: yAxisRange, title: { text: isNormalized ? 'Rapporto' : 'm', font: { size: 10 }, standoff: 4 },
-                fixedrange: !zoomed, zeroline: false, automargin: true,
+            yaxis: {
+                range: yAxisRange, title: { text: isNormalized ? '(liv−g)/g' : 'm', font: { size: 10 }, standoff: 4 },
+                fixedrange: !zoomed, zeroline: isNormalized, zerolinecolor: '#a68000', automargin: true,
                 gridcolor: '#e7eef2',
-                showgrid: true // Show grid on y-axis
+                showgrid: true
             },
-            shapes: [], // Placeholder for threshold lines and weighted average
-            autosize: true, // If zoomed, make it a fixed size; otherwise, allow resizing
-            height: zoomed ? Math.max(260, Math.min(window.innerHeight * .6, 500)) : 245, // Larger height for zoomed-in chart
-            margin: { t: 15, b: 45, r: 18, l: 48 }  // Reduce top margin since there's no title
+            shapes: [
+                ...D.thresholdShapes(sensor, { normalized: isNormalized }),
+                ...(D.averageShape(weightedAverage) ? [D.averageShape(weightedAverage)] : [])
+            ],
+            autosize: true,
+            height: zoomed ? Math.max(260, Math.min(window.innerHeight * .6, 500)) : 245,
+            margin: { t: 15, b: 45, r: 18, l: 48 }
         };
-        const plot_config = { 
+        const plot_config = {
             responsive: true, displayModeBar: zoomed, displaylogo: false, scrollZoom: false,
             modeBarButtonsToRemove: ['select2d', 'lasso2d'],
-            staticPlot: isTouchDevice() && !zoomed // Disable interactions on touch devices for non-zoomed plots
+            staticPlot: isTouchDevice() && !zoomed
         };
-
-        // Add threshold lines if they are not null (adjust for normalized mode)
-        const thresholdMultiplier = isNormalized ? (1 / getHighestSoglia(sensor)) : 1;
-        
-        if (sensor.levels.yellow !== null) {
-            layout.shapes.push({
-                type: 'line',
-                xref: 'paper',
-                x0: 0,
-                x1: 1,
-                y0: sensor.levels.yellow * thresholdMultiplier,
-                y1: sensor.levels.yellow * thresholdMultiplier,
-                line: {
-                    color: '#a68000',
-                    width: 1,
-                    dash: 'dash'
-                }
-            });
-        }
-        if (sensor.levels.orange !== null) {
-            layout.shapes.push({
-                type: 'line',
-                xref: 'paper',
-                x0: 0,
-                x1: 1,
-                y0: sensor.levels.orange * thresholdMultiplier,
-                y1: sensor.levels.orange * thresholdMultiplier,
-                line: {
-                    color: '#be5900',
-                    width: 1,
-                    dash: 'dash'
-                }
-            });
-        }
-        if (sensor.levels.red !== null) {
-            layout.shapes.push({
-                type: 'line',
-                xref: 'paper',
-                x0: 0,
-                x1: 1,
-                y0: sensor.levels.red * thresholdMultiplier,
-                y1: sensor.levels.red * thresholdMultiplier,
-                line: {
-                    color: '#b42332',
-                    width: 1,
-                    dash: 'dash'
-                }
-            });
-        }
-
-        // Add weighted average line
-        if (weightedAverage !== null) layout.shapes.push({
-            type: 'line',
-            xref: 'paper',
-            x0: 0,
-            x1: 1,
-            y0: weightedAverage,
-            y1: weightedAverage,
-            line: {
-                color: '#64748b',
-                width: 1.5,
-                dash: 'dot'
-            }
-        });
         // Ensure the element exists before calling Plotly
-        element.setAttribute('aria-label', `${sensor.name}: andamento delle ultime ${range} ore, ${isNormalized ? 'rapporto sulla massima soglia' : 'livello in metri'}. Orari italiani.`);
+        element.setAttribute('aria-label', `${sensor.name}: andamento delle ultime ${range} ore, ${isNormalized ? 'scarto (livello−giallo)/giallo' : 'livello in metri'}. Orari italiani.`);
         element.renderPromise = (element.renderPromise || Promise.resolve()).catch(() => {}).then(async () => {
             if (element.renderVersion !== version || !element.isConnected) return;
             // Check if the plot already exists

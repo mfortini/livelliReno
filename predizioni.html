@@ -46,12 +46,37 @@
         .experiment-banner strong { display: block; font-size: 1.05rem; margin-bottom: .4rem; color: #8a4500; }
         .experiment-banner p { margin: 0; font-size: .9rem; line-height: 1.55; }
         .status-line { font-size: .8rem; color: var(--muted); margin-bottom: 1rem; }
+        .pred-layout {
+            display: grid; grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
+            gap: 1rem; align-items: start;
+        }
+        #map-container {
+            position: sticky; top: calc(var(--header-h) + .5rem); background: white;
+            border: 1px solid var(--line); border-radius: .9rem; overflow: hidden; min-width: 0;
+        }
+        .mini-dag { padding: .55rem .4rem .7rem; }
+        .mini-dag-title { margin: 0 0 .2rem .5rem; font-size: .75rem; color: var(--muted); line-height: 1.5; }
+        #station-dag { overflow-x: auto; }
+        #station-dag svg { display: block; margin: 0 auto; }
+        #station-dag .dag-node { cursor: pointer; outline: none; }
+        #station-dag .dag-node:focus-visible rect { stroke: #086575; stroke-width: 2.5; }
+        #station-dag .dag-node:hover rect { stroke: #086575; }
+        #station-dag .dag-edge { pointer-events: none; }
+        .pred-main { min-width: 0; }
+        .toolbar { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; justify-content: space-between; margin-bottom: .85rem; }
+        .toolbar h2 { margin: 0; font-size: 1.15rem; }
+        #range-buttons { display: flex; gap: .35rem; flex-wrap: wrap; }
+        .range-button {
+            border: 1px solid var(--line); background: #fff; color: var(--muted); border-radius: .55rem;
+            padding: .35rem .75rem; font-size: .8rem; font-weight: 600; min-height: 36px;
+        }
+        .range-button.active { background: #086575; border-color: #086575; color: #fff; }
         .edge-badge {
             display: inline-block; font-size: .68rem; font-weight: 700; letter-spacing: .04em;
             text-transform: uppercase; color: #8a4500; background: #fff4e5; border: 1px solid #e0a35a;
             border-radius: .35rem; padding: .15rem .45rem; margin-bottom: .5rem;
         }
-        .edge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
+        .edge-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
         .edge-card {
             background: var(--surface); border: 1px solid var(--line); border-radius: .9rem; padding: 1rem 1.05rem;
             scroll-margin-top: calc(var(--header-h) + .75rem); min-width: 0;
@@ -64,12 +89,26 @@
         .fork-table th, .fork-table td { padding: .3rem .35rem; border-bottom: 1px solid #eef3f5; text-align: right; }
         .fork-table th:first-child, .fork-table td:first-child { text-align: left; }
         .fork-table th { color: var(--muted); font-weight: 600; }
-        .edge-plot { height: 180px; width: 100%; }
+        .edge-plot { height: 245px; width: 100%; min-height: 245px; }
+        .edge-compare { height: 180px; width: 100%; min-height: 180px; margin-top: .45rem; }
+        .edge-resid { height: 120px; width: 100%; min-height: 120px; margin-top: .25rem; }
+        .edge-compare[hidden], .edge-resid[hidden], .hindcast-note[hidden] { display: none !important; }
+        .hindcast-bar { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin: .45rem 0 .15rem; }
+        .hindcast-btn {
+            border: 1px solid var(--line); background: #fff; color: var(--ink); border-radius: .55rem;
+            padding: .35rem .75rem; font-size: .78rem; font-weight: 600; min-height: 36px; cursor: pointer;
+        }
+        .hindcast-btn[aria-pressed="true"] { background: #086575; border-color: #086575; color: #fff; }
+        .hindcast-note { margin: 0; font-size: .75rem; color: var(--muted); line-height: 1.45; }
         .edge-fail { color: var(--muted); font-size: .85rem; margin: 0; }
+        .reading-help { font-size: .8rem; color: var(--muted); margin: 0 0 1rem; }
+        .reading-help summary { cursor: pointer; font-weight: 600; color: var(--ink); }
         .source-notes { margin-top: 2rem; border-top: 1px solid var(--line); padding-top: 1.25rem; font-size: .8rem; color: var(--muted); line-height: 1.7; }
         .source-notes h2 { font-size: 1rem; font-weight: 700; color: var(--ink); }
         [hidden] { display: none !important; }
-        @media (max-width: 800px) {
+        @media (max-width: 900px) {
+            .pred-layout { grid-template-columns: 1fr; }
+            #map-container { position: static; order: -1; }
             .header-inner { flex-direction: column; align-items: start; }
             .site-header { padding: 1.25rem 1rem; }
         }
@@ -104,10 +143,32 @@
     </div>
     <div class="page-intro">
         <h2>Prove di trasferimento monte→valle</h2>
-        <p>Per ogni stazione a valle: modello multi-ingresso a orizzonte (incrementi a 30/60/90/120′) con lag dai monti e forchetta min/med/max. Solo dove il backtest batte la persistenza; resto senza curva. Indizi statistici, non una previsione affidabile.</p>
+        <p>Si mostrano solo le stazioni con stima affidabile (validate, holdout e backtest sopra soglia rispetto alla persistenza). Le altre restano nascoste. Per ciascuna: modello multi-ingresso a orizzonte (30/60/90/120′) con lag dai monti e forchetta min/med/max. Indizi statistici, non una previsione operativa.</p>
     </div>
     <p id="status-line" class="status-line" role="status">Caricamento osservazioni ARPAE…</p>
-    <div id="edge-grid" class="edge-grid" aria-live="polite"></div>
+    <div class="pred-layout">
+        <div id="map-container">
+            <div class="mini-dag">
+                <p class="mini-dag-title">Da monte a valle. Tocca una stazione per la scheda.</p>
+                <div id="station-dag" role="group" aria-label="Grafo delle dipendenze tra stazioni"></div>
+            </div>
+        </div>
+        <div class="pred-main">
+            <div class="toolbar">
+                <h2>Predizioni per stazione a valle</h2>
+                <div id="range-buttons" role="group" aria-label="Intervallo dei grafici">
+                    <button type="button" class="range-button" data-range="24" aria-pressed="false">24 ore</button>
+                    <button type="button" class="range-button active" data-range="48" aria-pressed="true">48 ore</button>
+                    <button type="button" class="range-button" data-range="72" aria-pressed="false">72 ore</button>
+                </div>
+            </div>
+            <details class="reading-help">
+                <summary>Come leggere grafici e soglie</summary>
+                <p>Stesso intervallo e soglie delle Osservazioni; a destra di «ora» la banda rossa è la forchetta sperimentale fino a 4–6 h dove il modello resta affidabile. «Predizione storica» confronta, allo stesso istante, il valore predetto H ore prima e l’osservato (più i residui e una stima del ritardo tipico). Non è allerta territoriale.</p>
+            </details>
+            <div id="edge-grid" class="edge-grid" aria-live="polite"></div>
+        </div>
+    </div>
     <footer class="source-notes">
         <h2>Limiti e disclaimer</h2>
         <p>I numeri mostrati non certificano il livello futuro di nessuna stazione. Non sostituiscono modelli idraulici, radar, pioggia prevista né bollettini ufficiali. Non basare su di essi evacuazioni, aperture di paratoie o comunicazioni al pubblico.</p>
@@ -116,6 +177,7 @@
 
 <script src="dashboard-data.js"></script>
 <script src="predict-transfer.js"></script>
+<script src="station-dag.js"></script>
 <script>
 (function () {
     const D = RenoData;
@@ -131,6 +193,21 @@
     const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     let config, sensorsById = {}, coeffs = null, renderTime = new Date();
+    let selectedRange = 48;
+    const FORECAST_RED = '#c62828';
+    const HINDCAST_ORANGE = '#c45c26';
+    const cardState = new Map(); // downstream -> { prediction, down, ups, rainSensors, bandHours, hindcast, showHindcast }
+
+    function bandHoursFor(nodeModel, prediction) {
+        const fromModel = P.maxReliableHorizonMinutes(nodeModel || prediction) / 60;
+        const fromPred = prediction?.maxHorizonMinutes != null ? prediction.maxHorizonMinutes / 60 : fromModel;
+        return Math.min(12, Math.max(2, fromPred || fromModel || 2));
+    }
+
+    function formatHorizonHours(hours) {
+        const h = Math.round(hours * 10) / 10;
+        return Number.isInteger(h) ? String(h) : h.toFixed(1);
+    }
 
     function updateHeaderCompact() {
         const header = document.getElementById('site-header');
@@ -145,6 +222,7 @@
             try { return decodeURIComponent(part); } catch { return part; }
         });
         if (parts.length >= 2) return { upstream: parts[0], downstream: parts[1] };
+        if (parts.length === 1) return { downstream: parts[0] };
         return null;
     }
 
@@ -152,41 +230,278 @@
         return `${encodeURIComponent(upstream)}/${encodeURIComponent(downstream)}`;
     }
 
+    function nodeCardId(downstream) {
+        return `node-${downstream}`.replace(/\s+/g, '_');
+    }
+
     function blank(name) {
         return { id: name, name, basin: '', coordinates: null, levels: { yellow: null, orange: null, red: null }, timeSeries: [] };
     }
 
-    const PAST_H = 12;
-    const FUT_H = 2;
-    const FORECAST_RED = '#c62828';
+    function debounce(fn, wait) {
+        let t;
+        return (...args) => {
+            clearTimeout(t);
+            t = setTimeout(() => fn(...args), wait);
+        };
+    }
 
-    function drawMiniPlot(elementId, down, prediction) {
+    function latestValue(sensor) {
+        const point = D.latestPoint(sensor);
+        return point ? point.value : null;
+    }
+
+    function updateStationDag() {
+        const container = document.getElementById('station-dag');
+        if (!container || !config || !window.RenoStationDag) return;
+        const dagFmt = v => new Intl.NumberFormat('it-IT', { maximumFractionDigits: 1 }).format(v);
+        RenoStationDag.renderStationDag(container, {
+            config,
+            buildGraph: P.buildGraph,
+            rankNodes: P.rankNodes,
+            getSensor: id => sensorsById[id],
+            blankSensor: blank,
+            status: s => D.status(s),
+            latestValue,
+            formatNumber: dagFmt,
+            debounce,
+            onSelect: sensorId => {
+                const card = document.getElementById(nodeCardId(sensorId));
+                if (!card) return;
+                document.querySelectorAll('.edge-card.is-target').forEach(el => el.classList.remove('is-target'));
+                card.classList.add('is-target');
+                card.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'start' });
+                const up = card.dataset.upstream || sensorId;
+                history.replaceState(null, '', `#${edgeAnchor(up, sensorId)}`);
+            }
+        });
+    }
+
+    function drawStationPlot(elementId, down, prediction, hindcast, bandHours) {
         const el = document.getElementById(elementId);
         if (!el || !window.Plotly || !prediction?.ok) return;
-        const observed = D.filter(down, PAST_H, renderTime).filter(p => p.value != null);
-        const forecast = prediction.forecast || [];
-        const lastObs = observed.at(-1);
+        const hours = bandHours || bandHoursFor(null, prediction);
+        const filtered = D.filter(down, selectedRange, renderTime);
+        const points = D.withGaps(filtered);
+        const times = points.map(d => +d.time);
+        const values = points.map(d => d.value);
+        const hoverFormatter = new Intl.DateTimeFormat('it-IT', {
+            timeZone: 'Europe/Rome', dateStyle: 'short', timeStyle: 'long'
+        });
+        const forecast = (prediction.forecast || []).filter(p => +p.time >= +renderTime - 1);
+        const lastObs = filtered.filter(p => p.value != null).at(-1);
         const bridge = lastObs && forecast.length
             ? [{ time: lastObs.time, min: lastObs.value, med: lastObs.value, max: lastObs.value }]
             : [];
         const band = bridge.concat(forecast);
+        const avg = D.weightedAverage(down, filtered, false);
+        const yValues = values.concat(band.map(p => p.med), band.map(p => p.min), band.map(p => p.max));
+        const start = +renderTime - selectedRange * 3600000;
+        const end = +renderTime + hours * 3600000;
+        const ticks = D.romeTickVals(start, end, 4);
         const traces = [
-            { x: observed.map(p => +p.time), y: observed.map(p => p.value), type: 'scatter', mode: 'lines', line: { color: '#087e91', width: 2 }, name: 'Oss.' },
+            {
+                x: times, y: values, type: 'scatter', mode: 'lines', name: 'Osservato',
+                customdata: points.map(d => hoverFormatter.format(d.time)), connectgaps: false,
+                hovertemplate: '%{customdata}<br><b>%{y:.2f} m</b><extra></extra>',
+                line: { color: '#087e91', width: 2.5 }
+            },
             { x: band.map(p => +p.time), y: band.map(p => p.max), type: 'scatter', mode: 'lines', line: { width: 0 }, hoverinfo: 'skip', showlegend: false },
             { x: band.map(p => +p.time), y: band.map(p => p.min), type: 'scatter', mode: 'lines', fill: 'tonexty', fillcolor: 'rgba(198,40,40,.16)', line: { width: 0 }, hoverinfo: 'skip', showlegend: false },
-            { x: band.map(p => +p.time), y: band.map(p => p.med), type: 'scatter', mode: 'lines', line: { color: FORECAST_RED, width: 2.25 }, name: 'Med' }
+            {
+                x: band.map(p => +p.time), y: band.map(p => p.med), type: 'scatter', mode: 'lines',
+                name: 'Previsione', line: { color: FORECAST_RED, width: 2.25 }
+            }
         ];
+        // Past hindcast lives in the compare panel (same-instant pred vs obs), not here —
+        // overlaying ŷ(t) on the full series makes a lagging model look time-shifted.
         const layout = {
-            margin: { t: 8, r: 8, b: 28, l: 36 }, height: 180, showlegend: false,
             paper_bgcolor: '#fff', plot_bgcolor: '#fff',
-            font: { size: 10, color: '#536b78' },
-            xaxis: { type: 'date', range: [+renderTime - PAST_H * 3600000, +renderTime + FUT_H * 3600000], gridcolor: '#e7eef2' },
-            yaxis: { gridcolor: '#e7eef2', zeroline: false },
-            shapes: [{ type: 'line', x0: +renderTime, x1: +renderTime, y0: 0, y1: 1, yref: 'paper', line: { color: '#9bb0ba', width: 1, dash: 'dot' } }]
+            font: { color: '#536b78', family: 'system-ui, sans-serif', size: 10 },
+            showlegend: false,
+            separators: ', ',
+            uirevision: `${selectedRange}-${down.id}`,
+            xaxis: {
+                type: 'date', range: [start, end],
+                tickmode: 'array', tickvals: ticks.tickvals, ticktext: ticks.ticktext,
+                fixedrange: true, zeroline: false, automargin: true,
+                gridcolor: '#e7eef2', showgrid: true
+            },
+            yaxis: {
+                range: D.yRangeFor(down, yValues), title: { text: 'm', font: { size: 10 }, standoff: 4 },
+                fixedrange: true, zeroline: false, automargin: true,
+                gridcolor: '#e7eef2', showgrid: true
+            },
+            shapes: [
+                ...D.thresholdShapes(down),
+                ...(D.averageShape(avg) ? [D.averageShape(avg)] : []),
+                {
+                    type: 'line', x0: +renderTime, x1: +renderTime, y0: 0, y1: 1, yref: 'paper',
+                    line: { color: '#9bb0ba', width: 1, dash: 'dot' }
+                }
+            ],
+            autosize: true, height: 245,
+            margin: { t: 15, b: 45, r: 18, l: 48 }
         };
-        el.style.height = '';
+        el.setAttribute('aria-label', `${down.name}: ultime ${selectedRange} ore e previsione sperimentale ${formatHorizonHours(hours)} h. Orari italiani.`);
         if (el.data) Plotly.react(el, traces, layout, { responsive: true, displayModeBar: false, staticPlot: true });
         else Plotly.newPlot(el, traces, layout, { responsive: true, displayModeBar: false, staticPlot: true });
+    }
+
+    function drawComparePlot(elementId, down, hindcast, bandHours) {
+        const el = document.getElementById(elementId);
+        if (!el || !window.Plotly || !hindcast?.ok) return;
+        const hours = bandHours || hindcast.horizonHours || 2;
+        const pts = hindcast.points;
+        const start = +renderTime - selectedRange * 3600000;
+        const end = +renderTime;
+        const ticks = D.romeTickVals(start, end, 4);
+        const xs = pts.map(p => +p.time);
+        const yValues = pts.flatMap(p => [p.predicted, p.observed]);
+        const traces = [
+            {
+                x: xs, y: pts.map(p => p.observed), type: 'scatter', mode: 'lines+markers',
+                name: 'Osservato',
+                line: { color: '#087e91', width: 2.25 },
+                marker: { size: 4, color: '#087e91' },
+                customdata: pts.map(p => p.predicted),
+                hovertemplate: '%{x|%d/%m %H:%M}<br>osservato <b>%{y:.2f} m</b><br>predetto %{customdata:.2f} m<extra></extra>'
+            },
+            {
+                x: xs, y: pts.map(p => p.predicted), type: 'scatter', mode: 'lines+markers',
+                name: 'Predetto',
+                line: { color: HINDCAST_ORANGE, width: 2.25 },
+                marker: { size: 4, color: HINDCAST_ORANGE },
+                customdata: pts.map(p => p.observed),
+                hovertemplate: '%{x|%d/%m %H:%M}<br>predetto <b>%{y:.2f} m</b><br>osservato %{customdata:.2f} m<extra></extra>'
+            }
+        ];
+        const layout = {
+            paper_bgcolor: '#fff', plot_bgcolor: '#fff',
+            font: { color: '#536b78', family: 'system-ui, sans-serif', size: 10 },
+            showlegend: true, legend: { orientation: 'h', y: 1.15, x: 0, font: { size: 10 } },
+            separators: ', ',
+            uirevision: `compare-${selectedRange}-${down.id}`,
+            xaxis: {
+                type: 'date', range: [start, end],
+                tickmode: 'array', tickvals: ticks.tickvals, ticktext: ticks.ticktext,
+                fixedrange: true, zeroline: false, automargin: true,
+                gridcolor: '#e7eef2', showgrid: true
+            },
+            yaxis: {
+                range: D.yRangeFor(down, yValues), title: { text: 'm', font: { size: 10 }, standoff: 4 },
+                fixedrange: true, zeroline: false, automargin: true,
+                gridcolor: '#e7eef2', showgrid: true
+            },
+            shapes: D.thresholdShapes(down),
+            autosize: true, height: 180,
+            margin: { t: 28, b: 40, r: 18, l: 48 },
+            title: { text: `Stesso istante: predetto ${formatHorizonHours(hours)} h prima vs successo`, font: { size: 11, color: '#536b78' }, x: 0, xanchor: 'left' }
+        };
+        el.setAttribute('aria-label', `${down.name}: confronto allo stesso istante tra predetto e osservato.`);
+        if (el.data) Plotly.react(el, traces, layout, { responsive: true, displayModeBar: false, staticPlot: true });
+        else Plotly.newPlot(el, traces, layout, { responsive: true, displayModeBar: false, staticPlot: true });
+    }
+
+    function drawResidualPlot(elementId, down, hindcast) {
+        const el = document.getElementById(elementId);
+        if (!el || !window.Plotly || !hindcast?.ok) return;
+        const pts = hindcast.points;
+        const start = +renderTime - selectedRange * 3600000;
+        const end = +renderTime;
+        const ticks = D.romeTickVals(start, end, 4);
+        const res = pts.map(p => p.residual);
+        const pad = Math.max(0.05, ...res.map(Math.abs)) * 1.15;
+        const traces = [{
+            x: pts.map(p => +p.time), y: res, type: 'scatter', mode: 'lines',
+            name: 'Residuo', line: { color: '#536b78', width: 1.75 },
+            hovertemplate: '%{x|%d/%m %H:%M}<br>pred−oss <b>%{y:.2f} m</b><extra></extra>'
+        }];
+        const layout = {
+            paper_bgcolor: '#fff', plot_bgcolor: '#fff',
+            font: { color: '#536b78', family: 'system-ui, sans-serif', size: 10 },
+            showlegend: false, separators: ', ',
+            uirevision: `resid-${selectedRange}-${down.id}`,
+            xaxis: {
+                type: 'date', range: [start, end],
+                tickmode: 'array', tickvals: ticks.tickvals, ticktext: ticks.ticktext,
+                fixedrange: true, zeroline: false, automargin: true,
+                gridcolor: '#e7eef2', showgrid: true
+            },
+            yaxis: {
+                range: [-pad, pad], title: { text: 'pred−oss (m)', font: { size: 10 }, standoff: 4 },
+                fixedrange: true, zeroline: true, zerolinecolor: '#9bb0ba', automargin: true,
+                gridcolor: '#e7eef2', showgrid: true
+            },
+            autosize: true, height: 120,
+            margin: { t: 8, b: 40, r: 18, l: 52 }
+        };
+        el.setAttribute('aria-label', `${down.name}: residui allo stesso istante di verifica.`);
+        if (el.data) Plotly.react(el, traces, layout, { responsive: true, displayModeBar: false, staticPlot: true });
+        else Plotly.newPlot(el, traces, layout, { responsive: true, displayModeBar: false, staticPlot: true });
+    }
+
+    function computeHindcast(state) {
+        return P.hindcastSeries(state.down, state.ups, {
+            hours: selectedRange,
+            now: renderTime,
+            coeffs,
+            horizonHours: state.bandHours || bandHoursFor(null, state.prediction),
+            downstreamId: state.down.id,
+            sensorMap: sensorsById,
+            rainSensors: state.rainSensors,
+            stepMs: P.DEFAULT_STEP_MS
+        });
+    }
+
+    function refreshCardPlots(downstream) {
+        const state = cardState.get(downstream);
+        if (!state) return;
+        const id = nodeCardId(downstream);
+        const compareEl = document.getElementById(`compare-${id}`);
+        const residEl = document.getElementById(`resid-${id}`);
+        const note = document.getElementById(`hindcast-note-${id}`);
+        const hc = state.showHindcast ? state.hindcast : null;
+        const hours = state.bandHours || bandHoursFor(null, state.prediction);
+        drawStationPlot(`plot-${id}`, state.down, state.prediction, hc, hours);
+        if (state.showHindcast && hc?.ok) {
+            if (compareEl) {
+                compareEl.hidden = false;
+                requestAnimationFrame(() => {
+                    drawComparePlot(`compare-${id}`, state.down, hc, hours);
+                    if (window.Plotly?.Plots) Plotly.Plots.resize(compareEl);
+                });
+            }
+            if (residEl) {
+                residEl.hidden = false;
+                requestAnimationFrame(() => {
+                    drawResidualPlot(`resid-${id}`, state.down, hc);
+                    if (window.Plotly?.Plots) Plotly.Plots.resize(residEl);
+                });
+            }
+            if (note) {
+                const mae = hc.points.reduce((s, p) => s + Math.abs(p.residual), 0) / hc.points.length;
+                const lagMin = hc.lag?.lagMin;
+                const lagNote = Number.isFinite(lagMin)
+                    ? ` · ritardo tipico ≈ ${Math.round(lagMin)}′`
+                    : '';
+                note.hidden = false;
+                note.textContent = `Stesso istante di verifica · ${hc.points.length} punti · MAE ${number(mae)} m (predetto ${formatHorizonHours(hours)} h prima − osservato)${lagNote}.`;
+            }
+        } else {
+            if (compareEl) {
+                compareEl.hidden = true;
+                if (window.Plotly && compareEl.data) Plotly.purge(compareEl);
+            }
+            if (residEl) {
+                residEl.hidden = true;
+                if (window.Plotly && residEl.data) Plotly.purge(residEl);
+            }
+            if (note) {
+                note.hidden = true;
+                note.textContent = '';
+            }
+        }
     }
 
     function downstreamNodes() {
@@ -215,19 +530,28 @@
         const nodes = downstreamNodes();
         const focus = parseEdgeHash();
         renderTime = new Date();
+        const keepHindcast = new Map([...cardState].map(([k, v]) => [k, !!v.showHindcast]));
+        cardState.clear();
         grid.replaceChildren();
         let okCount = 0;
         for (const node of nodes) {
             const down = sensorsById[node.downstream] || blank(node.downstream);
             const ups = node.upstreams.map(id => sensorsById[id] || blank(id));
             const rainSensors = Object.values(sensorsById).filter(s => s?.kind === 'rain' && s.timeSeries?.length);
+            const nodeModel = coeffs?.nodes?.[node.downstream];
+            const bandHours = bandHoursFor(nodeModel);
             const prediction = P.predictNode(down, ups, {
-                hours: 72, now: renderTime, coeffs, horizonHours: 2, downstreamId: node.downstream,
+                hours: 72, now: renderTime, coeffs, horizonHours: bandHours, downstreamId: node.downstream,
                 sensorMap: sensorsById, rainSensors
             });
+            // Stazioni sotto soglia di skill: nessuna card (improbabile che il ridge torni affidabile).
+            if (!prediction.ok) continue;
+            const hours = bandHoursFor(nodeModel, prediction);
+
+            okCount++;
             const card = document.createElement('article');
             card.className = 'edge-card';
-            card.id = `node-${node.downstream}`.replace(/\s+/g, '_');
+            card.id = nodeCardId(node.downstream);
             card.dataset.downstream = node.downstream;
             card.dataset.upstream = node.upstreams[0] || '';
             if (focus && focus.downstream === node.downstream) card.classList.add('is-target');
@@ -243,45 +567,109 @@
 
             const meta = document.createElement('p');
             meta.className = 'edge-meta';
-            if (!prediction.ok) {
-                meta.textContent = prediction.reason || 'Non disponibile';
-                card.appendChild(meta);
-                const fail = document.createElement('p');
-                fail.className = 'edge-fail';
-                fail.textContent = prediction.reliable === false
-                    ? 'Nessuna stima affidabile per questa stazione: in validazione il modello non batte la persistenza.'
-                    : 'Servono più dati allineati o un modello offline addestrato su storico umido (non solo magra).';
-                card.appendChild(fail);
-            } else {
-                okCount++;
-                const upsLabel = (prediction.upstreams || node.upstreams).join(' + ');
-                const skillLabel = prediction.skill120 == null ? '' : ` · skill@2h ${prediction.skill120.toFixed(2)}`;
-                meta.innerHTML = `da <strong>${upsLabel}</strong><br>lag ${formatLags(prediction)} · r=${prediction.r == null ? 'n/d' : prediction.r.toFixed(2)} · RMSE ${number(prediction.rmse)} m · fonte <strong>${prediction.source}</strong>${prediction.kind ? ' · ' + prediction.kind : ''}${skillLabel}${prediction.reason ? '<br>' + prediction.reason : ''}`;
-                card.appendChild(meta);
-                const table = document.createElement('table');
-                table.className = 'fork-table';
-                table.innerHTML = '<thead><tr><th>Ora</th><th>Min</th><th>Med</th><th>Max</th></tr></thead>';
-                const body = document.createElement('tbody');
-                for (const point of prediction.next || []) {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `<th scope="row">${dateTime(point.time)}</th><td>${number(point.min)}</td><td>${number(point.med)}</td><td>${number(point.max)}</td>`;
-                    body.appendChild(row);
-                }
-                table.appendChild(body);
-                card.appendChild(table);
-                const plot = document.createElement('div');
-                plot.className = 'edge-plot';
-                plot.id = `plot-${card.id}`;
-                card.appendChild(plot);
-                grid.appendChild(card);
-                requestAnimationFrame(() => drawMiniPlot(plot.id, down, prediction));
-                continue;
+            const upsLabel = (prediction.upstreams || node.upstreams).join(' + ');
+            const skillLabel = prediction.skill120 == null ? '' : ` · skill@2h ${prediction.skill120.toFixed(2)}`;
+            meta.innerHTML = `da <strong>${upsLabel}</strong><br>lag ${formatLags(prediction)} · r=${prediction.r == null ? 'n/d' : prediction.r.toFixed(2)} · RMSE ${number(prediction.rmse)} m · fonte <strong>${prediction.source}</strong>${prediction.kind ? ' · ' + prediction.kind : ''}${skillLabel}${prediction.reason ? '<br>' + prediction.reason : ''}`;
+            card.appendChild(meta);
+            const table = document.createElement('table');
+            table.className = 'fork-table';
+            table.innerHTML = '<thead><tr><th>Ora</th><th>Min</th><th>Med</th><th>Max</th></tr></thead>';
+            const body = document.createElement('tbody');
+            for (const point of prediction.next || []) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<th scope="row">${dateTime(point.time)}</th><td>${number(point.min)}</td><td>${number(point.med)}</td><td>${number(point.max)}</td>`;
+                body.appendChild(row);
             }
+            table.appendChild(body);
+            card.appendChild(table);
+            const plot = document.createElement('div');
+            plot.className = 'edge-plot';
+            plot.id = `plot-${card.id}`;
+            card.appendChild(plot);
+
+            const bar = document.createElement('div');
+            bar.className = 'hindcast-bar';
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'hindcast-btn';
+            btn.setAttribute('aria-pressed', 'false');
+            btn.dataset.downstream = node.downstream;
+            btn.textContent = 'Predizione storica';
+            bar.appendChild(btn);
+            const note = document.createElement('p');
+            note.className = 'hindcast-note';
+            note.id = `hindcast-note-${card.id}`;
+            note.hidden = true;
+            bar.appendChild(note);
+            card.appendChild(bar);
+
+            const compare = document.createElement('div');
+            compare.className = 'edge-compare';
+            compare.id = `compare-${card.id}`;
+            compare.hidden = true;
+            card.appendChild(compare);
+
+            const resid = document.createElement('div');
+            resid.className = 'edge-resid';
+            resid.id = `resid-${card.id}`;
+            resid.hidden = true;
+            card.appendChild(resid);
+
+            const state = {
+                down, ups, rainSensors, prediction,
+                bandHours: hours,
+                showHindcast: !!keepHindcast.get(node.downstream),
+                hindcast: null
+            };
+            cardState.set(node.downstream, state);
             grid.appendChild(card);
+
+            btn.addEventListener('click', () => {
+                const st = cardState.get(node.downstream);
+                if (!st) return;
+                if (st.showHindcast) {
+                    st.showHindcast = false;
+                    btn.setAttribute('aria-pressed', 'false');
+                    btn.textContent = 'Predizione storica';
+                    refreshCardPlots(node.downstream);
+                    return;
+                }
+                btn.disabled = true;
+                btn.textContent = 'Calcolo…';
+                requestAnimationFrame(() => {
+                    st.hindcast = computeHindcast(st);
+                    st.showHindcast = !!(st.hindcast && st.hindcast.ok);
+                    btn.disabled = false;
+                    if (!st.showHindcast) {
+                        btn.setAttribute('aria-pressed', 'false');
+                        btn.textContent = 'Predizione storica';
+                        note.hidden = false;
+                        note.textContent = st.hindcast?.reason || 'Hindcast non disponibile su questo intervallo.';
+                        refreshCardPlots(node.downstream);
+                        return;
+                    }
+                    btn.setAttribute('aria-pressed', 'true');
+                    btn.textContent = 'Nascondi storica';
+                    refreshCardPlots(node.downstream);
+                });
+            });
+
+            requestAnimationFrame(() => {
+                if (state.showHindcast) {
+                    state.hindcast = computeHindcast(state);
+                    state.showHindcast = !!(state.hindcast && state.hindcast.ok);
+                    if (state.showHindcast) {
+                        btn.setAttribute('aria-pressed', 'true');
+                        btn.textContent = 'Nascondi storica';
+                    }
+                }
+                refreshCardPlots(node.downstream);
+            });
         }
+        updateStationDag();
         const offline = (coeffs?.nodes && Object.keys(coeffs.nodes).length)
             || (coeffs?.edges && Object.keys(coeffs.edges).length);
-        status.textContent = `Sperimentale · ${okCount}/${nodes.length} stazioni a valle · aggiornato ${dateTime(renderTime)} · modello offline ${offline ? 'caricato' : 'assente'} · senza valore operativo`;
+        status.textContent = `Sperimentale · ${okCount} stazioni con stima · aggiornato ${dateTime(renderTime)} · modello offline ${offline ? 'caricato' : 'assente'} · senza valore operativo`;
         const target = grid.querySelector('.edge-card.is-target');
         if (target) {
             updateHeaderCompact();
@@ -289,15 +677,35 @@
         }
     }
 
+    function bindRangeButtons() {
+        const group = document.getElementById('range-buttons');
+        if (!group || group._bound) return;
+        group._bound = true;
+        group.addEventListener('click', evt => {
+            const btn = evt.target.closest('[data-range]');
+            if (!btn) return;
+            selectedRange = Number(btn.getAttribute('data-range')) || 48;
+            group.querySelectorAll('[data-range]').forEach(el => {
+                const on = el === btn;
+                el.classList.toggle('active', on);
+                el.setAttribute('aria-pressed', on ? 'true' : 'false');
+            });
+            renderAll();
+        });
+    }
+
     async function boot() {
         updateHeaderCompact();
+        bindRangeButtons();
         window.addEventListener('scroll', () => updateHeaderCompact(), { passive: true });
         window.addEventListener('hashchange', () => {
             document.querySelectorAll('.edge-card.is-target').forEach(el => el.classList.remove('is-target'));
             const focus = parseEdgeHash();
             if (!focus) return;
-            const card = [...document.querySelectorAll('.edge-card')].find(el =>
-                el.dataset.upstream === focus.upstream && el.dataset.downstream === focus.downstream);
+            const card = document.getElementById(nodeCardId(focus.downstream))
+                || [...document.querySelectorAll('.edge-card')].find(el =>
+                    el.dataset.downstream === focus.downstream
+                    && (!focus.upstream || el.dataset.upstream === focus.upstream));
             if (card) {
                 card.classList.add('is-target');
                 card.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'start' });

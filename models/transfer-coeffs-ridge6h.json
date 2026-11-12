@@ -1,0 +1,4875 @@
+{
+  "version": 4,
+  "kind": "direct_horizon_delta_ridge",
+  "stepMinutes": 30,
+  "horizonsMinutes": [
+    30,
+    60,
+    90,
+    120,
+    150,
+    180,
+    210,
+    240,
+    270,
+    300,
+    330,
+    360
+  ],
+  "skillKeep": 0.1,
+  "disclaimer": "Sperimentale: non operativo, non allertistico.",
+  "nodes": {
+    "Bonconvento": {
+      "upstreams": [
+        "Casalecchio tiro a volo"
+      ],
+      "lagMinutes": [
+        270
+      ],
+      "lagR": [
+        0.971857
+      ],
+      "thresholds": {
+        "Casalecchio tiro a volo": {
+          "mean": -0.411076,
+          "std": 0.363408,
+          "z85": 0.869755
+        }
+      },
+      "thresholdOn": "per_upstream_z85",
+      "useRain": true,
+      "horizons": {
+        "30": {
+          "b": -0.000688,
+          "wLocal": 0.802818,
+          "wWindow": [
+            0.010638
+          ],
+          "wRate": [
+            0.010638
+          ],
+          "wWindow2": [
+            0.011375
+          ],
+          "wRate2": [
+            0.011375
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Casalecchio tiro a volo",
+            "dxr_Casalecchio tiro a volo",
+            "dxw2_Casalecchio tiro a volo",
+            "dxr2_Casalecchio tiro a volo",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.010695,
+          "spreadHigh": 0.011034,
+          "spreadLowHigh": 0.370963,
+          "spreadHighHigh": 0.178129,
+          "train": {
+            "rmse": 0.022987,
+            "skill": 0.450187,
+            "mae": 0.009808,
+            "spreadLow": 0.011494,
+            "spreadHigh": 0.011539,
+            "n": 15869,
+            "coverage": 0.711639
+          },
+          "validate": {
+            "rmse": 0.021205,
+            "skill": 0.5417,
+            "mae": 0.009968,
+            "spreadLow": 0.010602,
+            "spreadHigh": 0.011674,
+            "n": 14762,
+            "coverage": 0.705934
+          },
+          "validateEvents": {
+            "rmse": 0.142503,
+            "skill": 0.590992,
+            "mae": 0.077767,
+            "spreadLow": 0.121728,
+            "spreadHigh": 0.071251,
+            "n": 219,
+            "coverage": 0.730594
+          },
+          "holdout": {
+            "rmse": 0.031431,
+            "skill": 0.277769,
+            "mae": 0.010004,
+            "spreadLow": 0.015716,
+            "spreadHigh": 0.015716,
+            "n": 3443,
+            "coverage": 0.821377
+          },
+          "holdoutEvents": {
+            "rmse": null,
+            "skill": null,
+            "mae": null,
+            "spreadLow": null,
+            "spreadHigh": null,
+            "n": 6,
+            "coverage": null
+          },
+          "wRain6": 0.000667,
+          "wRain24": -4.8e-05
+        },
+        "60": {
+          "b": -0.001971,
+          "wLocal": 1.412635,
+          "wWindow": [
+            0.060669
+          ],
+          "wRate": [
+            0.004187
+          ],
+          "wWindow2": [
+            0.021113
+          ],
+          "wRate2": [
+            0.022767
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Casalecchio tiro a volo",
+            "dxr_Casalecchio tiro a volo",
+            "dxw2_Casalecchio tiro a volo",
+            "dxr2_Casalecchio tiro a volo",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.023781,
+          "spreadHigh": 0.023781,
+          "spreadLowHigh": 0.523658,
+          "spreadHighHigh": 0.273983,
+          "train": {
+            "rmse": 0.048583,
+            "skill": 0.392677,
+            "mae": 0.017521,
+            "spreadLow": 0.024292,
+            "spreadHigh": 0.024292,
+            "n": 15866,
+            "coverage": 0.802786
+          },
+          "validate": {
+            "rmse": 0.048884,
+            "skill": 0.457163,
+            "mae": 0.018397,
+            "spreadLow": 0.024442,
+            "spreadHigh": 0.024442,
+            "n": 14756,
+            "coverage": 0.803334
+          },
+          "validateEvents": {
+            "rmse": 0.219186,
+            "skill": 0.48198,
+            "mae": 0.101967,
+            "spreadLow": 0.122004,
+            "spreadHigh": 0.109593,
+            "n": 608,
+            "coverage": 0.776316
+          },
+          "holdout": {
+            "rmse": 0.068563,
+            "skill": 0.146055,
+            "mae": 0.017117,
+            "spreadLow": 0.034281,
+            "spreadHigh": 0.034281,
+            "n": 3442,
+            "coverage": 0.910227
+          },
+          "holdoutEvents": {
+            "rmse": 0.616401,
+            "skill": 0.170388,
+            "mae": 0.229752,
+            "spreadLow": 0.308201,
+            "spreadHigh": 0.308201,
+            "n": 39,
+            "coverage": 0.333333
+          },
+          "wRain6": 0.001942,
+          "wRain24": -0.000144
+        },
+        "90": {
+          "b": -0.003556,
+          "wLocal": 1.913884,
+          "wWindow": [
+            0.078088
+          ],
+          "wRate": [
+            0.042531
+          ],
+          "wWindow2": [
+            0.031551
+          ],
+          "wRate2": [
+            -0.006403
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Casalecchio tiro a volo",
+            "dxr_Casalecchio tiro a volo",
+            "dxw2_Casalecchio tiro a volo",
+            "dxr2_Casalecchio tiro a volo",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.038976,
+          "spreadHigh": 0.038976,
+          "spreadLowHigh": 0.585591,
+          "spreadHighHigh": 0.322944,
+          "train": {
+            "rmse": 0.074432,
+            "skill": 0.356844,
+            "mae": 0.025891,
+            "spreadLow": 0.037216,
+            "spreadHigh": 0.037216,
+            "n": 15863,
+            "coverage": 0.82746
+          },
+          "validate": {
+            "rmse": 0.080473,
+            "skill": 0.388224,
+            "mae": 0.027848,
+            "spreadLow": 0.040237,
+            "spreadHigh": 0.040237,
+            "n": 14754,
+            "coverage": 0.85082
+          },
+          "validateEvents": {
+            "rmse": 0.258355,
+            "skill": 0.410071,
+            "mae": 0.111862,
+            "spreadLow": 0.129178,
+            "spreadHigh": 0.129178,
+            "n": 1262,
+            "coverage": 0.782884
+          },
+          "holdout": {
+            "rmse": 0.103329,
+            "skill": 0.06816,
+            "mae": 0.024343,
+            "spreadLow": 0.051665,
+            "spreadHigh": 0.051665,
+            "n": 3441,
+            "coverage": 0.928509
+          },
+          "holdoutEvents": {
+            "rmse": 0.902085,
+            "skill": 0.090157,
+            "mae": 0.373414,
+            "spreadLow": 0.451043,
+            "spreadHigh": 0.451043,
+            "n": 42,
+            "coverage": 0.404762
+          },
+          "wRain6": 0.003644,
+          "wRain24": -0.000294
+        },
+        "120": {
+          "b": -0.005395,
+          "wLocal": 2.333395,
+          "wWindow": [
+            0.084777
+          ],
+          "wRate": [
+            0.087686
+          ],
+          "wWindow2": [
+            0.006285
+          ],
+          "wRate2": [
+            0.035161
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Casalecchio tiro a volo",
+            "dxr_Casalecchio tiro a volo",
+            "dxw2_Casalecchio tiro a volo",
+            "dxr2_Casalecchio tiro a volo",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.055151,
+          "spreadHigh": 0.055151,
+          "spreadLowHigh": 0.842581,
+          "spreadHighHigh": 0.372768,
+          "train": {
+            "rmse": 0.100538,
+            "skill": 0.328207,
+            "mae": 0.034741,
+            "spreadLow": 0.050269,
+            "spreadHigh": 0.050269,
+            "n": 15861,
+            "coverage": 0.838472
+          },
+          "validate": {
+            "rmse": 0.11349,
+            "skill": 0.33515,
+            "mae": 0.038258,
+            "spreadLow": 0.056745,
+            "spreadHigh": 0.056745,
+            "n": 14754,
+            "coverage": 0.865257
+          },
+          "validateEvents": {
+            "rmse": 0.298214,
+            "skill": 0.357368,
+            "mae": 0.126813,
+            "spreadLow": 0.149107,
+            "spreadHigh": 0.149107,
+            "n": 1934,
+            "coverage": 0.767839
+          },
+          "holdout": {
+            "rmse": 0.134245,
+            "skill": 0.019611,
+            "mae": 0.031308,
+            "spreadLow": 0.067123,
+            "spreadHigh": 0.067123,
+            "n": 3440,
+            "coverage": 0.934884
+          },
+          "holdoutEvents": {
+            "rmse": 1.145406,
+            "skill": 0.043472,
+            "mae": 0.513974,
+            "spreadLow": 0.572703,
+            "spreadHigh": 0.572703,
+            "n": 44,
+            "coverage": 0.340909
+          },
+          "wRain6": 0.005693,
+          "wRain24": -0.000488
+        }
+      },
+      "skill120": 0.357368,
+      "holdoutSkill120": 0.043472,
+      "reliable": false,
+      "samples": 15869,
+      "trainedAt": "2026-11-12T17:48:43Z",
+      "kind": "direct_horizon_delta_ridge"
+    },
+    "Forcelli": {
+      "upstreams": [
+        "Lavino di Sotto",
+        "Paltrone Samoggia"
+      ],
+      "lagMinutes": [
+        180,
+        150
+      ],
+      "lagR": [
+        0.879417,
+        0.842925
+      ],
+      "thresholds": {
+        "Lavino di Sotto": {
+          "mean": 8.062121,
+          "std": 0.425731,
+          "z85": 0.605732
+        },
+        "Paltrone Samoggia": {
+          "mean": 31.92264,
+          "std": 0.253176,
+          "z85": 0.187064
+        }
+      },
+      "thresholdOn": "per_upstream_z85",
+      "useRain": true,
+      "horizons": {
+        "30": {
+          "b": -0.000588,
+          "wLocal": 0.616018,
+          "wWindow": [
+            0.000245,
+            0.026964
+          ],
+          "wRate": [
+            0.000245,
+            0.026964
+          ],
+          "wWindow2": [
+            0.001028,
+            0.024413
+          ],
+          "wRate2": [
+            0.001028,
+            0.024413
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Lavino di Sotto",
+            "dxw_Paltrone Samoggia",
+            "dxr_Lavino di Sotto",
+            "dxr_Paltrone Samoggia",
+            "dxw2_Lavino di Sotto",
+            "dxw2_Paltrone Samoggia",
+            "dxr2_Lavino di Sotto",
+            "dxr2_Paltrone Samoggia",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.008783,
+          "spreadHigh": 0.00942,
+          "spreadLowHigh": 0.478528,
+          "spreadHighHigh": 0.212978,
+          "train": {
+            "rmse": 0.019255,
+            "skill": 0.308417,
+            "mae": 0.010002,
+            "spreadLow": 0.009908,
+            "spreadHigh": 0.010972,
+            "n": 15336,
+            "coverage": 0.693727
+          },
+          "validate": {
+            "rmse": 0.01828,
+            "skill": 0.284335,
+            "mae": 0.00881,
+            "spreadLow": 0.00914,
+            "spreadHigh": 0.009951,
+            "n": 14087,
+            "coverage": 0.696813
+          },
+          "validateEvents": {
+            "rmse": 0.170383,
+            "skill": 0.375698,
+            "mae": 0.110471,
+            "spreadLow": 0.138952,
+            "spreadHigh": 0.085191,
+            "n": 86,
+            "coverage": 0.546512
+          },
+          "holdout": {
+            "rmse": 0.038374,
+            "skill": -0.306804,
+            "mae": 0.017435,
+            "spreadLow": 0.019187,
+            "spreadHigh": 0.019187,
+            "n": 3284,
+            "coverage": 0.718636
+          },
+          "holdoutEvents": {
+            "rmse": 0.410804,
+            "skill": -0.319112,
+            "mae": 0.319496,
+            "spreadLow": 0.410804,
+            "spreadHigh": 0.410804,
+            "n": 17,
+            "coverage": 0.705882
+          },
+          "wRain6": 0.000986,
+          "wRain24": -0.000134
+        },
+        "60": {
+          "b": -0.001393,
+          "wLocal": 1.050372,
+          "wWindow": [
+            0.001548,
+            0.075641
+          ],
+          "wRate": [
+            0.000173,
+            0.060346
+          ],
+          "wWindow2": [
+            -0.001239,
+            0.038022
+          ],
+          "wRate2": [
+            -0.000885,
+            -0.018148
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Lavino di Sotto",
+            "dxw_Paltrone Samoggia",
+            "dxr_Lavino di Sotto",
+            "dxr_Paltrone Samoggia",
+            "dxw2_Lavino di Sotto",
+            "dxw2_Paltrone Samoggia",
+            "dxr2_Lavino di Sotto",
+            "dxr2_Paltrone Samoggia",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.016208,
+          "spreadHigh": 0.016208,
+          "spreadLowHigh": 0.404057,
+          "spreadHighHigh": 0.2501,
+          "train": {
+            "rmse": 0.035564,
+            "skill": 0.304666,
+            "mae": 0.017101,
+            "spreadLow": 0.017782,
+            "spreadHigh": 0.018208,
+            "n": 15149,
+            "coverage": 0.722688
+          },
+          "validate": {
+            "rmse": 0.034781,
+            "skill": 0.259976,
+            "mae": 0.014861,
+            "spreadLow": 0.01739,
+            "spreadHigh": 0.01739,
+            "n": 13973,
+            "coverage": 0.75331
+          },
+          "validateEvents": {
+            "rmse": 0.20008,
+            "skill": 0.330469,
+            "mae": 0.121231,
+            "spreadLow": 0.156791,
+            "spreadHigh": 0.10004,
+            "n": 290,
+            "coverage": 0.668966
+          },
+          "holdout": {
+            "rmse": 0.051563,
+            "skill": -0.439688,
+            "mae": 0.025768,
+            "spreadLow": 0.027546,
+            "spreadHigh": 0.028523,
+            "n": 3196,
+            "coverage": 0.69806
+          },
+          "holdoutEvents": {
+            "rmse": 0.313063,
+            "skill": -0.427871,
+            "mae": 0.202145,
+            "spreadLow": 0.15745,
+            "spreadHigh": 0.156531,
+            "n": 46,
+            "coverage": 0.717391
+          },
+          "wRain6": 0.002465,
+          "wRain24": -0.000348
+        },
+        "90": {
+          "b": -0.002288,
+          "wLocal": 1.367529,
+          "wWindow": [
+            0.000394,
+            0.068876
+          ],
+          "wRate": [
+            0.00194,
+            0.127116
+          ],
+          "wWindow2": [
+            -7.8e-05,
+            0.020826
+          ],
+          "wRate2": [
+            4.4e-05,
+            0.019791
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Lavino di Sotto",
+            "dxw_Paltrone Samoggia",
+            "dxr_Lavino di Sotto",
+            "dxr_Paltrone Samoggia",
+            "dxw2_Lavino di Sotto",
+            "dxw2_Paltrone Samoggia",
+            "dxr2_Lavino di Sotto",
+            "dxr2_Paltrone Samoggia",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.023171,
+          "spreadHigh": 0.023171,
+          "spreadLowHigh": 0.461346,
+          "spreadHighHigh": 0.283313,
+          "train": {
+            "rmse": 0.052418,
+            "skill": 0.286658,
+            "mae": 0.024301,
+            "spreadLow": 0.026209,
+            "spreadHigh": 0.026209,
+            "n": 15107,
+            "coverage": 0.74866
+          },
+          "validate": {
+            "rmse": 0.050932,
+            "skill": 0.233517,
+            "mae": 0.020968,
+            "spreadLow": 0.025466,
+            "spreadHigh": 0.025466,
+            "n": 13926,
+            "coverage": 0.776677
+          },
+          "validateEvents": {
+            "rmse": 0.22665,
+            "skill": 0.303451,
+            "mae": 0.136045,
+            "spreadLow": 0.168348,
+            "spreadHigh": 0.113325,
+            "n": 521,
+            "coverage": 0.704415
+          },
+          "holdout": {
+            "rmse": 0.063852,
+            "skill": -0.510263,
+            "mae": 0.033942,
+            "spreadLow": 0.035299,
+            "spreadHigh": 0.037985,
+            "n": 3185,
+            "coverage": 0.695447
+          },
+          "holdoutEvents": {
+            "rmse": 0.28069,
+            "skill": -0.449428,
+            "mae": 0.179518,
+            "spreadLow": 0.196798,
+            "spreadHigh": 0.140345,
+            "n": 82,
+            "coverage": 0.560976
+          },
+          "wRain6": 0.004325,
+          "wRain24": -0.000622
+        },
+        "120": {
+          "b": -0.003341,
+          "wLocal": 1.585192,
+          "wWindow": [
+            0.00138,
+            0.083678
+          ],
+          "wRate": [
+            0.000286,
+            0.178668
+          ],
+          "wWindow2": [
+            0.00374,
+            -0.003612
+          ],
+          "wRate2": [
+            -0.001205,
+            0.004272
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Lavino di Sotto",
+            "dxw_Paltrone Samoggia",
+            "dxr_Lavino di Sotto",
+            "dxr_Paltrone Samoggia",
+            "dxw2_Lavino di Sotto",
+            "dxw2_Paltrone Samoggia",
+            "dxr2_Lavino di Sotto",
+            "dxr2_Paltrone Samoggia",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.029438,
+          "spreadHigh": 0.029438,
+          "spreadLowHigh": 0.546035,
+          "spreadHighHigh": 0.314864,
+          "train": {
+            "rmse": 0.069108,
+            "skill": 0.267515,
+            "mae": 0.03148,
+            "spreadLow": 0.034554,
+            "spreadHigh": 0.034554,
+            "n": 15076,
+            "coverage": 0.764991
+          },
+          "validate": {
+            "rmse": 0.066083,
+            "skill": 0.21582,
+            "mae": 0.026903,
+            "spreadLow": 0.033041,
+            "spreadHigh": 0.033041,
+            "n": 13886,
+            "coverage": 0.78626
+          },
+          "validateEvents": {
+            "rmse": 0.251891,
+            "skill": 0.284763,
+            "mae": 0.150788,
+            "spreadLow": 0.183106,
+            "spreadHigh": 0.125946,
+            "n": 735,
+            "coverage": 0.693878
+          },
+          "holdout": {
+            "rmse": 0.074643,
+            "skill": -0.530014,
+            "mae": 0.041611,
+            "spreadLow": 0.042906,
+            "spreadHigh": 0.046661,
+            "n": 3185,
+            "coverage": 0.696703
+          },
+          "holdoutEvents": {
+            "rmse": 0.252931,
+            "skill": -0.395009,
+            "mae": 0.170659,
+            "spreadLow": 0.214347,
+            "spreadHigh": 0.126465,
+            "n": 136,
+            "coverage": 0.522059
+          },
+          "wRain6": 0.006452,
+          "wRain24": -0.000931
+        }
+      },
+      "skill120": 0.284763,
+      "holdoutSkill120": -0.395009,
+      "reliable": false,
+      "samples": 15336,
+      "trainedAt": "2026-11-12T17:48:45Z",
+      "kind": "direct_horizon_delta_ridge"
+    },
+    "Sostegno Reno": {
+      "upstreams": [
+        "Bonconvento"
+      ],
+      "lagMinutes": [
+        180
+      ],
+      "lagR": [
+        0.890693
+      ],
+      "thresholds": {
+        "Bonconvento": {
+          "mean": 3.27934,
+          "std": 1.595478,
+          "z85": 0.855957
+        }
+      },
+      "thresholdOn": "per_upstream_z85",
+      "useRain": true,
+      "horizons": {
+        "30": {
+          "b": -0.001325,
+          "wLocal": -0.253638,
+          "wWindow": [
+            0.227785
+          ],
+          "wRate": [
+            0.227785
+          ],
+          "wWindow2": [
+            0.162721
+          ],
+          "wRate2": [
+            0.162721
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Bonconvento",
+            "dxr_Bonconvento",
+            "dxw2_Bonconvento",
+            "dxr2_Bonconvento",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.02201,
+          "spreadHigh": 0.02201,
+          "spreadLowHigh": 0.840071,
+          "spreadHighHigh": 0.46635,
+          "train": {
+            "rmse": 0.048286,
+            "skill": 0.104351,
+            "mae": 0.015856,
+            "spreadLow": 0.024143,
+            "spreadHigh": 0.024143,
+            "n": 10773,
+            "coverage": 0.868746
+          },
+          "validate": {
+            "rmse": 0.043547,
+            "skill": 0.101104,
+            "mae": 0.015262,
+            "spreadLow": 0.021774,
+            "spreadHigh": 0.021774,
+            "n": 9066,
+            "coverage": 0.842709
+          },
+          "validateEvents": {
+            "rmse": 0.329923,
+            "skill": 0.140126,
+            "mae": 0.216077,
+            "spreadLow": 0.26635,
+            "spreadHigh": 0.164961,
+            "n": 125,
+            "coverage": 0.632
+          },
+          "holdout": {
+            "rmse": 0.026782,
+            "skill": -0.069277,
+            "mae": 0.011461,
+            "spreadLow": 0.013391,
+            "spreadHigh": 0.013391,
+            "n": 3198,
+            "coverage": 0.701689
+          },
+          "holdoutEvents": {
+            "rmse": 0.254813,
+            "skill": -0.109897,
+            "mae": 0.188186,
+            "spreadLow": 0.236932,
+            "spreadHigh": 0.155865,
+            "n": 25,
+            "coverage": 0.68
+          },
+          "wRain6": 0.000117,
+          "wRain24": 0.000262
+        },
+        "60": {
+          "b": -0.001888,
+          "wLocal": -0.278487,
+          "wWindow": [
+            0.158592
+          ],
+          "wRate": [
+            0.657074
+          ],
+          "wWindow2": [
+            0.383518
+          ],
+          "wRate2": [
+            -0.242499
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Bonconvento",
+            "dxr_Bonconvento",
+            "dxw2_Bonconvento",
+            "dxr2_Bonconvento",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.028814,
+          "spreadHigh": 0.028814,
+          "spreadLowHigh": 0.745636,
+          "spreadHighHigh": 0.353718,
+          "train": {
+            "rmse": 0.059709,
+            "skill": 0.190213,
+            "mae": 0.022476,
+            "spreadLow": 0.029855,
+            "spreadHigh": 0.029855,
+            "n": 10748,
+            "coverage": 0.833923
+          },
+          "validate": {
+            "rmse": 0.060361,
+            "skill": 0.150218,
+            "mae": 0.022947,
+            "spreadLow": 0.03018,
+            "spreadHigh": 0.03018,
+            "n": 9041,
+            "coverage": 0.832872
+          },
+          "validateEvents": {
+            "rmse": 0.275032,
+            "skill": 0.205624,
+            "mae": 0.163574,
+            "spreadLow": 0.158462,
+            "spreadHigh": 0.137516,
+            "n": 342,
+            "coverage": 0.695906
+          },
+          "holdout": {
+            "rmse": 0.042035,
+            "skill": -0.049056,
+            "mae": 0.015634,
+            "spreadLow": 0.021017,
+            "spreadHigh": 0.021017,
+            "n": 3189,
+            "coverage": 0.708059
+          },
+          "holdoutEvents": {
+            "rmse": 0.286291,
+            "skill": -0.032793,
+            "mae": 0.182033,
+            "spreadLow": 0.18493,
+            "spreadHigh": 0.156077,
+            "n": 57,
+            "coverage": 0.736842
+          },
+          "wRain6": 0.000519,
+          "wRain24": 0.000322
+        },
+        "90": {
+          "b": -0.002334,
+          "wLocal": -0.237461,
+          "wWindow": [
+            0.201447
+          ],
+          "wRate": [
+            0.943209
+          ],
+          "wWindow2": [
+            0.261383
+          ],
+          "wRate2": [
+            -0.148145
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Bonconvento",
+            "dxr_Bonconvento",
+            "dxw2_Bonconvento",
+            "dxr2_Bonconvento",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.036215,
+          "spreadHigh": 0.036215,
+          "spreadLowHigh": 0.763546,
+          "spreadHighHigh": 0.351388,
+          "train": {
+            "rmse": 0.070357,
+            "skill": 0.248206,
+            "mae": 0.028416,
+            "spreadLow": 0.035179,
+            "spreadHigh": 0.035179,
+            "n": 10732,
+            "coverage": 0.811778
+          },
+          "validate": {
+            "rmse": 0.078659,
+            "skill": 0.175518,
+            "mae": 0.030124,
+            "spreadLow": 0.039329,
+            "spreadHigh": 0.039329,
+            "n": 9026,
+            "coverage": 0.829382
+          },
+          "validateEvents": {
+            "rmse": 0.265618,
+            "skill": 0.233074,
+            "mae": 0.147613,
+            "spreadLow": 0.132809,
+            "spreadHigh": 0.132809,
+            "n": 645,
+            "coverage": 0.694574
+          },
+          "holdout": {
+            "rmse": 0.058471,
+            "skill": -0.081831,
+            "mae": 0.019968,
+            "spreadLow": 0.029235,
+            "spreadHigh": 0.029235,
+            "n": 3188,
+            "coverage": 0.752196
+          },
+          "holdoutEvents": {
+            "rmse": 0.367968,
+            "skill": -0.058445,
+            "mae": 0.224543,
+            "spreadLow": 0.183984,
+            "spreadHigh": 0.183984,
+            "n": 70,
+            "coverage": 0.728571
+          },
+          "wRain6": 0.001082,
+          "wRain24": 0.000306
+        },
+        "120": {
+          "b": -0.002712,
+          "wLocal": -0.108085,
+          "wWindow": [
+            0.219055
+          ],
+          "wRate": [
+            1.272003
+          ],
+          "wWindow2": [
+            0.204677
+          ],
+          "wRate2": [
+            -0.173814
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Bonconvento",
+            "dxr_Bonconvento",
+            "dxw2_Bonconvento",
+            "dxr2_Bonconvento",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.044146,
+          "spreadHigh": 0.044146,
+          "spreadLowHigh": 1.008482,
+          "spreadHighHigh": 0.49017,
+          "train": {
+            "rmse": 0.082483,
+            "skill": 0.281406,
+            "mae": 0.034105,
+            "spreadLow": 0.041241,
+            "spreadHigh": 0.041241,
+            "n": 10719,
+            "coverage": 0.807165
+          },
+          "validate": {
+            "rmse": 0.09748,
+            "skill": 0.189151,
+            "mae": 0.037404,
+            "spreadLow": 0.04874,
+            "spreadHigh": 0.04874,
+            "n": 9009,
+            "coverage": 0.828949
+          },
+          "validateEvents": {
+            "rmse": 0.278062,
+            "skill": 0.248656,
+            "mae": 0.146473,
+            "spreadLow": 0.139031,
+            "spreadHigh": 0.139031,
+            "n": 923,
+            "coverage": 0.689057
+          },
+          "holdout": {
+            "rmse": 0.075844,
+            "skill": -0.138086,
+            "mae": 0.024272,
+            "spreadLow": 0.037922,
+            "spreadHigh": 0.037922,
+            "n": 3186,
+            "coverage": 0.776836
+          },
+          "holdoutEvents": {
+            "rmse": 0.451219,
+            "skill": -0.084643,
+            "mae": 0.259934,
+            "spreadLow": 0.22561,
+            "spreadHigh": 0.22561,
+            "n": 76,
+            "coverage": 0.763158
+          },
+          "wRain6": 0.001736,
+          "wRain24": 0.000244
+        }
+      },
+      "skill120": 0.248656,
+      "holdoutSkill120": -0.084643,
+      "reliable": false,
+      "samples": 10773,
+      "trainedAt": "2026-11-12T17:48:46Z",
+      "kind": "direct_horizon_delta_ridge"
+    },
+    "Cento": {
+      "upstreams": [
+        "Forcelli",
+        "Sostegno Reno"
+      ],
+      "lagMinutes": [
+        480,
+        150
+      ],
+      "lagR": [
+        0.861696,
+        0.882658
+      ],
+      "thresholds": {
+        "Forcelli": {
+          "mean": 6.920062,
+          "std": 0.813793,
+          "z85": 0.995263
+        },
+        "Sostegno Reno": {
+          "mean": 20.404451,
+          "std": 1.04153,
+          "z85": -0.157894
+        }
+      },
+      "thresholdOn": "per_upstream_z85",
+      "useRain": true,
+      "horizons": {
+        "30": {
+          "b": -0.000343,
+          "wLocal": 0.896284,
+          "wWindow": [
+            0.005216,
+            0.005105
+          ],
+          "wRate": [
+            0.005216,
+            0.005105
+          ],
+          "wWindow2": [
+            0.000976,
+            0.002793
+          ],
+          "wRate2": [
+            0.000976,
+            0.002793
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Forcelli",
+            "dxw_Sostegno Reno",
+            "dxr_Forcelli",
+            "dxr_Sostegno Reno",
+            "dxw2_Forcelli",
+            "dxw2_Sostegno Reno",
+            "dxr2_Forcelli",
+            "dxr2_Sostegno Reno",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.009095,
+          "spreadHigh": 0.008935,
+          "spreadLowHigh": 0.093304,
+          "spreadHighHigh": 0.042259,
+          "train": {
+            "rmse": 0.009911,
+            "skill": 0.629905,
+            "mae": 0.006405,
+            "spreadLow": 0.008796,
+            "spreadHigh": 0.009032,
+            "n": 10772,
+            "coverage": 0.697735
+          },
+          "validate": {
+            "rmse": 0.010253,
+            "skill": 0.639783,
+            "mae": 0.006701,
+            "spreadLow": 0.008953,
+            "spreadHigh": 0.009142,
+            "n": 9050,
+            "coverage": 0.696796
+          },
+          "validateEvents": {
+            "rmse": 0.033807,
+            "skill": 0.828477,
+            "mae": 0.02196,
+            "spreadLow": 0.03935,
+            "spreadHigh": 0.016903,
+            "n": 124,
+            "coverage": 0.637097
+          },
+          "holdout": {
+            "rmse": 0.008605,
+            "skill": 0.621452,
+            "mae": 0.003253,
+            "spreadLow": 0.004597,
+            "spreadHigh": 0.004431,
+            "n": 3198,
+            "coverage": 0.707004
+          },
+          "holdoutEvents": {
+            "rmse": 0.120981,
+            "skill": 0.675199,
+            "mae": 0.079976,
+            "spreadLow": 0.120981,
+            "spreadHigh": 0.120981,
+            "n": 11,
+            "coverage": 0.636364
+          },
+          "wRain6": 0.000137,
+          "wRain24": 3.2e-05
+        },
+        "60": {
+          "b": -0.000742,
+          "wLocal": 1.78223,
+          "wWindow": [
+            0.00093,
+            0.010245
+          ],
+          "wRate": [
+            0.02005,
+            0.000989
+          ],
+          "wWindow2": [
+            -0.014125,
+            0.007458
+          ],
+          "wRate2": [
+            -0.00157,
+            0.007631
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Forcelli",
+            "dxw_Sostegno Reno",
+            "dxr_Forcelli",
+            "dxr_Sostegno Reno",
+            "dxw2_Forcelli",
+            "dxw2_Sostegno Reno",
+            "dxr2_Forcelli",
+            "dxr2_Sostegno Reno",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.01339,
+          "spreadHigh": 0.012677,
+          "spreadLowHigh": 0.1391,
+          "spreadHighHigh": 0.076193,
+          "train": {
+            "rmse": 0.018266,
+            "skill": 0.651806,
+            "mae": 0.011439,
+            "spreadLow": 0.013297,
+            "spreadHigh": 0.014017,
+            "n": 10507,
+            "coverage": 0.702294
+          },
+          "validate": {
+            "rmse": 0.019526,
+            "skill": 0.649418,
+            "mae": 0.011938,
+            "spreadLow": 0.013436,
+            "spreadHigh": 0.014171,
+            "n": 8833,
+            "coverage": 0.69863
+          },
+          "validateEvents": {
+            "rmse": 0.060954,
+            "skill": 0.76645,
+            "mae": 0.036097,
+            "spreadLow": 0.054585,
+            "spreadHigh": 0.030477,
+            "n": 324,
+            "coverage": 0.697531
+          },
+          "holdout": {
+            "rmse": 0.021254,
+            "skill": 0.533057,
+            "mae": 0.006378,
+            "spreadLow": 0.010627,
+            "spreadHigh": 0.010627,
+            "n": 3069,
+            "coverage": 0.836429
+          },
+          "holdoutEvents": {
+            "rmse": 0.227672,
+            "skill": 0.559053,
+            "mae": 0.130842,
+            "spreadLow": 0.161169,
+            "spreadHigh": 0.113836,
+            "n": 23,
+            "coverage": 0.652174
+          },
+          "wRain6": 0.000389,
+          "wRain24": 4.6e-05
+        },
+        "90": {
+          "b": -0.001305,
+          "wLocal": 2.649377,
+          "wWindow": [
+            -0.015753,
+            0.014722
+          ],
+          "wRate": [
+            0.043196,
+            0.000299
+          ],
+          "wWindow2": [
+            -0.017345,
+            0.001303
+          ],
+          "wRate2": [
+            0.005905,
+            0.005475
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Forcelli",
+            "dxw_Sostegno Reno",
+            "dxr_Forcelli",
+            "dxr_Sostegno Reno",
+            "dxw2_Forcelli",
+            "dxw2_Sostegno Reno",
+            "dxr2_Forcelli",
+            "dxr2_Sostegno Reno",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.018068,
+          "spreadHigh": 0.018376,
+          "spreadLowHigh": 0.170912,
+          "spreadHighHigh": 0.103884,
+          "train": {
+            "rmse": 0.028314,
+            "skill": 0.637972,
+            "mae": 0.016748,
+            "spreadLow": 0.017956,
+            "spreadHigh": 0.020183,
+            "n": 10456,
+            "coverage": 0.695581
+          },
+          "validate": {
+            "rmse": 0.031014,
+            "skill": 0.623318,
+            "mae": 0.017738,
+            "spreadLow": 0.018069,
+            "spreadHigh": 0.021071,
+            "n": 8781,
+            "coverage": 0.693998
+          },
+          "validateEvents": {
+            "rmse": 0.083107,
+            "skill": 0.713094,
+            "mae": 0.046119,
+            "spreadLow": 0.055786,
+            "spreadHigh": 0.041553,
+            "n": 631,
+            "coverage": 0.681458
+          },
+          "holdout": {
+            "rmse": 0.037335,
+            "skill": 0.443002,
+            "mae": 0.009729,
+            "spreadLow": 0.018668,
+            "spreadHigh": 0.018668,
+            "n": 3055,
+            "coverage": 0.890344
+          },
+          "holdoutEvents": {
+            "rmse": 0.365549,
+            "skill": 0.461524,
+            "mae": 0.210718,
+            "spreadLow": 0.188115,
+            "spreadHigh": 0.210008,
+            "n": 29,
+            "coverage": 0.62069
+          },
+          "wRain6": 0.00075,
+          "wRain24": 7.3e-05
+        },
+        "120": {
+          "b": -0.00209,
+          "wLocal": 3.472166,
+          "wWindow": [
+            -0.020285,
+            0.01502
+          ],
+          "wRate": [
+            0.041451,
+            0.001829
+          ],
+          "wWindow2": [
+            -0.022484,
+            -0.003826
+          ],
+          "wRate2": [
+            0.013082,
+            0.00598
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Forcelli",
+            "dxw_Sostegno Reno",
+            "dxr_Forcelli",
+            "dxr_Sostegno Reno",
+            "dxw2_Forcelli",
+            "dxw2_Sostegno Reno",
+            "dxr2_Forcelli",
+            "dxr2_Sostegno Reno",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.023686,
+          "spreadHigh": 0.02361,
+          "spreadLowHigh": 0.251195,
+          "spreadHighHigh": 0.13296,
+          "train": {
+            "rmse": 0.040147,
+            "skill": 0.613024,
+            "mae": 0.022604,
+            "spreadLow": 0.024012,
+            "spreadHigh": 0.027361,
+            "n": 10417,
+            "coverage": 0.699626
+          },
+          "validate": {
+            "rmse": 0.044138,
+            "skill": 0.595391,
+            "mae": 0.024057,
+            "spreadLow": 0.023709,
+            "spreadHigh": 0.028847,
+            "n": 8737,
+            "coverage": 0.692343
+          },
+          "validateEvents": {
+            "rmse": 0.106368,
+            "skill": 0.672125,
+            "mae": 0.057319,
+            "spreadLow": 0.057369,
+            "spreadHigh": 0.053184,
+            "n": 919,
+            "coverage": 0.680087
+          },
+          "holdout": {
+            "rmse": 0.055379,
+            "skill": 0.366368,
+            "mae": 0.013313,
+            "spreadLow": 0.027689,
+            "spreadHigh": 0.027689,
+            "n": 3050,
+            "coverage": 0.916393
+          },
+          "holdoutEvents": {
+            "rmse": 0.521084,
+            "skill": 0.381733,
+            "mae": 0.307858,
+            "spreadLow": 0.260542,
+            "spreadHigh": 0.310679,
+            "n": 32,
+            "coverage": 0.625
+          },
+          "wRain6": 0.00123,
+          "wRain24": 0.000121
+        },
+        "150": {
+          "b": -0.003053,
+          "wLocal": 4.253783,
+          "wWindow": [
+            -0.028947,
+            0.018356
+          ],
+          "wRate": [
+            0.045918,
+            0.001742
+          ],
+          "wWindow2": [
+            -0.027437,
+            -0.011521
+          ],
+          "wRate2": [
+            0.031874,
+            0.016714
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Forcelli",
+            "dxw_Sostegno Reno",
+            "dxr_Forcelli",
+            "dxr_Sostegno Reno",
+            "dxw2_Forcelli",
+            "dxw2_Sostegno Reno",
+            "dxr2_Forcelli",
+            "dxr2_Sostegno Reno",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.028992,
+          "spreadHigh": 0.029536,
+          "spreadLowHigh": 0.315581,
+          "spreadHighHigh": 0.166876,
+          "train": {
+            "rmse": 0.05324,
+            "skill": 0.587416,
+            "mae": 0.028631,
+            "spreadLow": 0.029311,
+            "spreadHigh": 0.034492,
+            "n": 10394,
+            "coverage": 0.699346
+          },
+          "validate": {
+            "rmse": 0.05782,
+            "skill": 0.566404,
+            "mae": 0.030723,
+            "spreadLow": 0.02914,
+            "spreadHigh": 0.037521,
+            "n": 8703,
+            "coverage": 0.697001
+          },
+          "validateEvents": {
+            "rmse": 0.129386,
+            "skill": 0.636419,
+            "mae": 0.069908,
+            "spreadLow": 0.064693,
+            "spreadHigh": 0.068378,
+            "n": 1161,
+            "coverage": 0.697674
+          },
+          "holdout": {
+            "rmse": 0.07452,
+            "skill": 0.301545,
+            "mae": 0.017131,
+            "spreadLow": 0.03726,
+            "spreadHigh": 0.03726,
+            "n": 3043,
+            "coverage": 0.924088
+          },
+          "holdoutEvents": {
+            "rmse": 0.637972,
+            "skill": 0.315604,
+            "mae": 0.366325,
+            "spreadLow": 0.318986,
+            "spreadHigh": 0.375887,
+            "n": 39,
+            "coverage": 0.692308
+          },
+          "wRain6": 0.001876,
+          "wRain24": 0.000174
+        },
+        "180": {
+          "b": -0.004349,
+          "wLocal": 4.971498,
+          "wWindow": [
+            -0.03528,
+            0.026765
+          ],
+          "wRate": [
+            0.03516,
+            0.001286
+          ],
+          "wWindow2": [
+            -0.03478,
+            -0.02096
+          ],
+          "wRate2": [
+            0.048796,
+            0.0195
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Forcelli",
+            "dxw_Sostegno Reno",
+            "dxr_Forcelli",
+            "dxr_Sostegno Reno",
+            "dxw2_Forcelli",
+            "dxw2_Sostegno Reno",
+            "dxr2_Forcelli",
+            "dxr2_Sostegno Reno",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.03439,
+          "spreadHigh": 0.035937,
+          "spreadLowHigh": 0.434877,
+          "spreadHighHigh": 0.22405,
+          "train": {
+            "rmse": 0.067676,
+            "skill": 0.562114,
+            "mae": 0.035131,
+            "spreadLow": 0.034245,
+            "spreadHigh": 0.042574,
+            "n": 10356,
+            "coverage": 0.691
+          },
+          "validate": {
+            "rmse": 0.073925,
+            "skill": 0.533073,
+            "mae": 0.038085,
+            "spreadLow": 0.036963,
+            "spreadHigh": 0.04598,
+            "n": 8681,
+            "coverage": 0.692317
+          },
+          "validateEvents": {
+            "rmse": 0.159461,
+            "skill": 0.596633,
+            "mae": 0.086309,
+            "spreadLow": 0.079731,
+            "spreadHigh": 0.085106,
+            "n": 1337,
+            "coverage": 0.703067
+          },
+          "holdout": {
+            "rmse": 0.094206,
+            "skill": 0.24696,
+            "mae": 0.021408,
+            "spreadLow": 0.047103,
+            "spreadHigh": 0.047103,
+            "n": 3030,
+            "coverage": 0.929703
+          },
+          "holdoutEvents": {
+            "rmse": 0.6988,
+            "skill": 0.261229,
+            "mae": 0.375457,
+            "spreadLow": 0.3494,
+            "spreadHigh": 0.363196,
+            "n": 52,
+            "coverage": 0.730769
+          },
+          "wRain6": 0.002624,
+          "wRain24": 0.00027
+        },
+        "210": {
+          "b": -0.005772,
+          "wLocal": 5.640334,
+          "wWindow": [
+            -0.041784,
+            0.034171
+          ],
+          "wRate": [
+            0.02852,
+            -0.002249
+          ],
+          "wWindow2": [
+            -0.037034,
+            -0.027468
+          ],
+          "wRate2": [
+            0.028235,
+            0.034007
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Forcelli",
+            "dxw_Sostegno Reno",
+            "dxr_Forcelli",
+            "dxr_Sostegno Reno",
+            "dxw2_Forcelli",
+            "dxw2_Sostegno Reno",
+            "dxr2_Forcelli",
+            "dxr2_Sostegno Reno",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.039969,
+          "spreadHigh": 0.041961,
+          "spreadLowHigh": 0.531905,
+          "spreadHighHigh": 0.292662,
+          "train": {
+            "rmse": 0.083134,
+            "skill": 0.535747,
+            "mae": 0.041922,
+            "spreadLow": 0.041567,
+            "spreadHigh": 0.049971,
+            "n": 10335,
+            "coverage": 0.700726
+          },
+          "validate": {
+            "rmse": 0.091885,
+            "skill": 0.496846,
+            "mae": 0.045985,
+            "spreadLow": 0.045942,
+            "spreadHigh": 0.055897,
+            "n": 8658,
+            "coverage": 0.693694
+          },
+          "validateEvents": {
+            "rmse": 0.189235,
+            "skill": 0.555466,
+            "mae": 0.101204,
+            "spreadLow": 0.094618,
+            "spreadHigh": 0.099326,
+            "n": 1544,
+            "coverage": 0.694301
+          },
+          "holdout": {
+            "rmse": 0.113977,
+            "skill": 0.199712,
+            "mae": 0.025788,
+            "spreadLow": 0.056989,
+            "spreadHigh": 0.056989,
+            "n": 3024,
+            "coverage": 0.935847
+          },
+          "holdoutEvents": {
+            "rmse": 0.807434,
+            "skill": 0.214403,
+            "mae": 0.442307,
+            "spreadLow": 0.403717,
+            "spreadHigh": 0.41559,
+            "n": 57,
+            "coverage": 0.736842
+          },
+          "wRain6": 0.003545,
+          "wRain24": 0.000354
+        },
+        "240": {
+          "b": -0.007482,
+          "wLocal": 6.262378,
+          "wWindow": [
+            -0.049065,
+            0.041536
+          ],
+          "wRate": [
+            -0.006407,
+            0.004394
+          ],
+          "wWindow2": [
+            -0.034683,
+            -0.036441
+          ],
+          "wRate2": [
+            0.017396,
+            0.041127
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Forcelli",
+            "dxw_Sostegno Reno",
+            "dxr_Forcelli",
+            "dxr_Sostegno Reno",
+            "dxw2_Forcelli",
+            "dxw2_Sostegno Reno",
+            "dxr2_Forcelli",
+            "dxr2_Sostegno Reno",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.045184,
+          "spreadHigh": 0.048828,
+          "spreadLowHigh": 0.645249,
+          "spreadHighHigh": 0.351587,
+          "train": {
+            "rmse": 0.099114,
+            "skill": 0.513337,
+            "mae": 0.048798,
+            "spreadLow": 0.049557,
+            "spreadHigh": 0.057387,
+            "n": 10329,
+            "coverage": 0.708587
+          },
+          "validate": {
+            "rmse": 0.109919,
+            "skill": 0.463661,
+            "mae": 0.053945,
+            "spreadLow": 0.05496,
+            "spreadHigh": 0.0647,
+            "n": 8635,
+            "coverage": 0.696699
+          },
+          "validateEvents": {
+            "rmse": 0.219112,
+            "skill": 0.518775,
+            "mae": 0.117393,
+            "spreadLow": 0.109556,
+            "spreadHigh": 0.116849,
+            "n": 1704,
+            "coverage": 0.690141
+          },
+          "holdout": {
+            "rmse": 0.133695,
+            "skill": 0.15806,
+            "mae": 0.03043,
+            "spreadLow": 0.066848,
+            "spreadHigh": 0.066848,
+            "n": 3020,
+            "coverage": 0.936424
+          },
+          "holdoutEvents": {
+            "rmse": 0.900227,
+            "skill": 0.173734,
+            "mae": 0.495004,
+            "spreadLow": 0.450114,
+            "spreadHigh": 0.453011,
+            "n": 63,
+            "coverage": 0.698413
+          },
+          "wRain6": 0.004643,
+          "wRain24": 0.000431
+        },
+        "270": {
+          "b": -0.00933,
+          "wLocal": 6.842086,
+          "wWindow": [
+            -0.056411,
+            0.05014
+          ],
+          "wRate": [
+            -0.034784,
+            0.009091
+          ],
+          "wWindow2": [
+            -0.024893,
+            -0.050881
+          ],
+          "wRate2": [
+            -0.027197,
+            0.044771
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Forcelli",
+            "dxw_Sostegno Reno",
+            "dxr_Forcelli",
+            "dxr_Sostegno Reno",
+            "dxw2_Forcelli",
+            "dxw2_Sostegno Reno",
+            "dxr2_Forcelli",
+            "dxr2_Sostegno Reno",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.052455,
+          "spreadHigh": 0.055217,
+          "spreadLowHigh": 0.736295,
+          "spreadHighHigh": 0.398877,
+          "train": {
+            "rmse": 0.115619,
+            "skill": 0.492517,
+            "mae": 0.055831,
+            "spreadLow": 0.057809,
+            "spreadHigh": 0.065614,
+            "n": 10300,
+            "coverage": 0.714951
+          },
+          "validate": {
+            "rmse": 0.12827,
+            "skill": 0.433519,
+            "mae": 0.061911,
+            "spreadLow": 0.064135,
+            "spreadHigh": 0.073297,
+            "n": 8618,
+            "coverage": 0.701439
+          },
+          "validateEvents": {
+            "rmse": 0.246629,
+            "skill": 0.487298,
+            "mae": 0.130921,
+            "spreadLow": 0.123315,
+            "spreadHigh": 0.134613,
+            "n": 1868,
+            "coverage": 0.700749
+          },
+          "holdout": {
+            "rmse": 0.153169,
+            "skill": 0.121902,
+            "mae": 0.035505,
+            "spreadLow": 0.076584,
+            "spreadHigh": 0.076584,
+            "n": 3012,
+            "coverage": 0.935923
+          },
+          "holdoutEvents": {
+            "rmse": 1.002401,
+            "skill": 0.141623,
+            "mae": 0.55204,
+            "spreadLow": 0.5012,
+            "spreadHigh": 0.533137,
+            "n": 66,
+            "coverage": 0.681818
+          },
+          "wRain6": 0.005901,
+          "wRain24": 0.000493
+        },
+        "300": {
+          "b": -0.011168,
+          "wLocal": 7.371956,
+          "wWindow": [
+            -0.065908,
+            0.05576
+          ],
+          "wRate": [
+            -0.064072,
+            0.008878
+          ],
+          "wWindow2": [
+            -0.022686,
+            -0.06448
+          ],
+          "wRate2": [
+            0.002545,
+            0.065818
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Forcelli",
+            "dxw_Sostegno Reno",
+            "dxr_Forcelli",
+            "dxr_Sostegno Reno",
+            "dxw2_Forcelli",
+            "dxw2_Sostegno Reno",
+            "dxr2_Forcelli",
+            "dxr2_Sostegno Reno",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.060249,
+          "spreadHigh": 0.062101,
+          "spreadLowHigh": 0.859243,
+          "spreadHighHigh": 0.464081,
+          "train": {
+            "rmse": 0.132313,
+            "skill": 0.475354,
+            "mae": 0.062998,
+            "spreadLow": 0.066156,
+            "spreadHigh": 0.07391,
+            "n": 10291,
+            "coverage": 0.728501
+          },
+          "validate": {
+            "rmse": 0.146805,
+            "skill": 0.405692,
+            "mae": 0.070504,
+            "spreadLow": 0.073402,
+            "spreadHigh": 0.083924,
+            "n": 8611,
+            "coverage": 0.702706
+          },
+          "validateEvents": {
+            "rmse": 0.275145,
+            "skill": 0.458533,
+            "mae": 0.146953,
+            "spreadLow": 0.137572,
+            "spreadHigh": 0.152963,
+            "n": 1996,
+            "coverage": 0.697395
+          },
+          "holdout": {
+            "rmse": 0.172161,
+            "skill": 0.091046,
+            "mae": 0.040897,
+            "spreadLow": 0.086081,
+            "spreadHigh": 0.086081,
+            "n": 3001,
+            "coverage": 0.933689
+          },
+          "holdoutEvents": {
+            "rmse": 1.061952,
+            "skill": 0.111798,
+            "mae": 0.585429,
+            "spreadLow": 0.530976,
+            "spreadHigh": 0.530976,
+            "n": 74,
+            "coverage": 0.675676
+          },
+          "wRain6": 0.007301,
+          "wRain24": 0.000552
+        },
+        "330": {
+          "b": -0.013366,
+          "wLocal": 7.848308,
+          "wWindow": [
+            -0.075919,
+            0.05919
+          ],
+          "wRate": [
+            -0.088849,
+            0.0158
+          ],
+          "wWindow2": [
+            -0.018931,
+            -0.071125
+          ],
+          "wRate2": [
+            -0.000192,
+            0.048996
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Forcelli",
+            "dxw_Sostegno Reno",
+            "dxr_Forcelli",
+            "dxr_Sostegno Reno",
+            "dxw2_Forcelli",
+            "dxw2_Sostegno Reno",
+            "dxr2_Forcelli",
+            "dxr2_Sostegno Reno",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.067804,
+          "spreadHigh": 0.067804,
+          "spreadLowHigh": 0.949857,
+          "spreadHighHigh": 0.520768,
+          "train": {
+            "rmse": 0.149175,
+            "skill": 0.459315,
+            "mae": 0.07032,
+            "spreadLow": 0.074587,
+            "spreadHigh": 0.081793,
+            "n": 10285,
+            "coverage": 0.736023
+          },
+          "validate": {
+            "rmse": 0.164692,
+            "skill": 0.384734,
+            "mae": 0.078958,
+            "spreadLow": 0.082346,
+            "spreadHigh": 0.093724,
+            "n": 8596,
+            "coverage": 0.702652
+          },
+          "validateEvents": {
+            "rmse": 0.30133,
+            "skill": 0.437227,
+            "mae": 0.162803,
+            "spreadLow": 0.150665,
+            "spreadHigh": 0.174967,
+            "n": 2112,
+            "coverage": 0.685606
+          },
+          "holdout": {
+            "rmse": 0.190369,
+            "skill": 0.064585,
+            "mae": 0.046423,
+            "spreadLow": 0.095185,
+            "spreadHigh": 0.095185,
+            "n": 2995,
+            "coverage": 0.930885
+          },
+          "holdoutEvents": {
+            "rmse": 1.080311,
+            "skill": 0.087677,
+            "mae": 0.580526,
+            "spreadLow": 0.540155,
+            "spreadHigh": 0.540155,
+            "n": 87,
+            "coverage": 0.701149
+          },
+          "wRain6": 0.008829,
+          "wRain24": 0.000615
+        },
+        "360": {
+          "b": -0.015496,
+          "wLocal": 8.300787,
+          "wWindow": [
+            -0.090874,
+            0.060256
+          ],
+          "wRate": [
+            -0.099182,
+            0.031426
+          ],
+          "wWindow2": [
+            -0.019295,
+            -0.078166
+          ],
+          "wRate2": [
+            0.022258,
+            0.089189
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Forcelli",
+            "dxw_Sostegno Reno",
+            "dxr_Forcelli",
+            "dxr_Sostegno Reno",
+            "dxw2_Forcelli",
+            "dxw2_Sostegno Reno",
+            "dxr2_Forcelli",
+            "dxr2_Sostegno Reno",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.075214,
+          "spreadHigh": 0.075214,
+          "spreadLowHigh": 1.06514,
+          "spreadHighHigh": 0.60212,
+          "train": {
+            "rmse": 0.165564,
+            "skill": 0.443522,
+            "mae": 0.077273,
+            "spreadLow": 0.082782,
+            "spreadHigh": 0.087097,
+            "n": 10273,
+            "coverage": 0.740095
+          },
+          "validate": {
+            "rmse": 0.183024,
+            "skill": 0.365253,
+            "mae": 0.08783,
+            "spreadLow": 0.091512,
+            "spreadHigh": 0.103306,
+            "n": 8579,
+            "coverage": 0.70964
+          },
+          "validateEvents": {
+            "rmse": 0.327766,
+            "skill": 0.416054,
+            "mae": 0.179533,
+            "spreadLow": 0.163883,
+            "spreadHigh": 0.196524,
+            "n": 2230,
+            "coverage": 0.684753
+          },
+          "holdout": {
+            "rmse": 0.207696,
+            "skill": 0.041453,
+            "mae": 0.051852,
+            "spreadLow": 0.103848,
+            "spreadHigh": 0.103848,
+            "n": 2996,
+            "coverage": 0.932243
+          },
+          "holdoutEvents": {
+            "rmse": 1.09753,
+            "skill": 0.067233,
+            "mae": 0.575435,
+            "spreadLow": 0.548765,
+            "spreadHigh": 0.548765,
+            "n": 100,
+            "coverage": 0.79
+          },
+          "wRain6": 0.010428,
+          "wRain24": 0.00067
+        }
+      },
+      "skill120": 0.672125,
+      "holdoutSkill120": 0.381733,
+      "reliable": true,
+      "samples": 10772,
+      "trainedAt": "2026-11-12T17:48:48Z",
+      "kind": "direct_horizon_delta_ridge"
+    },
+    "Casalecchio tiro a volo": {
+      "upstreams": [
+        "Casalecchio chiusa"
+      ],
+      "lagMinutes": [
+        0
+      ],
+      "lagR": [
+        0.667217
+      ],
+      "thresholds": {
+        "Casalecchio chiusa": {
+          "mean": -0.017611,
+          "std": 0.646116,
+          "z85": 0.746942
+        }
+      },
+      "thresholdOn": "per_upstream_z85",
+      "useRain": true,
+      "horizons": {
+        "30": {
+          "b": -0.000394,
+          "wLocal": 0.182013,
+          "wWindow": [
+            0.071432
+          ],
+          "wRate": [
+            0.071432
+          ],
+          "wWindow2": [
+            -0.028732
+          ],
+          "wRate2": [
+            -0.028732
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Casalecchio chiusa",
+            "dxr_Casalecchio chiusa",
+            "dxw2_Casalecchio chiusa",
+            "dxr2_Casalecchio chiusa",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.008044,
+          "spreadHigh": 0.008464,
+          "spreadLowHigh": 0.505495,
+          "spreadHighHigh": 0.245024,
+          "train": {
+            "rmse": 0.02308,
+            "skill": 0.050599,
+            "mae": 0.009255,
+            "spreadLow": 0.01154,
+            "spreadHigh": 0.01154,
+            "n": 15886,
+            "coverage": 0.799194
+          },
+          "validate": {
+            "rmse": 0.02203,
+            "skill": 0.114891,
+            "mae": 0.00912,
+            "spreadLow": 0.011015,
+            "spreadHigh": 0.011015,
+            "n": 14752,
+            "coverage": 0.719089
+          },
+          "validateEvents": {
+            "rmse": 0.196019,
+            "skill": 0.146757,
+            "mae": 0.160737,
+            "spreadLow": 0.260714,
+            "spreadHigh": 0.121322,
+            "n": 131,
+            "coverage": 0.641221
+          },
+          "holdout": {
+            "rmse": 0.038855,
+            "skill": -0.015304,
+            "mae": 0.012955,
+            "spreadLow": 0.019427,
+            "spreadHigh": 0.019427,
+            "n": 3443,
+            "coverage": 0.873366
+          },
+          "holdoutEvents": {
+            "rmse": 0.280398,
+            "skill": 0.008173,
+            "mae": 0.170241,
+            "spreadLow": 0.140199,
+            "spreadHigh": 0.157888,
+            "n": 54,
+            "coverage": 0.666667
+          },
+          "wRain6": 0.00085,
+          "wRain24": -0.00015
+        },
+        "60": {
+          "b": -0.000745,
+          "wLocal": 0.361255,
+          "wWindow": [
+            -0.096002
+          ],
+          "wRate": [
+            0.285616
+          ],
+          "wWindow2": [
+            0.009588
+          ],
+          "wRate2": [
+            0.024751
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Casalecchio chiusa",
+            "dxr_Casalecchio chiusa",
+            "dxw2_Casalecchio chiusa",
+            "dxr2_Casalecchio chiusa",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.013832,
+          "spreadHigh": 0.013832,
+          "spreadLowHigh": 0.744273,
+          "spreadHighHigh": 0.322548,
+          "train": {
+            "rmse": 0.035611,
+            "skill": 0.069336,
+            "mae": 0.013574,
+            "spreadLow": 0.017805,
+            "spreadHigh": 0.017805,
+            "n": 15884,
+            "coverage": 0.827814
+          },
+          "validate": {
+            "rmse": 0.038517,
+            "skill": 0.101061,
+            "mae": 0.014112,
+            "spreadLow": 0.019258,
+            "spreadHigh": 0.019258,
+            "n": 14748,
+            "coverage": 0.783835
+          },
+          "validateEvents": {
+            "rmse": 0.258038,
+            "skill": 0.124966,
+            "mae": 0.190818,
+            "spreadLow": 0.25432,
+            "spreadHigh": 0.145174,
+            "n": 267,
+            "coverage": 0.674157
+          },
+          "holdout": {
+            "rmse": 0.054374,
+            "skill": -0.042408,
+            "mae": 0.017355,
+            "spreadLow": 0.027187,
+            "spreadHigh": 0.027187,
+            "n": 3442,
+            "coverage": 0.870134
+          },
+          "holdoutEvents": {
+            "rmse": 0.357313,
+            "skill": 0.016044,
+            "mae": 0.19967,
+            "spreadLow": 0.178656,
+            "spreadHigh": 0.178656,
+            "n": 64,
+            "coverage": 0.78125
+          },
+          "wRain6": 0.001726,
+          "wRain24": -0.000316
+        },
+        "90": {
+          "b": -0.001103,
+          "wLocal": 0.453289,
+          "wWindow": [
+            -0.030601
+          ],
+          "wRate": [
+            0.228988
+          ],
+          "wWindow2": [
+            0.002218
+          ],
+          "wRate2": [
+            0.029339
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Casalecchio chiusa",
+            "dxr_Casalecchio chiusa",
+            "dxw2_Casalecchio chiusa",
+            "dxr2_Casalecchio chiusa",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.019056,
+          "spreadHigh": 0.019056,
+          "spreadLowHigh": 0.822872,
+          "spreadHighHigh": 0.373784,
+          "train": {
+            "rmse": 0.047231,
+            "skill": 0.070931,
+            "mae": 0.017578,
+            "spreadLow": 0.023615,
+            "spreadHigh": 0.023615,
+            "n": 15882,
+            "coverage": 0.840952
+          },
+          "validate": {
+            "rmse": 0.053026,
+            "skill": 0.084545,
+            "mae": 0.018824,
+            "spreadLow": 0.026513,
+            "spreadHigh": 0.026513,
+            "n": 14746,
+            "coverage": 0.814729
+          },
+          "validateEvents": {
+            "rmse": 0.299027,
+            "skill": 0.109377,
+            "mae": 0.214495,
+            "spreadLow": 0.303679,
+            "spreadHigh": 0.149514,
+            "n": 390,
+            "coverage": 0.617949
+          },
+          "holdout": {
+            "rmse": 0.065751,
+            "skill": -0.051283,
+            "mae": 0.021014,
+            "spreadLow": 0.032876,
+            "spreadHigh": 0.032876,
+            "n": 3441,
+            "coverage": 0.860506
+          },
+          "holdoutEvents": {
+            "rmse": 0.411138,
+            "skill": 0.022429,
+            "mae": 0.223795,
+            "spreadLow": 0.205569,
+            "spreadHigh": 0.205569,
+            "n": 69,
+            "coverage": 0.855072
+          },
+          "wRain6": 0.002665,
+          "wRain24": -0.000501
+        },
+        "120": {
+          "b": -0.001421,
+          "wLocal": 0.5188,
+          "wWindow": [
+            -0.012931
+          ],
+          "wRate": [
+            0.227933
+          ],
+          "wWindow2": [
+            0.004186
+          ],
+          "wRate2": [
+            0.00728
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Casalecchio chiusa",
+            "dxr_Casalecchio chiusa",
+            "dxw2_Casalecchio chiusa",
+            "dxr2_Casalecchio chiusa",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.024107,
+          "spreadHigh": 0.024107,
+          "spreadLowHigh": 0.853041,
+          "spreadHighHigh": 0.399569,
+          "train": {
+            "rmse": 0.057552,
+            "skill": 0.071559,
+            "mae": 0.021231,
+            "spreadLow": 0.028776,
+            "spreadHigh": 0.028776,
+            "n": 15880,
+            "coverage": 0.848552
+          },
+          "validate": {
+            "rmse": 0.065793,
+            "skill": 0.074802,
+            "mae": 0.023412,
+            "spreadLow": 0.032897,
+            "spreadHigh": 0.032897,
+            "n": 14744,
+            "coverage": 0.82732
+          },
+          "validateEvents": {
+            "rmse": 0.319655,
+            "skill": 0.09582,
+            "mae": 0.226744,
+            "spreadLow": 0.326216,
+            "spreadHigh": 0.159828,
+            "n": 543,
+            "coverage": 0.640884
+          },
+          "holdout": {
+            "rmse": 0.074773,
+            "skill": -0.056338,
+            "mae": 0.024096,
+            "spreadLow": 0.037386,
+            "spreadHigh": 0.037386,
+            "n": 3440,
+            "coverage": 0.854651
+          },
+          "holdoutEvents": {
+            "rmse": 0.460159,
+            "skill": -0.02777,
+            "mae": 0.260772,
+            "spreadLow": 0.23008,
+            "spreadHigh": 0.23008,
+            "n": 79,
+            "coverage": 0.873418
+          },
+          "wRain6": 0.003572,
+          "wRain24": -0.000689
+        }
+      },
+      "skill120": 0.09582,
+      "holdoutSkill120": -0.02777,
+      "reliable": false,
+      "samples": 15886,
+      "trainedAt": "2026-11-12T17:48:48Z",
+      "kind": "direct_horizon_delta_ridge"
+    },
+    "Casalecchio chiusa": {
+      "upstreams": [
+        "Sasso Marconi",
+        "Vergato DX"
+      ],
+      "lagMinutes": [
+        60,
+        210
+      ],
+      "lagR": [
+        0.71605,
+        0.142692
+      ],
+      "thresholds": {
+        "Sasso Marconi": {
+          "mean": -0.114545,
+          "std": 0.245775,
+          "z85": 0.913618
+        },
+        "Vergato DX": {
+          "mean": 1.036145,
+          "std": 0.137342,
+          "z85": 0.282907
+        }
+      },
+      "thresholdOn": "per_upstream_z85",
+      "useRain": true,
+      "horizons": {
+        "30": {
+          "b": -6.7e-05,
+          "wLocal": 0.692411,
+          "wWindow": [
+            0.044898,
+            -0.001188
+          ],
+          "wRate": [
+            0.044898,
+            -0.001188
+          ],
+          "wWindow2": [
+            0.019864,
+            -0.00027
+          ],
+          "wRate2": [
+            0.019864,
+            -0.00027
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Sasso Marconi",
+            "dxw_Vergato DX",
+            "dxr_Sasso Marconi",
+            "dxr_Vergato DX",
+            "dxw2_Sasso Marconi",
+            "dxw2_Vergato DX",
+            "dxr2_Sasso Marconi",
+            "dxr2_Vergato DX",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.01152,
+          "spreadHigh": 0.011865,
+          "spreadLowHigh": 0.269033,
+          "spreadHighHigh": 0.147771,
+          "train": {
+            "rmse": 0.022466,
+            "skill": 0.290507,
+            "mae": 0.009926,
+            "spreadLow": 0.011233,
+            "spreadHigh": 0.011233,
+            "n": 15362,
+            "coverage": 0.757649
+          },
+          "validate": {
+            "rmse": 0.023484,
+            "skill": 0.322034,
+            "mae": 0.010874,
+            "spreadLow": 0.011742,
+            "spreadHigh": 0.011742,
+            "n": 14402,
+            "coverage": 0.758367
+          },
+          "validateEvents": {
+            "rmse": 0.118217,
+            "skill": 0.371194,
+            "mae": 0.087877,
+            "spreadLow": 0.130227,
+            "spreadHigh": 0.064082,
+            "n": 320,
+            "coverage": 0.6125
+          },
+          "holdout": {
+            "rmse": 0.034172,
+            "skill": 0.385869,
+            "mae": 0.014231,
+            "spreadLow": 0.017086,
+            "spreadHigh": 0.017086,
+            "n": 3213,
+            "coverage": 0.787115
+          },
+          "holdoutEvents": {
+            "rmse": 0.105349,
+            "skill": 0.437473,
+            "mae": 0.069187,
+            "spreadLow": 0.083321,
+            "spreadHigh": 0.059042,
+            "n": 224,
+            "coverage": 0.638393
+          },
+          "wRain6": 0.00015,
+          "wRain24": -2.1e-05
+        },
+        "60": {
+          "b": -0.000135,
+          "wLocal": 1.124697,
+          "wWindow": [
+            0.084094,
+            -0.012813
+          ],
+          "wRate": [
+            0.141596,
+            0.006786
+          ],
+          "wWindow2": [
+            -0.056002,
+            -0.007982
+          ],
+          "wRate2": [
+            -0.001484,
+            -0.008843
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Sasso Marconi",
+            "dxw_Vergato DX",
+            "dxr_Sasso Marconi",
+            "dxr_Vergato DX",
+            "dxw2_Sasso Marconi",
+            "dxw2_Vergato DX",
+            "dxr2_Sasso Marconi",
+            "dxr2_Vergato DX",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.025269,
+          "spreadHigh": 0.025269,
+          "spreadLowHigh": 0.393927,
+          "spreadHighHigh": 0.204605,
+          "train": {
+            "rmse": 0.045606,
+            "skill": 0.218306,
+            "mae": 0.019111,
+            "spreadLow": 0.022803,
+            "spreadHigh": 0.022803,
+            "n": 15220,
+            "coverage": 0.804599
+          },
+          "validate": {
+            "rmse": 0.049411,
+            "skill": 0.231178,
+            "mae": 0.02178,
+            "spreadLow": 0.024706,
+            "spreadHigh": 0.024706,
+            "n": 14334,
+            "coverage": 0.802219
+          },
+          "validateEvents": {
+            "rmse": 0.163215,
+            "skill": 0.281642,
+            "mae": 0.122419,
+            "spreadLow": 0.173842,
+            "spreadHigh": 0.109801,
+            "n": 1000,
+            "coverage": 0.687
+          },
+          "holdout": {
+            "rmse": 0.071626,
+            "skill": 0.299921,
+            "mae": 0.031417,
+            "spreadLow": 0.035813,
+            "spreadHigh": 0.035813,
+            "n": 3152,
+            "coverage": 0.777284
+          },
+          "holdoutEvents": {
+            "rmse": 0.167121,
+            "skill": 0.34448,
+            "mae": 0.119059,
+            "spreadLow": 0.181476,
+            "spreadHigh": 0.106925,
+            "n": 468,
+            "coverage": 0.66453
+          },
+          "wRain6": 0.000523,
+          "wRain24": -7.4e-05
+        },
+        "90": {
+          "b": -0.000324,
+          "wLocal": 1.383968,
+          "wWindow": [
+            0.018125,
+            -0.021949
+          ],
+          "wRate": [
+            0.303909,
+            0.008815
+          ],
+          "wWindow2": [
+            -0.032017,
+            -0.007496
+          ],
+          "wRate2": [
+            -0.041386,
+            -0.006118
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Sasso Marconi",
+            "dxw_Vergato DX",
+            "dxr_Sasso Marconi",
+            "dxr_Vergato DX",
+            "dxw2_Sasso Marconi",
+            "dxw2_Vergato DX",
+            "dxr2_Sasso Marconi",
+            "dxr2_Vergato DX",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.039439,
+          "spreadHigh": 0.039439,
+          "spreadLowHigh": 0.524322,
+          "spreadHighHigh": 0.301901,
+          "train": {
+            "rmse": 0.06792,
+            "skill": 0.166262,
+            "mae": 0.028533,
+            "spreadLow": 0.03396,
+            "spreadHigh": 0.03396,
+            "n": 15150,
+            "coverage": 0.810231
+          },
+          "validate": {
+            "rmse": 0.075702,
+            "skill": 0.159162,
+            "mae": 0.033061,
+            "spreadLow": 0.037851,
+            "spreadHigh": 0.037851,
+            "n": 14307,
+            "coverage": 0.807996
+          },
+          "validateEvents": {
+            "rmse": 0.218908,
+            "skill": 0.198205,
+            "mae": 0.165925,
+            "spreadLow": 0.233789,
+            "spreadHigh": 0.162609,
+            "n": 1435,
+            "coverage": 0.710801
+          },
+          "holdout": {
+            "rmse": 0.113948,
+            "skill": 0.220209,
+            "mae": 0.051321,
+            "spreadLow": 0.056974,
+            "spreadHigh": 0.056974,
+            "n": 3126,
+            "coverage": 0.776711
+          },
+          "holdoutEvents": {
+            "rmse": 0.233802,
+            "skill": 0.252705,
+            "mae": 0.168201,
+            "spreadLow": 0.250177,
+            "spreadHigh": 0.157609,
+            "n": 656,
+            "coverage": 0.685976
+          },
+          "wRain6": 0.000884,
+          "wRain24": -0.000124
+        },
+        "120": {
+          "b": -0.00054,
+          "wLocal": 1.501288,
+          "wWindow": [
+            -0.022824,
+            -0.019574
+          ],
+          "wRate": [
+            0.394636,
+            0.007373
+          ],
+          "wWindow2": [
+            -0.046246,
+            -0.004862
+          ],
+          "wRate2": [
+            0.011005,
+            -0.006852
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Sasso Marconi",
+            "dxw_Vergato DX",
+            "dxr_Sasso Marconi",
+            "dxr_Vergato DX",
+            "dxw2_Sasso Marconi",
+            "dxw2_Vergato DX",
+            "dxr2_Sasso Marconi",
+            "dxr2_Vergato DX",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.052382,
+          "spreadHigh": 0.052382,
+          "spreadLowHigh": 0.658874,
+          "spreadHighHigh": 0.38858,
+          "train": {
+            "rmse": 0.089362,
+            "skill": 0.122802,
+            "mae": 0.037851,
+            "spreadLow": 0.044681,
+            "spreadHigh": 0.044681,
+            "n": 15091,
+            "coverage": 0.806772
+          },
+          "validate": {
+            "rmse": 0.099188,
+            "skill": 0.113734,
+            "mae": 0.043533,
+            "spreadLow": 0.049594,
+            "spreadHigh": 0.049594,
+            "n": 14285,
+            "coverage": 0.80511
+          },
+          "validateEvents": {
+            "rmse": 0.266123,
+            "skill": 0.142946,
+            "mae": 0.203096,
+            "spreadLow": 0.273534,
+            "spreadHigh": 0.209614,
+            "n": 1749,
+            "coverage": 0.705546
+          },
+          "holdout": {
+            "rmse": 0.15119,
+            "skill": 0.174929,
+            "mae": 0.070489,
+            "spreadLow": 0.075595,
+            "spreadHigh": 0.075595,
+            "n": 3100,
+            "coverage": 0.765484
+          },
+          "holdoutEvents": {
+            "rmse": 0.296556,
+            "skill": 0.185032,
+            "mae": 0.216912,
+            "spreadLow": 0.320018,
+            "spreadHigh": 0.209831,
+            "n": 767,
+            "coverage": 0.685789
+          },
+          "wRain6": 0.001505,
+          "wRain24": -0.000209
+        }
+      },
+      "skill120": 0.142946,
+      "holdoutSkill120": 0.185032,
+      "reliable": true,
+      "samples": 15362,
+      "trainedAt": "2026-11-12T17:48:50Z",
+      "kind": "direct_horizon_delta_ridge"
+    },
+    "Dosso": {
+      "upstreams": [
+        "Cento"
+      ],
+      "lagMinutes": [
+        150
+      ],
+      "lagR": [
+        0.288319
+      ],
+      "thresholds": {
+        "Cento": {
+          "mean": -0.389004,
+          "std": 1.844531,
+          "z85": 0.896707
+        }
+      },
+      "thresholdOn": "per_upstream_z85",
+      "useRain": true,
+      "horizons": {
+        "30": {
+          "b": -0.000683,
+          "wLocal": -0.232401,
+          "wWindow": [
+            0.288212
+          ],
+          "wRate": [
+            0.288212
+          ],
+          "wWindow2": [
+            0.120967
+          ],
+          "wRate2": [
+            0.120967
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Cento",
+            "dxr_Cento",
+            "dxw2_Cento",
+            "dxr2_Cento",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.015014,
+          "spreadHigh": 0.015014,
+          "spreadLowHigh": 0.296023,
+          "spreadHighHigh": 0.296023,
+          "train": {
+            "rmse": 0.055811,
+            "skill": 0.088657,
+            "mae": 0.011347,
+            "spreadLow": 0.027906,
+            "spreadHigh": 0.027906,
+            "n": 15810,
+            "coverage": 0.969892
+          },
+          "validate": {
+            "rmse": 0.029373,
+            "skill": 0.15883,
+            "mae": 0.009103,
+            "spreadLow": 0.014686,
+            "spreadHigh": 0.014686,
+            "n": 14712,
+            "coverage": 0.860658
+          },
+          "validateEvents": {
+            "rmse": 0.236819,
+            "skill": 0.182733,
+            "mae": 0.098435,
+            "spreadLow": 0.118409,
+            "spreadHigh": 0.118409,
+            "n": 170,
+            "coverage": 0.688235
+          },
+          "holdout": {
+            "rmse": 0.013408,
+            "skill": 0.015182,
+            "mae": 0.006442,
+            "spreadLow": 0.007197,
+            "spreadHigh": 0.007193,
+            "n": 3443,
+            "coverage": 0.698809
+          },
+          "holdoutEvents": {
+            "rmse": 0.191883,
+            "skill": -0.011248,
+            "mae": 0.178135,
+            "spreadLow": 0.191883,
+            "spreadHigh": 0.191883,
+            "n": 11,
+            "coverage": 0.454545
+          },
+          "wRain6": 5e-06,
+          "wRain24": 0.000143
+        },
+        "60": {
+          "b": -0.001352,
+          "wLocal": -0.287298,
+          "wWindow": [
+            0.32588
+          ],
+          "wRate": [
+            0.736223
+          ],
+          "wWindow2": [
+            0.093581
+          ],
+          "wRate2": [
+            -0.069303
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Cento",
+            "dxr_Cento",
+            "dxw2_Cento",
+            "dxr2_Cento",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.01877,
+          "spreadHigh": 0.01877,
+          "spreadLowHigh": 0.32372,
+          "spreadHighHigh": 0.233788,
+          "train": {
+            "rmse": 0.069674,
+            "skill": 0.162244,
+            "mae": 0.017285,
+            "spreadLow": 0.034837,
+            "spreadHigh": 0.034837,
+            "n": 15804,
+            "coverage": 0.942989
+          },
+          "validate": {
+            "rmse": 0.03863,
+            "skill": 0.263817,
+            "mae": 0.014399,
+            "spreadLow": 0.019315,
+            "spreadHigh": 0.019315,
+            "n": 14706,
+            "coverage": 0.817625
+          },
+          "validateEvents": {
+            "rmse": 0.187031,
+            "skill": 0.33396,
+            "mae": 0.091037,
+            "spreadLow": 0.118323,
+            "spreadHigh": 0.093515,
+            "n": 408,
+            "coverage": 0.713235
+          },
+          "holdout": {
+            "rmse": 0.023867,
+            "skill": 0.030115,
+            "mae": 0.009287,
+            "spreadLow": 0.011934,
+            "spreadHigh": 0.011934,
+            "n": 3442,
+            "coverage": 0.76351
+          },
+          "holdoutEvents": {
+            "rmse": 0.313068,
+            "skill": 0.035936,
+            "mae": 0.267316,
+            "spreadLow": 0.313068,
+            "spreadHigh": 0.313068,
+            "n": 16,
+            "coverage": 0.5625
+          },
+          "wRain6": 0.000135,
+          "wRain24": 0.000252
+        },
+        "90": {
+          "b": -0.002085,
+          "wLocal": -0.25063,
+          "wWindow": [
+            0.209483
+          ],
+          "wRate": [
+            1.397474
+          ],
+          "wWindow2": [
+            0.092845
+          ],
+          "wRate2": [
+            -0.191724
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Cento",
+            "dxr_Cento",
+            "dxw2_Cento",
+            "dxr2_Cento",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.051839,
+          "spreadHigh": 0.051839,
+          "spreadLowHigh": 0.473554,
+          "spreadHighHigh": 0.473554,
+          "train": {
+            "rmse": 0.080689,
+            "skill": 0.217762,
+            "mae": 0.022938,
+            "spreadLow": 0.040345,
+            "spreadHigh": 0.040345,
+            "n": 15798,
+            "coverage": 0.916888
+          },
+          "validate": {
+            "rmse": 0.099195,
+            "skill": 0.113466,
+            "mae": 0.020559,
+            "spreadLow": 0.049598,
+            "spreadHigh": 0.049598,
+            "n": 14699,
+            "coverage": 0.917954
+          },
+          "validateEvents": {
+            "rmse": 0.378843,
+            "skill": 0.130586,
+            "mae": 0.092646,
+            "spreadLow": 0.189421,
+            "spreadHigh": 0.189421,
+            "n": 919,
+            "coverage": 0.628945
+          },
+          "holdout": {
+            "rmse": 0.033873,
+            "skill": 0.045021,
+            "mae": 0.011954,
+            "spreadLow": 0.016936,
+            "spreadHigh": 0.016936,
+            "n": 3441,
+            "coverage": 0.81023
+          },
+          "holdoutEvents": {
+            "rmse": 0.389455,
+            "skill": 0.064576,
+            "mae": 0.307181,
+            "spreadLow": 0.412111,
+            "spreadHigh": 0.405605,
+            "n": 22,
+            "coverage": 0.636364
+          },
+          "wRain6": 0.000366,
+          "wRain24": 0.000349
+        },
+        "120": {
+          "b": -0.003021,
+          "wLocal": -0.236765,
+          "wWindow": [
+            0.160883
+          ],
+          "wRate": [
+            2.019048
+          ],
+          "wWindow2": [
+            0.062433
+          ],
+          "wRate2": [
+            -0.212453
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Cento",
+            "dxr_Cento",
+            "dxw2_Cento",
+            "dxr2_Cento",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.096796,
+          "spreadHigh": 0.096796,
+          "spreadLowHigh": 0.72024,
+          "spreadHighHigh": 0.72024,
+          "train": {
+            "rmse": 0.09238,
+            "skill": 0.257802,
+            "mae": 0.029062,
+            "spreadLow": 0.04619,
+            "spreadHigh": 0.04619,
+            "n": 15792,
+            "coverage": 0.891781
+          },
+          "validate": {
+            "rmse": 0.182457,
+            "skill": 0.061512,
+            "mae": 0.028605,
+            "spreadLow": 0.091229,
+            "spreadHigh": 0.091229,
+            "n": 14697,
+            "coverage": 0.926856
+          },
+          "validateEvents": {
+            "rmse": 0.576192,
+            "skill": 0.072653,
+            "mae": 0.114131,
+            "spreadLow": 0.288096,
+            "spreadHigh": 0.288096,
+            "n": 1415,
+            "coverage": 0.571731
+          },
+          "holdout": {
+            "rmse": 0.044622,
+            "skill": 0.031602,
+            "mae": 0.014847,
+            "spreadLow": 0.022311,
+            "spreadHigh": 0.022311,
+            "n": 3440,
+            "coverage": 0.838663
+          },
+          "holdoutEvents": {
+            "rmse": 0.478463,
+            "skill": 0.05469,
+            "mae": 0.365886,
+            "spreadLow": 0.484227,
+            "spreadHigh": 0.416181,
+            "n": 26,
+            "coverage": 0.615385
+          },
+          "wRain6": 0.000655,
+          "wRain24": 0.000472
+        }
+      },
+      "skill120": 0.072653,
+      "holdoutSkill120": 0.05469,
+      "reliable": false,
+      "samples": 15810,
+      "trainedAt": "2026-11-12T17:48:51Z",
+      "kind": "direct_horizon_delta_ridge"
+    },
+    "Opera Reno Panfilia": {
+      "upstreams": [
+        "Dosso"
+      ],
+      "lagMinutes": [
+        120
+      ],
+      "lagR": [
+        0.242462
+      ],
+      "thresholds": {
+        "Dosso": {
+          "mean": 4.116146,
+          "std": 3.1913,
+          "z85": 0.649376
+        }
+      },
+      "thresholdOn": "per_upstream_z85",
+      "useRain": true,
+      "horizons": {
+        "30": {
+          "b": -0.003876,
+          "wLocal": -0.14128,
+          "wWindow": [
+            0.0617
+          ],
+          "wRate": [
+            0.0617
+          ],
+          "wWindow2": [
+            0.059928
+          ],
+          "wRate2": [
+            0.059928
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Dosso",
+            "dxr_Dosso",
+            "dxw2_Dosso",
+            "dxr2_Dosso",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.040111,
+          "spreadHigh": 0.040111,
+          "spreadLowHigh": 1.128229,
+          "spreadHighHigh": 1.209937,
+          "train": {
+            "rmse": 0.05078,
+            "skill": 0.049248,
+            "mae": 0.017522,
+            "spreadLow": 0.02539,
+            "spreadHigh": 0.02539,
+            "n": 12885,
+            "coverage": 0.840202
+          },
+          "validate": {
+            "rmse": 0.086703,
+            "skill": 0.044644,
+            "mae": 0.018964,
+            "spreadLow": 0.043352,
+            "spreadHigh": 0.043352,
+            "n": 12289,
+            "coverage": 0.943527
+          },
+          "validateEvents": {
+            "rmse": 0.543933,
+            "skill": 0.05086,
+            "mae": 0.32444,
+            "spreadLow": 0.271966,
+            "spreadHigh": 0.271966,
+            "n": 297,
+            "coverage": 0.744108
+          },
+          "holdout": {
+            "rmse": 0.024149,
+            "skill": 0.035448,
+            "mae": 0.013993,
+            "spreadLow": 0.013858,
+            "spreadHigh": 0.013512,
+            "n": 3443,
+            "coverage": 0.697647
+          },
+          "holdoutEvents": {
+            "rmse": 0.146078,
+            "skill": 0.111065,
+            "mae": 0.133667,
+            "spreadLow": 0.159502,
+            "spreadHigh": 0.142974,
+            "n": 32,
+            "coverage": 0.71875
+          },
+          "wRain6": -0.000631,
+          "wRain24": 0.000822
+        },
+        "60": {
+          "b": -0.005195,
+          "wLocal": -0.066932,
+          "wWindow": [
+            0.245828
+          ],
+          "wRate": [
+            -0.050461
+          ],
+          "wWindow2": [
+            0.165055
+          ],
+          "wRate2": [
+            0.065821
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Dosso",
+            "dxr_Dosso",
+            "dxw2_Dosso",
+            "dxr2_Dosso",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.046903,
+          "spreadHigh": 0.046903,
+          "spreadLowHigh": 0.597117,
+          "spreadHighHigh": 0.778749,
+          "train": {
+            "rmse": 0.063622,
+            "skill": 0.120097,
+            "mae": 0.023121,
+            "spreadLow": 0.031811,
+            "spreadHigh": 0.031811,
+            "n": 12655,
+            "coverage": 0.822442
+          },
+          "validate": {
+            "rmse": 0.099721,
+            "skill": 0.062888,
+            "mae": 0.024353,
+            "spreadLow": 0.049861,
+            "spreadHigh": 0.049861,
+            "n": 12088,
+            "coverage": 0.931337
+          },
+          "validateEvents": {
+            "rmse": 0.476093,
+            "skill": 0.059911,
+            "mae": 0.254741,
+            "spreadLow": 0.26569,
+            "spreadHigh": 0.238047,
+            "n": 505,
+            "coverage": 0.750495
+          },
+          "holdout": {
+            "rmse": 0.02751,
+            "skill": 0.047084,
+            "mae": 0.016721,
+            "spreadLow": 0.01746,
+            "spreadHigh": 0.016547,
+            "n": 3442,
+            "coverage": 0.696688
+          },
+          "holdoutEvents": {
+            "rmse": 0.134396,
+            "skill": 0.194851,
+            "mae": 0.120338,
+            "spreadLow": 0.139075,
+            "spreadHigh": 0.140948,
+            "n": 50,
+            "coverage": 0.68
+          },
+          "wRain6": -0.000341,
+          "wRain24": 0.000974
+        },
+        "90": {
+          "b": -0.010683,
+          "wLocal": -0.258213,
+          "wWindow": [
+            0.324479
+          ],
+          "wRate": [
+            -0.054602
+          ],
+          "wWindow2": [
+            0.189488
+          ],
+          "wRate2": [
+            0.083396
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Dosso",
+            "dxr_Dosso",
+            "dxw2_Dosso",
+            "dxr2_Dosso",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.12477,
+          "spreadHigh": 0.12477,
+          "spreadLowHigh": 1.054229,
+          "spreadHighHigh": 1.054229,
+          "train": {
+            "rmse": 0.283471,
+            "skill": 0.018299,
+            "mae": 0.043664,
+            "spreadLow": 0.141736,
+            "spreadHigh": 0.141736,
+            "n": 12486,
+            "coverage": 0.967243
+          },
+          "validate": {
+            "rmse": 0.244629,
+            "skill": 0.029493,
+            "mae": 0.039542,
+            "spreadLow": 0.122315,
+            "spreadHigh": 0.122315,
+            "n": 11933,
+            "coverage": 0.964217
+          },
+          "validateEvents": {
+            "rmse": 0.843384,
+            "skill": 0.031557,
+            "mae": 0.269652,
+            "spreadLow": 0.421692,
+            "spreadHigh": 0.421692,
+            "n": 990,
+            "coverage": 0.9
+          },
+          "holdout": {
+            "rmse": 0.03042,
+            "skill": 0.05842,
+            "mae": 0.02001,
+            "spreadLow": 0.024342,
+            "spreadHigh": 0.016082,
+            "n": 3441,
+            "coverage": 0.620169
+          },
+          "holdoutEvents": {
+            "rmse": 0.127744,
+            "skill": 0.289445,
+            "mae": 0.120844,
+            "spreadLow": 0.143944,
+            "spreadHigh": 0.123468,
+            "n": 63,
+            "coverage": 0.714286
+          },
+          "wRain6": -0.000178,
+          "wRain24": 0.001294
+        },
+        "120": {
+          "b": -0.014367,
+          "wLocal": -0.24015,
+          "wWindow": [
+            0.355318
+          ],
+          "wRate": [
+            -0.036313
+          ],
+          "wWindow2": [
+            0.150946
+          ],
+          "wRate2": [
+            0.12114
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Dosso",
+            "dxr_Dosso",
+            "dxw2_Dosso",
+            "dxr2_Dosso",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.176399,
+          "spreadHigh": 0.176399,
+          "spreadLowHigh": 1.2159,
+          "spreadHighHigh": 1.2159,
+          "train": {
+            "rmse": 0.31744,
+            "skill": 0.024507,
+            "mae": 0.053978,
+            "spreadLow": 0.15872,
+            "spreadHigh": 0.15872,
+            "n": 12419,
+            "coverage": 0.96135
+          },
+          "validate": {
+            "rmse": 0.340475,
+            "skill": 0.017391,
+            "mae": 0.053115,
+            "spreadLow": 0.170238,
+            "spreadHigh": 0.170238,
+            "n": 11880,
+            "coverage": 0.959428
+          },
+          "validateEvents": {
+            "rmse": 0.97272,
+            "skill": 0.025666,
+            "mae": 0.275818,
+            "spreadLow": 0.48636,
+            "spreadHigh": 0.48636,
+            "n": 1425,
+            "coverage": 0.887018
+          },
+          "holdout": {
+            "rmse": 0.035534,
+            "skill": 0.0178,
+            "mae": 0.023254,
+            "spreadLow": 0.028434,
+            "spreadHigh": 0.017767,
+            "n": 3440,
+            "coverage": 0.585756
+          },
+          "holdoutEvents": {
+            "rmse": 0.150313,
+            "skill": 0.263153,
+            "mae": 0.139744,
+            "spreadLow": 0.147513,
+            "spreadHigh": 0.157828,
+            "n": 69,
+            "coverage": 0.666667
+          },
+          "wRain6": 7.8e-05,
+          "wRain24": 0.00157
+        }
+      },
+      "skill120": 0.025666,
+      "holdoutSkill120": 0.263153,
+      "reliable": false,
+      "samples": 12885,
+      "trainedAt": "2026-11-12T17:48:52Z",
+      "kind": "direct_horizon_delta_ridge"
+    },
+    "Secondo Salto": {
+      "upstreams": [
+        "Opera Reno Panfilia"
+      ],
+      "lagMinutes": [
+        540
+      ],
+      "lagR": [
+        0.075022
+      ],
+      "thresholds": {
+        "Opera Reno Panfilia": {
+          "mean": 15.301318,
+          "std": 1.948141,
+          "z85": 0.330408
+        }
+      },
+      "thresholdOn": "per_upstream_z85",
+      "useRain": true,
+      "horizons": {
+        "30": {
+          "b": -0.000167,
+          "wLocal": -0.409664,
+          "wWindow": [
+            0.003816
+          ],
+          "wRate": [
+            0.003816
+          ],
+          "wWindow2": [
+            0.005387
+          ],
+          "wRate2": [
+            0.005387
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Opera Reno Panfilia",
+            "dxr_Opera Reno Panfilia",
+            "dxw2_Opera Reno Panfilia",
+            "dxr2_Opera Reno Panfilia",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.033492,
+          "spreadHigh": 0.033492,
+          "spreadLowHigh": 0.464831,
+          "spreadHighHigh": 0.455891,
+          "train": {
+            "rmse": 0.074815,
+            "skill": 0.086806,
+            "mae": 0.027373,
+            "spreadLow": 0.037408,
+            "spreadHigh": 0.037408,
+            "n": 12717,
+            "coverage": 0.819061
+          },
+          "validate": {
+            "rmse": 0.06534,
+            "skill": 0.071441,
+            "mae": 0.024367,
+            "spreadLow": 0.03267,
+            "spreadHigh": 0.03267,
+            "n": 12217,
+            "coverage": 0.833265
+          },
+          "validateEvents": {
+            "rmse": 0.23196,
+            "skill": 0.098401,
+            "mae": 0.180837,
+            "spreadLow": 0.195906,
+            "spreadHigh": 0.183671,
+            "n": 830,
+            "coverage": 0.70241
+          },
+          "holdout": {
+            "rmse": 0.023072,
+            "skill": 0.071026,
+            "mae": 0.010956,
+            "spreadLow": 0.011536,
+            "spreadHigh": 0.011536,
+            "n": 3443,
+            "coverage": 0.765611
+          },
+          "holdoutEvents": {
+            "rmse": 0.126096,
+            "skill": 0.128264,
+            "mae": 0.119163,
+            "spreadLow": 0.141173,
+            "spreadHigh": 0.122619,
+            "n": 73,
+            "coverage": 0.561644
+          },
+          "wRain6": 5.8e-05,
+          "wRain24": 3.5e-05
+        },
+        "60": {
+          "b": -0.00054,
+          "wLocal": -0.432365,
+          "wWindow": [
+            -0.000735
+          ],
+          "wRate": [
+            0.005134
+          ],
+          "wWindow2": [
+            0.016907
+          ],
+          "wRate2": [
+            -0.010796
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Opera Reno Panfilia",
+            "dxr_Opera Reno Panfilia",
+            "dxw2_Opera Reno Panfilia",
+            "dxr2_Opera Reno Panfilia",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.03661,
+          "spreadHigh": 0.03661,
+          "spreadLowHigh": 0.485936,
+          "spreadHighHigh": 0.452493,
+          "train": {
+            "rmse": 0.081693,
+            "skill": 0.08146,
+            "mae": 0.030438,
+            "spreadLow": 0.040846,
+            "spreadHigh": 0.040846,
+            "n": 12291,
+            "coverage": 0.814824
+          },
+          "validate": {
+            "rmse": 0.073476,
+            "skill": 0.052969,
+            "mae": 0.027152,
+            "spreadLow": 0.036738,
+            "spreadHigh": 0.036738,
+            "n": 11863,
+            "coverage": 0.834106
+          },
+          "validateEvents": {
+            "rmse": 0.248997,
+            "skill": 0.077913,
+            "mae": 0.184586,
+            "spreadLow": 0.189373,
+            "spreadHigh": 0.175144,
+            "n": 900,
+            "coverage": 0.692222
+          },
+          "holdout": {
+            "rmse": 0.025197,
+            "skill": 0.095124,
+            "mae": 0.01266,
+            "spreadLow": 0.012598,
+            "spreadHigh": 0.012598,
+            "n": 3442,
+            "coverage": 0.723707
+          },
+          "holdoutEvents": {
+            "rmse": 0.125805,
+            "skill": 0.150808,
+            "mae": 0.118551,
+            "spreadLow": 0.139265,
+            "spreadHigh": 0.119722,
+            "n": 89,
+            "coverage": 0.561798
+          },
+          "wRain6": 9.6e-05,
+          "wRain24": 8.8e-05
+        },
+        "90": {
+          "b": -0.00098,
+          "wLocal": -0.420495,
+          "wWindow": [
+            0.017813
+          ],
+          "wRate": [
+            -0.016677
+          ],
+          "wWindow2": [
+            -0.007122
+          ],
+          "wRate2": [
+            0.017232
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Opera Reno Panfilia",
+            "dxr_Opera Reno Panfilia",
+            "dxw2_Opera Reno Panfilia",
+            "dxr2_Opera Reno Panfilia",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.038169,
+          "spreadHigh": 0.038169,
+          "spreadLowHigh": 0.460375,
+          "spreadHighHigh": 0.441051,
+          "train": {
+            "rmse": 0.089107,
+            "skill": 0.066765,
+            "mae": 0.033043,
+            "spreadLow": 0.044553,
+            "spreadHigh": 0.044553,
+            "n": 11952,
+            "coverage": 0.816934
+          },
+          "validate": {
+            "rmse": 0.079158,
+            "skill": 0.061563,
+            "mae": 0.029092,
+            "spreadLow": 0.039579,
+            "spreadHigh": 0.039579,
+            "n": 11584,
+            "coverage": 0.834168
+          },
+          "validateEvents": {
+            "rmse": 0.266367,
+            "skill": 0.08183,
+            "mae": 0.192588,
+            "spreadLow": 0.199718,
+            "spreadHigh": 0.185547,
+            "n": 907,
+            "coverage": 0.699008
+          },
+          "holdout": {
+            "rmse": 0.026043,
+            "skill": 0.078836,
+            "mae": 0.013763,
+            "spreadLow": 0.013035,
+            "spreadHigh": 0.013396,
+            "n": 3441,
+            "coverage": 0.700087
+          },
+          "holdoutEvents": {
+            "rmse": 0.130858,
+            "skill": 0.130207,
+            "mae": 0.125732,
+            "spreadLow": 0.145695,
+            "spreadHigh": 0.121055,
+            "n": 84,
+            "coverage": 0.511905
+          },
+          "wRain6": 0.00028,
+          "wRain24": 7e-05
+        },
+        "120": {
+          "b": -0.001498,
+          "wLocal": -0.445266,
+          "wWindow": [
+            0.002528
+          ],
+          "wRate": [
+            0.0241
+          ],
+          "wWindow2": [
+            -0.000952
+          ],
+          "wRate2": [
+            0.002862
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Opera Reno Panfilia",
+            "dxr_Opera Reno Panfilia",
+            "dxw2_Opera Reno Panfilia",
+            "dxr2_Opera Reno Panfilia",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.039224,
+          "spreadHigh": 0.039224,
+          "spreadLowHigh": 0.499231,
+          "spreadHighHigh": 0.428614,
+          "train": {
+            "rmse": 0.096128,
+            "skill": 0.064956,
+            "mae": 0.035397,
+            "spreadLow": 0.048064,
+            "spreadHigh": 0.048064,
+            "n": 11693,
+            "coverage": 0.815445
+          },
+          "validate": {
+            "rmse": 0.084517,
+            "skill": 0.040424,
+            "mae": 0.030451,
+            "spreadLow": 0.042259,
+            "spreadHigh": 0.042259,
+            "n": 11369,
+            "coverage": 0.836573
+          },
+          "validateEvents": {
+            "rmse": 0.285432,
+            "skill": 0.05662,
+            "mae": 0.198147,
+            "spreadLow": 0.213584,
+            "spreadHigh": 0.18388,
+            "n": 893,
+            "coverage": 0.692049
+          },
+          "holdout": {
+            "rmse": 0.02764,
+            "skill": 0.061399,
+            "mae": 0.015052,
+            "spreadLow": 0.01442,
+            "spreadHigh": 0.014795,
+            "n": 3440,
+            "coverage": 0.700581
+          },
+          "holdoutEvents": {
+            "rmse": 0.12902,
+            "skill": 0.119177,
+            "mae": 0.122522,
+            "spreadLow": 0.14628,
+            "spreadHigh": 0.117654,
+            "n": 93,
+            "coverage": 0.505376
+          },
+          "wRain6": 0.000284,
+          "wRain24": 9.7e-05
+        }
+      },
+      "skill120": 0.05662,
+      "holdoutSkill120": 0.119177,
+      "reliable": false,
+      "samples": 12717,
+      "trainedAt": "2026-11-12T17:48:54Z",
+      "kind": "direct_horizon_delta_ridge"
+    },
+    "Gallo": {
+      "upstreams": [
+        "Opera Reno Panfilia"
+      ],
+      "lagMinutes": [
+        360
+      ],
+      "lagR": [
+        0.509236
+      ],
+      "thresholds": {
+        "Opera Reno Panfilia": {
+          "mean": 15.30022,
+          "std": 1.95556,
+          "z85": 0.327159
+        }
+      },
+      "thresholdOn": "per_upstream_z85",
+      "useRain": true,
+      "horizons": {
+        "30": {
+          "b": -0.000911,
+          "wLocal": 0.803267,
+          "wWindow": [
+            0.009665
+          ],
+          "wRate": [
+            0.009665
+          ],
+          "wWindow2": [
+            0.011069
+          ],
+          "wRate2": [
+            0.011069
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Opera Reno Panfilia",
+            "dxr_Opera Reno Panfilia",
+            "dxw2_Opera Reno Panfilia",
+            "dxr2_Opera Reno Panfilia",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.010342,
+          "spreadHigh": 0.009421,
+          "spreadLowHigh": 0.047961,
+          "spreadHighHigh": 0.027781,
+          "train": {
+            "rmse": 0.011168,
+            "skill": 0.557344,
+            "mae": 0.008071,
+            "spreadLow": 0.009816,
+            "spreadHigh": 0.009661,
+            "n": 12849,
+            "coverage": 0.697331
+          },
+          "validate": {
+            "rmse": 0.011246,
+            "skill": 0.521255,
+            "mae": 0.008191,
+            "spreadLow": 0.009941,
+            "spreadHigh": 0.009742,
+            "n": 12335,
+            "coverage": 0.678071
+          },
+          "validateEvents": {
+            "rmse": 0.022225,
+            "skill": 0.842423,
+            "mae": 0.019102,
+            "spreadLow": 0.032962,
+            "spreadHigh": 0.011112,
+            "n": 150,
+            "coverage": 0.26
+          },
+          "holdout": {
+            "rmse": 0.010834,
+            "skill": 0.193289,
+            "mae": 0.008045,
+            "spreadLow": 0.010024,
+            "spreadHigh": 0.009306,
+            "n": 3443,
+            "coverage": 0.678478
+          },
+          "holdoutEvents": {
+            "rmse": 0.036716,
+            "skill": 0.786495,
+            "mae": 0.027849,
+            "spreadLow": 0.036716,
+            "spreadHigh": 0.036716,
+            "n": 12,
+            "coverage": 0.75
+          },
+          "wRain6": -0.000175,
+          "wRain24": 0.000203
+        },
+        "60": {
+          "b": -0.001938,
+          "wLocal": 1.558012,
+          "wWindow": [
+            0.045604
+          ],
+          "wRate": [
+            -0.011126
+          ],
+          "wWindow2": [
+            0.029228
+          ],
+          "wRate2": [
+            0.012116
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Opera Reno Panfilia",
+            "dxr_Opera Reno Panfilia",
+            "dxw2_Opera Reno Panfilia",
+            "dxr2_Opera Reno Panfilia",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.016816,
+          "spreadHigh": 0.014949,
+          "spreadLowHigh": 0.10089,
+          "spreadHighHigh": 0.04698,
+          "train": {
+            "rmse": 0.018578,
+            "skill": 0.623434,
+            "mae": 0.013109,
+            "spreadLow": 0.015069,
+            "spreadHigh": 0.015684,
+            "n": 12419,
+            "coverage": 0.697077
+          },
+          "validate": {
+            "rmse": 0.018543,
+            "skill": 0.592996,
+            "mae": 0.013221,
+            "spreadLow": 0.015433,
+            "spreadHigh": 0.015657,
+            "n": 11980,
+            "coverage": 0.67813
+          },
+          "validateEvents": {
+            "rmse": 0.037584,
+            "skill": 0.805328,
+            "mae": 0.02813,
+            "spreadLow": 0.053903,
+            "spreadHigh": 0.018792,
+            "n": 441,
+            "coverage": 0.580499
+          },
+          "holdout": {
+            "rmse": 0.018448,
+            "skill": 0.237304,
+            "mae": 0.01328,
+            "spreadLow": 0.017106,
+            "spreadHigh": 0.015819,
+            "n": 3442,
+            "coverage": 0.704823
+          },
+          "holdoutEvents": {
+            "rmse": 0.082536,
+            "skill": 0.713297,
+            "mae": 0.055678,
+            "spreadLow": 0.082536,
+            "spreadHigh": 0.082536,
+            "n": 19,
+            "coverage": 0.684211
+          },
+          "wRain6": -0.000279,
+          "wRain24": 0.000406
+        },
+        "90": {
+          "b": -0.003127,
+          "wLocal": 2.307667,
+          "wWindow": [
+            0.053272
+          ],
+          "wRate": [
+            -0.006976
+          ],
+          "wWindow2": [
+            0.02576
+          ],
+          "wRate2": [
+            0.009914
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Opera Reno Panfilia",
+            "dxr_Opera Reno Panfilia",
+            "dxw2_Opera Reno Panfilia",
+            "dxr2_Opera Reno Panfilia",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.024005,
+          "spreadHigh": 0.020238,
+          "spreadLowHigh": 0.147437,
+          "spreadHighHigh": 0.061798,
+          "train": {
+            "rmse": 0.026485,
+            "skill": 0.639564,
+            "mae": 0.018352,
+            "spreadLow": 0.021157,
+            "spreadHigh": 0.022004,
+            "n": 12075,
+            "coverage": 0.699379
+          },
+          "validate": {
+            "rmse": 0.026511,
+            "skill": 0.607861,
+            "mae": 0.018643,
+            "spreadLow": 0.021452,
+            "spreadHigh": 0.021905,
+            "n": 11696,
+            "coverage": 0.671341
+          },
+          "validateEvents": {
+            "rmse": 0.045779,
+            "skill": 0.782331,
+            "mae": 0.03218,
+            "spreadLow": 0.049209,
+            "spreadHigh": 0.028628,
+            "n": 1000,
+            "coverage": 0.447
+          },
+          "holdout": {
+            "rmse": 0.02617,
+            "skill": 0.245984,
+            "mae": 0.018267,
+            "spreadLow": 0.024391,
+            "spreadHigh": 0.02048,
+            "n": 3441,
+            "coverage": 0.707643
+          },
+          "holdoutEvents": {
+            "rmse": 0.13508,
+            "skill": 0.656258,
+            "mae": 0.090098,
+            "spreadLow": 0.173727,
+            "spreadHigh": 0.06754,
+            "n": 23,
+            "coverage": 0.73913
+          },
+          "wRain6": -0.000402,
+          "wRain24": 0.000638
+        },
+        "120": {
+          "b": -0.004522,
+          "wLocal": 3.194684,
+          "wWindow": [
+            0.012655
+          ],
+          "wRate": [
+            0.034345
+          ],
+          "wWindow2": [
+            0.004288
+          ],
+          "wRate2": [
+            0.020536
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Opera Reno Panfilia",
+            "dxr_Opera Reno Panfilia",
+            "dxw2_Opera Reno Panfilia",
+            "dxr2_Opera Reno Panfilia",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.030602,
+          "spreadHigh": 0.026383,
+          "spreadLowHigh": 0.205563,
+          "spreadHighHigh": 0.078517,
+          "train": {
+            "rmse": 0.035319,
+            "skill": 0.637804,
+            "mae": 0.024443,
+            "spreadLow": 0.027617,
+            "spreadHigh": 0.029375,
+            "n": 11818,
+            "coverage": 0.691234
+          },
+          "validate": {
+            "rmse": 0.035316,
+            "skill": 0.605833,
+            "mae": 0.024681,
+            "spreadLow": 0.028267,
+            "spreadHigh": 0.029373,
+            "n": 11477,
+            "coverage": 0.661061
+          },
+          "validateEvents": {
+            "rmse": 0.055375,
+            "skill": 0.767708,
+            "mae": 0.037876,
+            "spreadLow": 0.044363,
+            "spreadHigh": 0.038091,
+            "n": 1466,
+            "coverage": 0.468622
+          },
+          "holdout": {
+            "rmse": 0.035021,
+            "skill": 0.222293,
+            "mae": 0.024165,
+            "spreadLow": 0.030973,
+            "spreadHigh": 0.02736,
+            "n": 3440,
+            "coverage": 0.69157
+          },
+          "holdoutEvents": {
+            "rmse": 0.188752,
+            "skill": 0.621748,
+            "mae": 0.123648,
+            "spreadLow": 0.246547,
+            "spreadHigh": 0.094376,
+            "n": 25,
+            "coverage": 0.72
+          },
+          "wRain6": -0.000541,
+          "wRain24": 0.000878
+        },
+        "150": {
+          "b": -0.006099,
+          "wLocal": 3.969642,
+          "wWindow": [
+            0.012169
+          ],
+          "wRate": [
+            0.048394
+          ],
+          "wWindow2": [
+            7.9e-05
+          ],
+          "wRate2": [
+            0.015232
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Opera Reno Panfilia",
+            "dxr_Opera Reno Panfilia",
+            "dxw2_Opera Reno Panfilia",
+            "dxr2_Opera Reno Panfilia",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.038011,
+          "spreadHigh": 0.032451,
+          "spreadLowHigh": 0.283666,
+          "spreadHighHigh": 0.104021,
+          "train": {
+            "rmse": 0.043473,
+            "skill": 0.63998,
+            "mae": 0.030138,
+            "spreadLow": 0.035786,
+            "spreadHigh": 0.036468,
+            "n": 11732,
+            "coverage": 0.706529
+          },
+          "validate": {
+            "rmse": 0.044934,
+            "skill": 0.597051,
+            "mae": 0.030793,
+            "spreadLow": 0.035766,
+            "spreadHigh": 0.036591,
+            "n": 11396,
+            "coverage": 0.660056
+          },
+          "validateEvents": {
+            "rmse": 0.070208,
+            "skill": 0.741279,
+            "mae": 0.046838,
+            "spreadLow": 0.045925,
+            "spreadHigh": 0.050861,
+            "n": 1806,
+            "coverage": 0.501107
+          },
+          "holdout": {
+            "rmse": 0.043538,
+            "skill": 0.209898,
+            "mae": 0.029297,
+            "spreadLow": 0.038893,
+            "spreadHigh": 0.033552,
+            "n": 3439,
+            "coverage": 0.708927
+          },
+          "holdoutEvents": {
+            "rmse": 0.256497,
+            "skill": 0.576738,
+            "mae": 0.172425,
+            "spreadLow": 0.327092,
+            "spreadHigh": 0.128249,
+            "n": 26,
+            "coverage": 0.615385
+          },
+          "wRain6": -0.000622,
+          "wRain24": 0.0011
+        },
+        "180": {
+          "b": -0.007839,
+          "wLocal": 4.717795,
+          "wWindow": [
+            0.005661
+          ],
+          "wRate": [
+            0.064989
+          ],
+          "wWindow2": [
+            -0.000199
+          ],
+          "wRate2": [
+            0.007514
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Opera Reno Panfilia",
+            "dxr_Opera Reno Panfilia",
+            "dxw2_Opera Reno Panfilia",
+            "dxr2_Opera Reno Panfilia",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.045542,
+          "spreadHigh": 0.036158,
+          "spreadLowHigh": 0.367672,
+          "spreadHighHigh": 0.123776,
+          "train": {
+            "rmse": 0.052046,
+            "skill": 0.63543,
+            "mae": 0.036266,
+            "spreadLow": 0.041986,
+            "spreadHigh": 0.044105,
+            "n": 11652,
+            "coverage": 0.694731
+          },
+          "validate": {
+            "rmse": 0.054861,
+            "skill": 0.590396,
+            "mae": 0.036908,
+            "spreadLow": 0.041695,
+            "spreadHigh": 0.043993,
+            "n": 11330,
+            "coverage": 0.651721
+          },
+          "validateEvents": {
+            "rmse": 0.086694,
+            "skill": 0.717207,
+            "mae": 0.057108,
+            "spreadLow": 0.051854,
+            "spreadHigh": 0.06112,
+            "n": 2070,
+            "coverage": 0.502415
+          },
+          "holdout": {
+            "rmse": 0.052451,
+            "skill": 0.192545,
+            "mae": 0.034431,
+            "spreadLow": 0.045715,
+            "spreadHigh": 0.038612,
+            "n": 3438,
+            "coverage": 0.69808
+          },
+          "holdoutEvents": {
+            "rmse": 0.329369,
+            "skill": 0.533731,
+            "mae": 0.227591,
+            "spreadLow": 0.468262,
+            "spreadHigh": 0.164684,
+            "n": 27,
+            "coverage": 0.62963
+          },
+          "wRain6": -0.000678,
+          "wRain24": 0.001332
+        },
+        "210": {
+          "b": -0.009801,
+          "wLocal": 5.411186,
+          "wWindow": [
+            0.002916
+          ],
+          "wRate": [
+            0.073781
+          ],
+          "wWindow2": [
+            -0.000444
+          ],
+          "wRate2": [
+            0.014626
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Opera Reno Panfilia",
+            "dxr_Opera Reno Panfilia",
+            "dxw2_Opera Reno Panfilia",
+            "dxr2_Opera Reno Panfilia",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.053342,
+          "spreadHigh": 0.041931,
+          "spreadLowHigh": 0.450283,
+          "spreadHighHigh": 0.146801,
+          "train": {
+            "rmse": 0.061602,
+            "skill": 0.62393,
+            "mae": 0.042561,
+            "spreadLow": 0.048825,
+            "spreadHigh": 0.05164,
+            "n": 11575,
+            "coverage": 0.696933
+          },
+          "validate": {
+            "rmse": 0.06567,
+            "skill": 0.57965,
+            "mae": 0.043444,
+            "spreadLow": 0.049177,
+            "spreadHigh": 0.051751,
+            "n": 11263,
+            "coverage": 0.651247
+          },
+          "validateEvents": {
+            "rmse": 0.105224,
+            "skill": 0.693939,
+            "mae": 0.068474,
+            "spreadLow": 0.058935,
+            "spreadHigh": 0.074601,
+            "n": 2248,
+            "coverage": 0.513345
+          },
+          "holdout": {
+            "rmse": 0.061577,
+            "skill": 0.174075,
+            "mae": 0.039451,
+            "spreadLow": 0.051584,
+            "spreadHigh": 0.042477,
+            "n": 3437,
+            "coverage": 0.692173
+          },
+          "holdoutEvents": {
+            "rmse": 0.411583,
+            "skill": 0.49476,
+            "mae": 0.290688,
+            "spreadLow": 0.650865,
+            "spreadHigh": 0.205792,
+            "n": 27,
+            "coverage": 0.592593
+          },
+          "wRain6": -0.000684,
+          "wRain24": 0.001588
+        },
+        "240": {
+          "b": -0.011989,
+          "wLocal": 6.094276,
+          "wWindow": [
+            0.001249
+          ],
+          "wRate": [
+            0.083514
+          ],
+          "wWindow2": [
+            -0.002021
+          ],
+          "wRate2": [
+            0.025022
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Opera Reno Panfilia",
+            "dxr_Opera Reno Panfilia",
+            "dxw2_Opera Reno Panfilia",
+            "dxr2_Opera Reno Panfilia",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.061797,
+          "spreadHigh": 0.047904,
+          "spreadLowHigh": 0.517758,
+          "spreadHighHigh": 0.172046,
+          "train": {
+            "rmse": 0.071635,
+            "skill": 0.610871,
+            "mae": 0.049027,
+            "spreadLow": 0.054779,
+            "spreadHigh": 0.059184,
+            "n": 11517,
+            "coverage": 0.696449
+          },
+          "validate": {
+            "rmse": 0.077469,
+            "skill": 0.565418,
+            "mae": 0.050465,
+            "spreadLow": 0.057034,
+            "spreadHigh": 0.059363,
+            "n": 11213,
+            "coverage": 0.656738
+          },
+          "validateEvents": {
+            "rmse": 0.125547,
+            "skill": 0.669353,
+            "mae": 0.081228,
+            "spreadLow": 0.071762,
+            "spreadHigh": 0.089143,
+            "n": 2405,
+            "coverage": 0.524324
+          },
+          "holdout": {
+            "rmse": 0.070938,
+            "skill": 0.154114,
+            "mae": 0.044456,
+            "spreadLow": 0.058153,
+            "spreadHigh": 0.047902,
+            "n": 3436,
+            "coverage": 0.695285
+          },
+          "holdoutEvents": {
+            "rmse": 0.48881,
+            "skill": 0.458833,
+            "mae": 0.353702,
+            "spreadLow": 0.826179,
+            "spreadHigh": 0.244405,
+            "n": 28,
+            "coverage": 0.642857
+          },
+          "wRain6": -0.000484,
+          "wRain24": 0.001821
+        },
+        "270": {
+          "b": -0.014348,
+          "wLocal": 6.774832,
+          "wWindow": [
+            -0.000331
+          ],
+          "wRate": [
+            0.10473
+          ],
+          "wWindow2": [
+            0.001116
+          ],
+          "wRate2": [
+            -0.05489
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Opera Reno Panfilia",
+            "dxr_Opera Reno Panfilia",
+            "dxw2_Opera Reno Panfilia",
+            "dxr2_Opera Reno Panfilia",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.06867,
+          "spreadHigh": 0.052611,
+          "spreadLowHigh": 0.618552,
+          "spreadHighHigh": 0.202192,
+          "train": {
+            "rmse": 0.08235,
+            "skill": 0.595605,
+            "mae": 0.055628,
+            "spreadLow": 0.061832,
+            "spreadHigh": 0.067562,
+            "n": 11470,
+            "coverage": 0.696687
+          },
+          "validate": {
+            "rmse": 0.090564,
+            "skill": 0.549648,
+            "mae": 0.057829,
+            "spreadLow": 0.063303,
+            "spreadHigh": 0.068141,
+            "n": 11177,
+            "coverage": 0.645075
+          },
+          "validateEvents": {
+            "rmse": 0.147412,
+            "skill": 0.645138,
+            "mae": 0.094212,
+            "spreadLow": 0.079892,
+            "spreadHigh": 0.102974,
+            "n": 2562,
+            "coverage": 0.531226
+          },
+          "holdout": {
+            "rmse": 0.080368,
+            "skill": 0.134667,
+            "mae": 0.049467,
+            "spreadLow": 0.0649,
+            "spreadHigh": 0.051022,
+            "n": 3435,
+            "coverage": 0.689083
+          },
+          "holdoutEvents": {
+            "rmse": 0.5634,
+            "skill": 0.428416,
+            "mae": 0.410224,
+            "spreadLow": 0.905748,
+            "spreadHigh": 0.2817,
+            "n": 29,
+            "coverage": 0.62069
+          },
+          "wRain6": -0.000386,
+          "wRain24": 0.002076
+        },
+        "300": {
+          "b": -0.016704,
+          "wLocal": 7.400337,
+          "wWindow": [
+            -0.001468
+          ],
+          "wRate": [
+            0.096508
+          ],
+          "wWindow2": [
+            0.000251
+          ],
+          "wRate2": [
+            -0.022503
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Opera Reno Panfilia",
+            "dxr_Opera Reno Panfilia",
+            "dxw2_Opera Reno Panfilia",
+            "dxr2_Opera Reno Panfilia",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.076157,
+          "spreadHigh": 0.057363,
+          "spreadLowHigh": 0.744481,
+          "spreadHighHigh": 0.23347,
+          "train": {
+            "rmse": 0.093776,
+            "skill": 0.579346,
+            "mae": 0.062446,
+            "spreadLow": 0.068709,
+            "spreadHigh": 0.076039,
+            "n": 11417,
+            "coverage": 0.695629
+          },
+          "validate": {
+            "rmse": 0.104095,
+            "skill": 0.536215,
+            "mae": 0.065132,
+            "spreadLow": 0.070237,
+            "spreadHigh": 0.07644,
+            "n": 11147,
+            "coverage": 0.643043
+          },
+          "validateEvents": {
+            "rmse": 0.171089,
+            "skill": 0.621704,
+            "mae": 0.108222,
+            "spreadLow": 0.085544,
+            "spreadHigh": 0.117817,
+            "n": 2695,
+            "coverage": 0.534694
+          },
+          "holdout": {
+            "rmse": 0.089555,
+            "skill": 0.118676,
+            "mae": 0.054305,
+            "spreadLow": 0.070837,
+            "spreadHigh": 0.054659,
+            "n": 3434,
+            "coverage": 0.676762
+          },
+          "holdoutEvents": {
+            "rmse": 0.61938,
+            "skill": 0.398141,
+            "mae": 0.4575,
+            "spreadLow": 1.002376,
+            "spreadHigh": 0.30969,
+            "n": 32,
+            "coverage": 0.65625
+          },
+          "wRain6": -0.000166,
+          "wRain24": 0.002344
+        },
+        "330": {
+          "b": -0.018919,
+          "wLocal": 8.105514,
+          "wWindow": [
+            -0.005989
+          ],
+          "wRate": [
+            0.098337
+          ],
+          "wWindow2": [
+            -0.002484
+          ],
+          "wRate2": [
+            -0.055958
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Opera Reno Panfilia",
+            "dxr_Opera Reno Panfilia",
+            "dxw2_Opera Reno Panfilia",
+            "dxr2_Opera Reno Panfilia",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.083703,
+          "spreadHigh": 0.062525,
+          "spreadLowHigh": 0.857532,
+          "spreadHighHigh": 0.267496,
+          "train": {
+            "rmse": 0.106634,
+            "skill": 0.563019,
+            "mae": 0.070041,
+            "spreadLow": 0.075419,
+            "spreadHigh": 0.084833,
+            "n": 11362,
+            "coverage": 0.69398
+          },
+          "validate": {
+            "rmse": 0.117217,
+            "skill": 0.52073,
+            "mae": 0.072565,
+            "spreadLow": 0.077554,
+            "spreadHigh": 0.086344,
+            "n": 11101,
+            "coverage": 0.638591
+          },
+          "validateEvents": {
+            "rmse": 0.191547,
+            "skill": 0.602722,
+            "mae": 0.120677,
+            "spreadLow": 0.095774,
+            "spreadHigh": 0.133952,
+            "n": 2811,
+            "coverage": 0.541089
+          },
+          "holdout": {
+            "rmse": 0.099384,
+            "skill": 0.097169,
+            "mae": 0.059586,
+            "spreadLow": 0.078455,
+            "spreadHigh": 0.059666,
+            "n": 3433,
+            "coverage": 0.681037
+          },
+          "holdoutEvents": {
+            "rmse": 0.68972,
+            "skill": 0.372689,
+            "mae": 0.517239,
+            "spreadLow": 1.114861,
+            "spreadHigh": 0.359675,
+            "n": 33,
+            "coverage": 0.69697
+          },
+          "wRain6": -7e-06,
+          "wRain24": 0.002646
+        },
+        "360": {
+          "b": -0.02169,
+          "wLocal": 8.760437,
+          "wWindow": [
+            -0.006242
+          ],
+          "wRate": [
+            0.102608
+          ],
+          "wWindow2": [
+            -0.002048
+          ],
+          "wRate2": [
+            -0.146532
+          ],
+          "features": [
+            "dy_local",
+            "dxw_Opera Reno Panfilia",
+            "dxr_Opera Reno Panfilia",
+            "dxw2_Opera Reno Panfilia",
+            "dxr2_Opera Reno Panfilia",
+            "rain6h",
+            "rain24h"
+          ],
+          "spreadLow": 0.091585,
+          "spreadHigh": 0.067264,
+          "spreadLowHigh": 0.917134,
+          "spreadHighHigh": 0.308592,
+          "train": {
+            "rmse": 0.119068,
+            "skill": 0.551338,
+            "mae": 0.077468,
+            "spreadLow": 0.083889,
+            "spreadHigh": 0.093806,
+            "n": 11315,
+            "coverage": 0.697128
+          },
+          "validate": {
+            "rmse": 0.131702,
+            "skill": 0.501507,
+            "mae": 0.080719,
+            "spreadLow": 0.083998,
+            "spreadHigh": 0.095474,
+            "n": 11046,
+            "coverage": 0.634166
+          },
+          "validateEvents": {
+            "rmse": 0.214557,
+            "skill": 0.580313,
+            "mae": 0.135203,
+            "spreadLow": 0.107279,
+            "spreadHigh": 0.151965,
+            "n": 2908,
+            "coverage": 0.540578
+          },
+          "holdout": {
+            "rmse": 0.109086,
+            "skill": 0.077469,
+            "mae": 0.064705,
+            "spreadLow": 0.085733,
+            "spreadHigh": 0.06286,
+            "n": 3432,
+            "coverage": 0.674242
+          },
+          "holdoutEvents": {
+            "rmse": 0.719921,
+            "skill": 0.346978,
+            "mae": 0.528003,
+            "spreadLow": 1.158195,
+            "spreadHigh": 0.424264,
+            "n": 38,
+            "coverage": 0.710526
+          },
+          "wRain6": 0.000227,
+          "wRain24": 0.002936
+        }
+      },
+      "skill120": 0.767708,
+      "holdoutSkill120": 0.621748,
+      "reliable": false,
+      "samples": 12849,
+      "trainedAt": "2026-11-12T17:48:56Z",
+      "kind": "direct_horizon_delta_ridge"
+    }
+  },
+  "edges": {
+    "Casalecchio tiro a volo->Bonconvento": {
+      "lagMinutes": 270,
+      "skill120": 0.357368,
+      "reliable": false,
+      "rmse": 0.11349,
+      "spreadLow": 0.055151,
+      "spreadHigh": 0.055151,
+      "trainedAt": "2026-11-12T17:48:43Z",
+      "kind": "direct_horizon_delta_ridge"
+    },
+    "Lavino di Sotto->Forcelli": {
+      "lagMinutes": 180,
+      "skill120": 0.284763,
+      "reliable": false,
+      "rmse": 0.066083,
+      "spreadLow": 0.029438,
+      "spreadHigh": 0.029438,
+      "trainedAt": "2026-11-12T17:48:45Z",
+      "kind": "direct_horizon_delta_ridge"
+    },
+    "Paltrone Samoggia->Forcelli": {
+      "lagMinutes": 150,
+      "skill120": 0.284763,
+      "reliable": false,
+      "rmse": 0.066083,
+      "spreadLow": 0.029438,
+      "spreadHigh": 0.029438,
+      "trainedAt": "2026-11-12T17:48:45Z",
+      "kind": "direct_horizon_delta_ridge"
+    },
+    "Bonconvento->Sostegno Reno": {
+      "lagMinutes": 180,
+      "skill120": 0.248656,
+      "reliable": false,
+      "rmse": 0.09748,
+      "spreadLow": 0.044146,
+      "spreadHigh": 0.044146,
+      "trainedAt": "2026-11-12T17:48:46Z",
+      "kind": "direct_horizon_delta_ridge"
+    },
+    "Forcelli->Cento": {
+      "lagMinutes": 480,
+      "skill120": 0.672125,
+      "reliable": true,
+      "rmse": 0.044138,
+      "spreadLow": 0.023686,
+      "spreadHigh": 0.02361,
+      "trainedAt": "2026-11-12T17:48:48Z",
+      "kind": "direct_horizon_delta_ridge"
+    },
+    "Sostegno Reno->Cento": {
+      "lagMinutes": 150,
+      "skill120": 0.672125,
+      "reliable": true,
+      "rmse": 0.044138,
+      "spreadLow": 0.023686,
+      "spreadHigh": 0.02361,
+      "trainedAt": "2026-11-12T17:48:48Z",
+      "kind": "direct_horizon_delta_ridge"
+    },
+    "Casalecchio chiusa->Casalecchio tiro a volo": {
+      "lagMinutes": 0,
+      "skill120": 0.09582,
+      "reliable": false,
+      "rmse": 0.065793,
+      "spreadLow": 0.024107,
+      "spreadHigh": 0.024107,
+      "trainedAt": "2026-11-12T17:48:48Z",
+      "kind": "direct_horizon_delta_ridge"
+    },
+    "Sasso Marconi->Casalecchio chiusa": {
+      "lagMinutes": 60,
+      "skill120": 0.142946,
+      "reliable": true,
+      "rmse": 0.099188,
+      "spreadLow": 0.052382,
+      "spreadHigh": 0.052382,
+      "trainedAt": "2026-11-12T17:48:50Z",
+      "kind": "direct_horizon_delta_ridge"
+    },
+    "Vergato DX->Casalecchio chiusa": {
+      "lagMinutes": 210,
+      "skill120": 0.142946,
+      "reliable": true,
+      "rmse": 0.099188,
+      "spreadLow": 0.052382,
+      "spreadHigh": 0.052382,
+      "trainedAt": "2026-11-12T17:48:50Z",
+      "kind": "direct_horizon_delta_ridge"
+    },
+    "Cento->Dosso": {
+      "lagMinutes": 150,
+      "skill120": 0.072653,
+      "reliable": false,
+      "rmse": 0.182457,
+      "spreadLow": 0.096796,
+      "spreadHigh": 0.096796,
+      "trainedAt": "2026-11-12T17:48:51Z",
+      "kind": "direct_horizon_delta_ridge"
+    },
+    "Dosso->Opera Reno Panfilia": {
+      "lagMinutes": 120,
+      "skill120": 0.025666,
+      "reliable": false,
+      "rmse": 0.340475,
+      "spreadLow": 0.176399,
+      "spreadHigh": 0.176399,
+      "trainedAt": "2026-11-12T17:48:52Z",
+      "kind": "direct_horizon_delta_ridge"
+    },
+    "Opera Reno Panfilia->Secondo Salto": {
+      "lagMinutes": 540,
+      "skill120": 0.05662,
+      "reliable": false,
+      "rmse": 0.084517,
+      "spreadLow": 0.039224,
+      "spreadHigh": 0.039224,
+      "trainedAt": "2026-11-12T17:48:54Z",
+      "kind": "direct_horizon_delta_ridge"
+    },
+    "Opera Reno Panfilia->Gallo": {
+      "lagMinutes": 360,
+      "skill120": 0.767708,
+      "reliable": false,
+      "rmse": 0.035316,
+      "spreadLow": 0.030602,
+      "spreadHigh": 0.026383,
+      "trainedAt": "2026-11-12T17:48:56Z",
+      "kind": "direct_horizon_delta_ridge"
+    }
+  }
+}

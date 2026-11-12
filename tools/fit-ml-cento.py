@@ -155,20 +155,47 @@ def build_feature_matrix(
     soglia_kind: str = "yellow",
     chain_pairs: list[tuple[str, str]] | None = None,
     poly_points: int = POLY_NAIVE_POINTS,
+    upstream_tau: dict[str, int] | None = None,
+    lag_align_h: int = 0,
+    align_mode: str = "shift",
+    align_window: int = 16,
 ) -> tuple[pd.DataFrame, list[str]]:
-    """Flat window of level/delta/miss (+ optional soglia headroom/ratio / chain deltas) + rain."""
+    """Flat window of level/delta/miss (+ optional soglia headroom/ratio / chain deltas) + rain.
+
+    ``upstream_tau`` (station → lag in 30′ steps) enables lag-aligned features:
+    - ``shift``: upstream lag k samples x(t + h - tau_i - k·step);
+    - ``augment``: flat window untouched + extra ``a*`` block sampling
+      x(t + h - tau_i - j·step) for j in [0, align_window).
+    For h ≤ tau_i the wave reaching valle at t+h is already observed upstream.
+    Shifts < 0 (h > tau_i) become NaN features with miss=1 — no future peeking.
+    """
     parts: dict[str, pd.Series] = {}
     feature_cols: list[str] = []
     station_order = list(stations) if stations is not None else list(wide.columns)
     soglia_levels = soglia_levels or {}
+    upstream_tau = upstream_tau or {}
     prefix = f"headroom_{soglia_kind}" if use_soglia_headroom else "level"
     ratio_prefix = f"ratio_{soglia_kind}"
     n_poly = max(POLY_NAIVE_MIN, int(poly_points))
+    nan_series = pd.Series(np.nan, index=wide.index, dtype=float)
+    one_series = pd.Series(1.0, index=wide.index, dtype=float)
+
+    def shifted(series: pd.Series, s: int) -> pd.Series:
+        """Causal shift: s<0 would peek into the future → all-NaN."""
+        if s < 0:
+            return nan_series
+        return series.shift(s) if s else series
 
     for station in station_order:
         if station not in wide.columns:
             raise SystemExit(f"Missing station column: {station}")
         level = wide[station]
+        is_aligned_up = station in upstream_tau
+        lag_off = (
+            int(upstream_tau[station]) - int(lag_align_h)
+            if is_aligned_up and align_mode == "shift"
+            else 0
+        )
         prev = level.shift(1)
         miss = level.isna().astype(float)
         tag = safe_name(station)
@@ -185,9 +212,10 @@ def build_feature_matrix(
         d1_s, d2_s = series_poly_derivatives(level, n_points=n_poly)
         feat_prefix = prefix if use_head else "level"
         for k in range(lookback):
-            lv = signal.shift(k)
-            dv = signal_delta.shift(k)
-            mv = miss.shift(k).fillna(1.0)
+            s = k + lag_off
+            lv = shifted(signal, s)
+            dv = shifted(signal_delta, s)
+            mv = shifted(miss, s).fillna(1.0)
             c_lv = f"{feat_prefix}_{tag}_lag{k}"
             c_dv = f"delta_{tag}_lag{k}"
             c_mv = f"miss_{tag}_lag{k}"
@@ -196,8 +224,8 @@ def build_feature_matrix(
             parts[c_lv] = lv
             parts[c_dv] = dv
             parts[c_mv] = mv
-            parts[c_d1] = d1_s.shift(k)
-            parts[c_d2] = d2_s.shift(k)
+            parts[c_d1] = shifted(d1_s, s)
+            parts[c_d2] = shifted(d2_s, s)
             feature_cols.extend([c_lv, c_dv, c_mv, c_d1, c_d2])
         if use_ratio:
             # Fill fraction of soglia (0 ⇒ empty relative to yellow, 1 ⇒ at yellow).
@@ -207,9 +235,26 @@ def build_feature_matrix(
             for k in range(lookback):
                 c_r = f"{ratio_prefix}_{tag}_lag{k}"
                 c_rd = f"ratio_delta_{tag}_lag{k}"
-                parts[c_r] = ratio.shift(k)
-                parts[c_rd] = ratio_delta.shift(k)
+                parts[c_r] = shifted(ratio, k + lag_off)
+                parts[c_rd] = shifted(ratio_delta, k + lag_off)
                 feature_cols.extend([c_r, c_rd])
+        if is_aligned_up and align_mode == "augment":
+            # Arriving-wave block: j=0 is the upstream sample expected to reach
+            # valle at t+h (x(t+h-tau_i)); j>0 walks further back along the wave.
+            a_off = int(upstream_tau[station]) - int(lag_align_h)
+            for j in range(max(1, int(align_window))):
+                s = a_off + j
+                c_lv = f"alevel_{tag}_lag{j}"
+                c_dv = f"adelta_{tag}_lag{j}"
+                c_mv = f"amiss_{tag}_lag{j}"
+                c_d1 = f"ad1_{tag}_lag{j}"
+                c_d2 = f"ad2_{tag}_lag{j}"
+                parts[c_lv] = shifted(signal, s)
+                parts[c_dv] = shifted(signal_delta, s)
+                parts[c_mv] = shifted(miss, s).fillna(1.0)
+                parts[c_d1] = shifted(d1_s, s)
+                parts[c_d2] = shifted(d2_s, s)
+                feature_cols.extend([c_lv, c_dv, c_mv, c_d1, c_d2])
 
     for a, b in (chain_pairs or []):
         if a not in wide.columns or b not in wide.columns:
@@ -764,6 +809,36 @@ def main() -> None:
     )
     parser.add_argument("--skip-lgbm", action="store_true", help="Train/export DNN only")
     parser.add_argument(
+        "--lag-align",
+        nargs="?",
+        const="shift",
+        default=None,
+        choices=("shift", "augment"),
+        help=(
+            "shift: le finestre upstream partono da x(t+h-tau_i) (perdono le ore recenti di monte); "
+            "augment: finestra piatta invariata + blocco align_ centrato sull'onda in arrivo x(t+h-tau_i-j)"
+        ),
+    )
+    parser.add_argument(
+        "--align-window",
+        type=int,
+        default=16,
+        help="Ampiezza blocco augment (step da 30′) attorno a x(t+h-tau_i)",
+    )
+    parser.add_argument(
+        "--max-lag-steps",
+        type=int,
+        default=LOOKBACK,
+        help="Limite superiore per la stima del lag upstream (step da 30′)",
+    )
+    parser.add_argument(
+        "--horizons",
+        type=int,
+        nargs="+",
+        default=None,
+        help="Horizon steps of 30′ (default 1 2 3 4 = 30..120′; e.g. 1..12 = 6 h)",
+    )
+    parser.add_argument(
         "--poly-points",
         type=int,
         default=POLY_NAIVE_POINTS,
@@ -801,6 +876,8 @@ def main() -> None:
         "valle"
     )
     tag = f"{tag}-p{poly_points}"
+    if args.lag_align:
+        tag = f"{tag}-lag{args.lag_align}"
     if args.export_dnn is None:
         args.export_dnn = ROOT / "models" / f"cento-dnn-{tag}.json"
     if args.out is None:
@@ -856,21 +933,48 @@ def main() -> None:
             log("Pioggia: assente, fit solo livelli", level="warn")
 
     chain_pairs = list(CHAIN_PAIRS) if use_chain and acceptors else []
+
+    upstream_tau: dict[str, int] = {}
+    if args.lag_align:
+        log_step("Stima ritardi monte→Cento (solo mesi di train)")
+        train_wide, _, _ = split_masks(wide.index)
+        y_down = wide[DOWNSTREAM].to_numpy(dtype=float)
+        for up in UPSTREAMS:
+            x_up = wide[up].to_numpy(dtype=float)
+            lag, r = ft.estimate_lag(
+                x_up, y_down, args.max_lag_steps, train_mask=train_wide
+            )
+            upstream_tau[up] = lag
+            log(
+                f"τ({up}→{DOWNSTREAM}) = {lag} step = {lag * ft.STEP_MINUTES}′ "
+                f"(r={r if r is None else round(r, 3)})",
+                level="ok",
+            )
+
     log_step("Feature matrix")
     t_feat = time.perf_counter()
     log(
         f"Building features: lookback={args.lookback} yellow={use_yellow} "
-        f"ratio={use_yellow} chain={bool(chain_pairs)} d1/d2=poly{poly_points}"
+        f"ratio={use_yellow} chain={bool(chain_pairs)} d1/d2=poly{poly_points} "
+        f"lag-align={bool(upstream_tau)}"
     )
-    feats, feature_cols = build_feature_matrix(
-        wide, rain, lookback=args.lookback, stations=needed,
-        soglia_levels=soglia_levels,
-        use_soglia_headroom=use_yellow,
-        use_soglia_ratio=use_yellow,
-        soglia_kind="yellow",
-        chain_pairs=chain_pairs,
-        poly_points=poly_points,
-    )
+
+    def make_feats(h_steps: int) -> tuple[pd.DataFrame, list[str]]:
+        return build_feature_matrix(
+            wide, rain, lookback=args.lookback, stations=needed,
+            soglia_levels=soglia_levels,
+            use_soglia_headroom=use_yellow,
+            use_soglia_ratio=use_yellow,
+            soglia_kind="yellow",
+            chain_pairs=chain_pairs,
+            poly_points=poly_points,
+            upstream_tau=upstream_tau,
+            lag_align_h=h_steps,
+            align_mode=args.lag_align or "shift",
+            align_window=args.align_window,
+        )
+
+    feats, feature_cols = make_feats(0)
     use_rain = rain is not None and {"rain6h", "rain24h"}.issubset(rain.columns)
     n_d1 = sum(1 for c in feature_cols if c.startswith("d1_"))
     n_d2 = sum(1 for c in feature_cols if c.startswith("d2_"))
@@ -881,14 +985,21 @@ def main() -> None:
     )
     log(f"stations={needed}", level="debug")
 
+    horizons = [int(h) for h in (args.horizons if args.horizons else HORIZONS)]
+    if not horizons or any(h < 1 for h in horizons):
+        raise SystemExit("--horizons must be positive 30′-steps (e.g. 1 2 3 4)")
+    log(f"horizons steps={horizons} → {[h * ft.STEP_MINUTES for h in horizons]}′")
+
     horizons_out: dict[str, dict] = {}
     export_horizons: dict[str, dict] = {}
-    n_h = len(HORIZONS)
+    n_h = len(horizons)
 
-    for hi, h in enumerate(HORIZONS, start=1):
+    for hi, h in enumerate(horizons, start=1):
         minutes = h * ft.STEP_MINUTES
         log_step(f"Orizzonte {minutes}′  ({hi}/{n_h})")
         t_h = time.perf_counter()
+        if upstream_tau:
+            feats, feature_cols = make_feats(h)
         targets = build_targets(wide, h)
         X, y, y0, index = align_xy(feats, feature_cols, targets)
         train_m, val_m, hold_m = split_masks(index)
@@ -1001,6 +1112,12 @@ def main() -> None:
         "sogliaKind": "yellow" if use_yellow else None,
         "sogliaLevels": {k: soglia_levels[k] for k in needed if k in soglia_levels} if use_yellow else {},
         "chainPairs": [list(p) for p in chain_pairs],
+        "upstreamLagAlign": bool(upstream_tau),
+        "upstreamLagMode": args.lag_align if upstream_tau else None,
+        "upstreamLagAlignWindow": args.align_window if upstream_tau else None,
+        "upstreamLagMinutes": {
+            up: upstream_tau[up] * ft.STEP_MINUTES for up in upstream_tau
+        },
     }
     dnn_node = {
         "kind": "window_delta_mlp",
@@ -1044,7 +1161,7 @@ def main() -> None:
         "lookbackSteps": args.lookback,
         "lookbackMinutes": args.lookback * ft.STEP_MINUTES,
         "stepMinutes": ft.STEP_MINUTES,
-        "horizonsMinutes": [h * ft.STEP_MINUTES for h in HORIZONS],
+        "horizonsMinutes": [h * ft.STEP_MINUTES for h in horizons],
         "features": feature_cols,
         "useRain": use_rain,
         "disclaimer": "Sperimentale: non operativo, non allertistico.",

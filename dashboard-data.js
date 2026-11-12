@@ -99,12 +99,20 @@
     }
 
     function highestThreshold(sensor) {
-        return Math.max(0, ...Object.values(sensor.levels).filter(finite));
+        return Math.max(0, ...Object.values(sensor?.levels || {}).filter(finite));
     }
 
+    // Yellow soglia is present on all level stations; preferred reference (as in ML features).
+    function yellowThreshold(sensor) {
+        const yellow = sensor?.levels?.yellow;
+        return finite(yellow) && yellow > 0 ? yellow : null;
+    }
+
+    // Scarto rispetto al giallo: (livello − giallo) / giallo.
+    // 0 ⇒ al giallo; <0 ⇒ sotto (più sicuro); >0 ⇒ sopra (verso arancio/rosso).
     function normalize(sensor, value) {
-        const threshold = highestThreshold(sensor);
-        return finite(value) && threshold > 0 ? value / threshold : null;
+        const yellow = yellowThreshold(sensor);
+        return finite(value) && yellow != null ? (value - yellow) / yellow : null;
     }
 
     function filter(sensor, hours, now = new Date()) {
@@ -139,6 +147,72 @@
     function romeTime(date) {
         const p = Object.fromEntries(romeFormatter.formatToParts(date).map(part => [part.type, part.value]));
         return `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}:${p.second}`;
+    }
+
+    function thresholdShapes(sensor, { normalized = false } = {}) {
+        const shapes = [];
+        const yellow = yellowThreshold(sensor);
+        const colors = { yellow: '#a68000', orange: '#be5900', red: '#b42332' };
+        for (const key of ['yellow', 'orange', 'red']) {
+            const raw = sensor?.levels?.[key];
+            if (!finite(raw)) continue;
+            let y = raw;
+            if (normalized) {
+                if (yellow == null) continue;
+                y = (raw - yellow) / yellow;
+            }
+            shapes.push({
+                type: 'line', xref: 'paper', x0: 0, x1: 1,
+                y0: y, y1: y,
+                line: { color: colors[key], width: 1, dash: 'dash' }
+            });
+        }
+        return shapes;
+    }
+
+    function averageShape(value) {
+        if (!finite(value)) return null;
+        return {
+            type: 'line', xref: 'paper', x0: 0, x1: 1, y0: value, y1: value,
+            line: { color: '#64748b', width: 1.5, dash: 'dot' }
+        };
+    }
+
+    function yRangeFor(sensor, values, { normalized = false, padding = 0.5 } = {}) {
+        const finiteValues = (values || []).filter(finite);
+        const minValue = finiteValues.length ? Math.min(...finiteValues) : 0;
+        const maxValue = finiteValues.length ? Math.max(...finiteValues) : 1;
+        if (normalized) {
+            const yellow = yellowThreshold(sensor);
+            const extras = [0, -1];
+            if (yellow != null) {
+                for (const key of ['orange', 'red']) {
+                    const raw = sensor?.levels?.[key];
+                    if (finite(raw)) extras.push((raw - yellow) / yellow);
+                }
+            }
+            const lo = Math.min(minValue, ...extras);
+            const hi = Math.max(maxValue, ...extras);
+            return [lo - 0.05, hi + 0.05];
+        }
+        const thresholds = ['yellow', 'orange', 'red']
+            .map(k => sensor?.levels?.[k])
+            .filter(finite);
+        const lowest = thresholds.length ? Math.min(...thresholds) : null;
+        const highest = thresholds.length ? Math.max(...thresholds) : null;
+        const yMin = Math.min(-1, minValue - padding, lowest != null ? lowest - padding : minValue - padding);
+        const yMax = Math.max(maxValue + padding, highest != null ? highest + padding : maxValue + padding);
+        return [yMin, yMax];
+    }
+
+    function romeTickVals(startMs, endMs, tickCount = 4) {
+        const span = endMs - startMs;
+        const ticks = Array.from({ length: tickCount }, (_, i) => startMs + i * span / (tickCount - 1));
+        const texts = ticks.map(t => {
+            const r = romeTime(new Date(t));
+            return `${r.slice(8, 10)}/${r.slice(5, 7)}<br>${r.slice(11, 16)}`;
+        });
+        return { tickvals: ticks, ticktext: texts };
     }
 
     function createClient(fetcher, timeout = 15000) {
@@ -259,8 +333,9 @@
     }
 
     const api = {
-        parseSensorData, rainfallGauges, latestPoint, status, isStale, highestThreshold, normalize,
-        filter, weightedAverage, withGaps, romeTime, createClient, readCache, saveCache
+        parseSensorData, rainfallGauges, latestPoint, status, isStale, highestThreshold, yellowThreshold, normalize,
+        filter, weightedAverage, withGaps, romeTime, thresholdShapes, averageShape, yRangeFor, romeTickVals,
+        createClient, readCache, saveCache
     };
     if (typeof module !== 'undefined' && module.exports) module.exports = api;
     else root.RenoData = api;

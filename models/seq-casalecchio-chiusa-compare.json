@@ -1,0 +1,543 @@
+{
+  "version": 1,
+  "kind": "seq_e2e",
+  "downstream": "Casalecchio chiusa",
+  "upstreams": [
+    "Sasso Marconi",
+    "Vergato DX"
+  ],
+  "stations": [
+    "Casalecchio chiusa",
+    "Sasso Marconi",
+    "Vergato DX"
+  ],
+  "lookbackSteps": 48,
+  "lookbackMinutes": 1440,
+  "stepMinutes": 30,
+  "channelNames": [
+    "level_Casalecchio_chiusa",
+    "delta_Casalecchio_chiusa",
+    "miss_Casalecchio_chiusa",
+    "level_Sasso_Marconi",
+    "delta_Sasso_Marconi",
+    "miss_Sasso_Marconi",
+    "level_Vergato_DX",
+    "delta_Vergato_DX",
+    "miss_Vergato_DX",
+    "rain6h",
+    "rain24h"
+  ],
+  "useRain": true,
+  "rainGauges": [
+    "Sasso Marconi Arpa",
+    "Vergato",
+    "Riola di Vergato",
+    "Padulle Sala Bolognese",
+    "Finale Emilia",
+    "Zola Predosa",
+    "Lavino di Sopra",
+    "Anzola"
+  ],
+  "arches": [
+    "gru"
+  ],
+  "disclaimer": "Sperimentale: non operativo, non allertistico. Offline only.",
+  "mlpRef": "/data/ComuneDiCento/livelliReno/models/transfer-coeffs.json",
+  "gate": {
+    "gru": {
+      "validateEventsSkill120": 0.245754,
+      "holdoutEventsSkillPersist120": 0.290234,
+      "mlpValidateEventsSkill120": 0.143837,
+      "mlpHoldoutEventsSkillPersist120": 0.184828,
+      "prodValidateEventsSkill120": 0.143837,
+      "prodHoldoutEventsSkillPersist120": 0.184828,
+      "beatsMlpValidate": true,
+      "beatsProdValidate": true,
+      "beatsProdHoldoutPersist": true,
+      "adoptRuntime": true,
+      "reason": [
+        "beats production MLP on validate+holdout — still needs browser export + backtest"
+      ]
+    }
+  },
+  "trainedAt": "2026-11-12T15:45:35Z",
+  "horizons": {
+    "30": {
+      "horizonMinutes": 30,
+      "nChannels": 11,
+      "channelNames": [
+        "level_Casalecchio_chiusa",
+        "delta_Casalecchio_chiusa",
+        "miss_Casalecchio_chiusa",
+        "level_Sasso_Marconi",
+        "delta_Sasso_Marconi",
+        "miss_Sasso_Marconi",
+        "level_Vergato_DX",
+        "delta_Vergato_DX",
+        "miss_Vergato_DX",
+        "rain6h",
+        "rain24h"
+      ],
+      "nSamples": {
+        "train": 15841,
+        "validate": 14758,
+        "holdout": 3443
+      },
+      "channelStats": {
+        "level_Casalecchio_chiusa": {
+          "mean": -0.01944441,
+          "std": 0.64895352
+        },
+        "delta_Casalecchio_chiusa": {
+          "mean": 4.819e-05,
+          "std": 0.03216811
+        },
+        "miss_Casalecchio_chiusa": {
+          "mean": 0.0,
+          "std": 1.0
+        },
+        "level_Sasso_Marconi": {
+          "mean": -0.11381694,
+          "std": 0.2465224
+        },
+        "delta_Sasso_Marconi": {
+          "mean": -1.776e-05,
+          "std": 0.01675082
+        },
+        "miss_Sasso_Marconi": {
+          "mean": 0.0,
+          "std": 1.0
+        },
+        "level_Vergato_DX": {
+          "mean": 1.03622189,
+          "std": 0.13726184
+        },
+        "delta_Vergato_DX": {
+          "mean": 4.701e-05,
+          "std": 0.06826341
+        },
+        "miss_Vergato_DX": {
+          "mean": 0.0,
+          "std": 1.0
+        },
+        "rain6h": {
+          "mean": 1.3941982,
+          "std": 5.16681479
+        },
+        "rain24h": {
+          "mean": 5.48120686,
+          "std": 13.84847056
+        }
+      },
+      "gru": {
+        "train": {
+          "rmse": 0.016313,
+          "skill": 0.493279,
+          "mae": 0.008372,
+          "n": 15841,
+          "baseline": "persist",
+          "rmseBaseline": 0.032192
+        },
+        "validate": {
+          "rmse": 0.020755,
+          "skill": 0.39856,
+          "mae": 0.009825,
+          "n": 14758,
+          "baseline": "persist",
+          "rmseBaseline": 0.03451
+        },
+        "validateEvents": {
+          "rmse": 0.094762,
+          "skill": 0.494106,
+          "mae": 0.065539,
+          "n": 326,
+          "baseline": "persist",
+          "rmseBaseline": 0.187316
+        },
+        "holdout": {
+          "rmse": 0.027536,
+          "skill": 0.510563,
+          "mae": 0.011921,
+          "n": 3443,
+          "baseline": "poly2",
+          "rmseBaseline": 0.056261,
+          "skillPersist": 0.498889,
+          "rmsePersist": 0.05495
+        },
+        "holdoutEvents": {
+          "rmse": 0.084388,
+          "skill": 0.371903,
+          "mae": 0.045089,
+          "n": 237,
+          "baseline": "poly2",
+          "rmseBaseline": 0.134354,
+          "skillPersist": 0.542245,
+          "rmsePersist": 0.184351
+        },
+        "architecture": "GRU(h=64)",
+        "earlyStopping": {
+          "best_epoch": 26,
+          "best_val_mse": 0.00043079
+        }
+      }
+    },
+    "60": {
+      "horizonMinutes": 60,
+      "nChannels": 11,
+      "channelNames": [
+        "level_Casalecchio_chiusa",
+        "delta_Casalecchio_chiusa",
+        "miss_Casalecchio_chiusa",
+        "level_Sasso_Marconi",
+        "delta_Sasso_Marconi",
+        "miss_Sasso_Marconi",
+        "level_Vergato_DX",
+        "delta_Vergato_DX",
+        "miss_Vergato_DX",
+        "rain6h",
+        "rain24h"
+      ],
+      "nSamples": {
+        "train": 15841,
+        "validate": 14757,
+        "holdout": 3442
+      },
+      "channelStats": {
+        "level_Casalecchio_chiusa": {
+          "mean": -0.01944441,
+          "std": 0.64895352
+        },
+        "delta_Casalecchio_chiusa": {
+          "mean": 4.819e-05,
+          "std": 0.03216811
+        },
+        "miss_Casalecchio_chiusa": {
+          "mean": 0.0,
+          "std": 1.0
+        },
+        "level_Sasso_Marconi": {
+          "mean": -0.11381694,
+          "std": 0.2465224
+        },
+        "delta_Sasso_Marconi": {
+          "mean": -1.776e-05,
+          "std": 0.01675082
+        },
+        "miss_Sasso_Marconi": {
+          "mean": 0.0,
+          "std": 1.0
+        },
+        "level_Vergato_DX": {
+          "mean": 1.03622189,
+          "std": 0.13726184
+        },
+        "delta_Vergato_DX": {
+          "mean": 4.701e-05,
+          "std": 0.06826341
+        },
+        "miss_Vergato_DX": {
+          "mean": 0.0,
+          "std": 1.0
+        },
+        "rain6h": {
+          "mean": 1.3941982,
+          "std": 5.16681479
+        },
+        "rain24h": {
+          "mean": 5.48120686,
+          "std": 13.84847056
+        }
+      },
+      "gru": {
+        "train": {
+          "rmse": 0.035795,
+          "skill": 0.399324,
+          "mae": 0.016365,
+          "n": 15841,
+          "baseline": "persist",
+          "rmseBaseline": 0.05959
+        },
+        "validate": {
+          "rmse": 0.043031,
+          "skill": 0.330287,
+          "mae": 0.019492,
+          "n": 14757,
+          "baseline": "persist",
+          "rmseBaseline": 0.064252
+        },
+        "validateEvents": {
+          "rmse": 0.135312,
+          "skill": 0.400595,
+          "mae": 0.098437,
+          "n": 1042,
+          "baseline": "persist",
+          "rmseBaseline": 0.225744
+        },
+        "holdout": {
+          "rmse": 0.058636,
+          "skill": 0.531847,
+          "mae": 0.02669,
+          "n": 3442,
+          "baseline": "poly2",
+          "rmseBaseline": 0.12525,
+          "skillPersist": 0.436687,
+          "rmsePersist": 0.104091
+        },
+        "holdoutEvents": {
+          "rmse": 0.133493,
+          "skill": 0.431852,
+          "mae": 0.082354,
+          "n": 536,
+          "baseline": "poly2",
+          "rmseBaseline": 0.234962,
+          "skillPersist": 0.472039,
+          "rmsePersist": 0.252847
+        },
+        "architecture": "GRU(h=64)",
+        "earlyStopping": {
+          "best_epoch": 17,
+          "best_val_mse": 0.00185164
+        }
+      }
+    },
+    "90": {
+      "horizonMinutes": 90,
+      "nChannels": 11,
+      "channelNames": [
+        "level_Casalecchio_chiusa",
+        "delta_Casalecchio_chiusa",
+        "miss_Casalecchio_chiusa",
+        "level_Sasso_Marconi",
+        "delta_Sasso_Marconi",
+        "miss_Sasso_Marconi",
+        "level_Vergato_DX",
+        "delta_Vergato_DX",
+        "miss_Vergato_DX",
+        "rain6h",
+        "rain24h"
+      ],
+      "nSamples": {
+        "train": 15841,
+        "validate": 14756,
+        "holdout": 3441
+      },
+      "channelStats": {
+        "level_Casalecchio_chiusa": {
+          "mean": -0.01944441,
+          "std": 0.64895352
+        },
+        "delta_Casalecchio_chiusa": {
+          "mean": 4.819e-05,
+          "std": 0.03216811
+        },
+        "miss_Casalecchio_chiusa": {
+          "mean": 0.0,
+          "std": 1.0
+        },
+        "level_Sasso_Marconi": {
+          "mean": -0.11381694,
+          "std": 0.2465224
+        },
+        "delta_Sasso_Marconi": {
+          "mean": -1.776e-05,
+          "std": 0.01675082
+        },
+        "miss_Sasso_Marconi": {
+          "mean": 0.0,
+          "std": 1.0
+        },
+        "level_Vergato_DX": {
+          "mean": 1.03622189,
+          "std": 0.13726184
+        },
+        "delta_Vergato_DX": {
+          "mean": 4.701e-05,
+          "std": 0.06826341
+        },
+        "miss_Vergato_DX": {
+          "mean": 0.0,
+          "std": 1.0
+        },
+        "rain6h": {
+          "mean": 1.3941982,
+          "std": 5.16681479
+        },
+        "rain24h": {
+          "mean": 5.48120686,
+          "std": 13.84847056
+        }
+      },
+      "gru": {
+        "train": {
+          "rmse": 0.05284,
+          "skill": 0.368946,
+          "mae": 0.024391,
+          "n": 15841,
+          "baseline": "persist",
+          "rmseBaseline": 0.083733
+        },
+        "validate": {
+          "rmse": 0.066941,
+          "skill": 0.25737,
+          "mae": 0.030141,
+          "n": 14756,
+          "baseline": "persist",
+          "rmseBaseline": 0.090141
+        },
+        "validateEvents": {
+          "rmse": 0.184893,
+          "skill": 0.318131,
+          "mae": 0.137149,
+          "n": 1505,
+          "baseline": "persist",
+          "rmseBaseline": 0.271157
+        },
+        "holdout": {
+          "rmse": 0.096468,
+          "skill": 0.550467,
+          "mae": 0.047241,
+          "n": 3441,
+          "baseline": "poly2",
+          "rmseBaseline": 0.214595,
+          "skillPersist": 0.349687,
+          "rmsePersist": 0.14834
+        },
+        "holdoutEvents": {
+          "rmse": 0.184139,
+          "skill": 0.495299,
+          "mae": 0.125928,
+          "n": 774,
+          "baseline": "poly2",
+          "rmseBaseline": 0.364847,
+          "skillPersist": 0.399031,
+          "rmsePersist": 0.306403
+        },
+        "architecture": "GRU(h=64)",
+        "earlyStopping": {
+          "best_epoch": 17,
+          "best_val_mse": 0.00448114
+        }
+      }
+    },
+    "120": {
+      "horizonMinutes": 120,
+      "nChannels": 11,
+      "channelNames": [
+        "level_Casalecchio_chiusa",
+        "delta_Casalecchio_chiusa",
+        "miss_Casalecchio_chiusa",
+        "level_Sasso_Marconi",
+        "delta_Sasso_Marconi",
+        "miss_Sasso_Marconi",
+        "level_Vergato_DX",
+        "delta_Vergato_DX",
+        "miss_Vergato_DX",
+        "rain6h",
+        "rain24h"
+      ],
+      "nSamples": {
+        "train": 15841,
+        "validate": 14755,
+        "holdout": 3440
+      },
+      "channelStats": {
+        "level_Casalecchio_chiusa": {
+          "mean": -0.01944441,
+          "std": 0.64895352
+        },
+        "delta_Casalecchio_chiusa": {
+          "mean": 4.819e-05,
+          "std": 0.03216811
+        },
+        "miss_Casalecchio_chiusa": {
+          "mean": 0.0,
+          "std": 1.0
+        },
+        "level_Sasso_Marconi": {
+          "mean": -0.11381694,
+          "std": 0.2465224
+        },
+        "delta_Sasso_Marconi": {
+          "mean": -1.776e-05,
+          "std": 0.01675082
+        },
+        "miss_Sasso_Marconi": {
+          "mean": 0.0,
+          "std": 1.0
+        },
+        "level_Vergato_DX": {
+          "mean": 1.03622189,
+          "std": 0.13726184
+        },
+        "delta_Vergato_DX": {
+          "mean": 4.701e-05,
+          "std": 0.06826341
+        },
+        "miss_Vergato_DX": {
+          "mean": 0.0,
+          "std": 1.0
+        },
+        "rain6h": {
+          "mean": 1.3941982,
+          "std": 5.16681479
+        },
+        "rain24h": {
+          "mean": 5.48120686,
+          "std": 13.84847056
+        }
+      },
+      "gru": {
+        "train": {
+          "rmse": 0.068266,
+          "skill": 0.350022,
+          "mae": 0.031857,
+          "n": 15841,
+          "baseline": "persist",
+          "rmseBaseline": 0.105028
+        },
+        "validate": {
+          "rmse": 0.090169,
+          "skill": 0.198151,
+          "mae": 0.040437,
+          "n": 14755,
+          "baseline": "persist",
+          "rmseBaseline": 0.112452
+        },
+        "validateEvents": {
+          "rmse": 0.233059,
+          "skill": 0.245754,
+          "mae": 0.170907,
+          "n": 1844,
+          "baseline": "persist",
+          "rmseBaseline": 0.308996
+        },
+        "holdout": {
+          "rmse": 0.147024,
+          "skill": 0.546937,
+          "mae": 0.075385,
+          "n": 3440,
+          "baseline": "poly2",
+          "rmseBaseline": 0.324511,
+          "skillPersist": 0.219206,
+          "rmsePersist": 0.188301
+        },
+        "holdoutEvents": {
+          "rmse": 0.251988,
+          "skill": 0.523954,
+          "mae": 0.179958,
+          "n": 944,
+          "baseline": "poly2",
+          "rmseBaseline": 0.529336,
+          "skillPersist": 0.290234,
+          "rmsePersist": 0.35503
+        },
+        "architecture": "GRU(h=64)",
+        "earlyStopping": {
+          "best_epoch": 16,
+          "best_val_mse": 0.00813052
+        }
+      }
+    }
+  },
+  "note": "End-to-end Δy su finestra L×C (non ibrido Muskingum/RC). Stesso split/eventi della MLP; non patcha transfer-coeffs."
+}

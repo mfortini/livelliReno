@@ -61,18 +61,22 @@ test('freshness is separate from hydrometric state and future values are not fre
     assert.equal(D.isStale(s, new Date('2026-11-10T12:00:00Z'), 90), true);
 });
 
-test('normalization preserves null, supports negatives and requires a positive threshold', () => {
-    const s = sensor([]);
+test('normalization is (livello−giallo)/giallo with zero at yellow', () => {
+    const s = sensor([], { yellow: 5, orange: 7, red: 9 });
+    assert.equal(D.yellowThreshold(s), 5);
     assert.equal(D.normalize(s, null), null);
-    assert.equal(D.normalize(s, -3), -1);
-    assert.equal(D.normalize(sensor([], { yellow: null, orange: null, red: null }), 4), null);
+    assert.equal(D.normalize(s, 5), 0);
+    assert.equal(D.normalize(s, 0), -1);
+    assert.equal(D.normalize(s, 7.5), 0.5);
+    assert.equal(D.normalize(sensor([], { yellow: null, orange: 3, red: 5 }), 4), null);
     assert.equal(D.normalize(sensor([], { yellow: 0, orange: null, red: null }), 4), null);
 });
 
 test('weighted averages ignore nulls and large gaps, including normalized values', () => {
-    const s = sensor([2, 4, null, 8]);
+    const s = sensor([2, 4, null, 8], { yellow: 4, orange: 6, red: 8 });
     assert.equal(D.weightedAverage(s, s.timeSeries, false), 3);
-    assert.equal(D.weightedAverage(s, s.timeSeries, true), 1);
+    // (2-4)/4=-0.5 and (4-4)/4=0 → mean -0.25 on first segment only (null breaks later)
+    assert.equal(D.weightedAverage(s, s.timeSeries, true), -0.25);
     assert.equal(D.weightedAverage(sensor([]), [], false), null);
     assert.equal(D.weightedAverage(sensor([1]), sensor([1]).timeSeries, false), null);
     const gap = [{ time: new Date(0), value: 2 }, { time: new Date(4 * 3600000), value: 4 }];
@@ -86,6 +90,26 @@ test('time window uses absolute instants, excludes future samples and works acro
     assert.equal(D.filter(s, 24, new Date('2026-10-25T01:00:00Z')).length, 2);
     assert.equal(D.romeTime(new Date('2026-10-25T00:30:00Z')), '2026-10-25 02:30:00');
     assert.equal(D.romeTime(new Date('2026-10-25T01:30:00Z')), '2026-10-25 02:30:00');
+});
+
+test('thresholdShapes and yRangeFor include soglie; romeTickVals length matches', () => {
+    const s = sensor([0.5, 1.2], { yellow: 2, orange: 4, red: 6 });
+    const shapes = D.thresholdShapes(s);
+    assert.equal(shapes.length, 3);
+    assert.equal(shapes[0].y0, 2);
+    assert.equal(shapes[2].line.color, '#b42332');
+    const normShapes = D.thresholdShapes(s, { normalized: true });
+    assert.equal(normShapes[0].y0, 0);
+    assert.equal(normShapes[1].y0, (4 - 2) / 2);
+    assert.ok(normShapes[2].y0 > normShapes[1].y0);
+    const range = D.yRangeFor(s, [0.5, 1.2]);
+    assert.ok(range[0] <= -1);
+    assert.ok(range[1] >= 6);
+    const ticks = D.romeTickVals(0, 48 * 3600000, 4);
+    assert.equal(ticks.tickvals.length, 4);
+    assert.equal(ticks.ticktext.length, 4);
+    assert.equal(D.averageShape(null), null);
+    assert.equal(D.averageShape(1.5).y0, 1.5);
 });
 
 const config = { sensors: { Cento: { arpaeId: '1', url: 'https://example.test/1' }, Forcelli: { arpaeId: '2', url: 'https://example.test/2' } } };
