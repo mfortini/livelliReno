@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "kind": "cento_enkf_mass_transfer",
+  "disclaimer": "Sperimentale: non operativo, non allertistico.",
+  "note": "Anomaly-space reservoirs with upstream pulses + coupling. Gauges lack a common datum. A = effective storage; C_out/A = resistance.",
+  "downstream": "Cento",
+  "upstreams": [
+    "Forcelli",
+    "Sostegno Reno"
+  ],
+  "stepMinutes": 30,
+  "horizonsMinutes": [
+    30,
+    60,
+    90,
+    120
+  ],
+  "ensembleN": 40,
+  "processNoiseM": 0.01,
+  "obsNoiseM": 0.02,
+  "means": {
+    "Cento": -0.388346,
+    "Forcelli": 6.920062,
+    "Sostegno Reno": 20.404451
+  },
+  "lags": {
+    "Forcelli": {
+      "steps": 16,
+      "minutes": 480,
+      "r": 0.861217
+    },
+    "Sostegno Reno": {
+      "steps": 5,
+      "minutes": 150,
+      "r": 0.881127
+    }
+  },
+  "params": {
+    "A": 3.746584,
+    "C_f": 1.216102,
+    "C_s": 0.745851,
+    "C_f_down": 0.20582,
+    "C_s_down": 0.430851,
+    "K_f": 0.037747,
+    "K_s": 0.11351,
+    "C_out": 0.090157,
+    "alpha": 0.13586
+  },
+  "trainOneStepRmse": 0.317445,
+  "spikeCounts": {
+    "Cento": 0,
+    "Forcelli": 2,
+    "Sostegno Reno": 0
+  },
+  "metrics": {
+    "30": {
+      "all": {
+        "rmse": 0.120976,
+        "skill": -1.518028,
+        "mae": 0.064645,
+        "n": 3110
+      },
+      "events": {
+        "rmse": 0.437814,
+        "skill": -1.017,
+        "mae": 0.379426,
+        "n": 134
+      }
+    },
+    "60": {
+      "all": {
+        "rmse": 0.167921,
+        "skill": -0.764508,
+        "mae": 0.088283,
+        "n": 3110
+      },
+      "events": {
+        "rmse": 0.482861,
+        "skill": -0.390405,
+        "mae": 0.387315,
+        "n": 222
+      }
+    },
+    "90": {
+      "all": {
+        "rmse": 0.212994,
+        "skill": -0.509926,
+        "mae": 0.111168,
+        "n": 3111
+      },
+      "events": {
+        "rmse": 0.521941,
+        "skill": -0.176975,
+        "mae": 0.390106,
+        "n": 306
+      }
+    },
+    "120": {
+      "all": {
+        "rmse": 0.25553,
+        "skill": -0.3793,
+        "mae": 0.133118,
+        "n": 3111
+      },
+      "events": {
+        "rmse": 0.564001,
+        "skill": -0.076807,
+        "mae": 0.401021,
+        "n": 382
+      }
+    }
+  },
+  "gate": {
+    "dnnSkill120Events": 0.825961,
+    "enkfSkill120Events": -0.076807,
+    "adoptRuntime": false,
+    "reason": "enkf_below_dnn_keep_mlp_apply_smooth"
+  },
+  "fittedAt": "2026-11-12T09:26:12Z"
+}

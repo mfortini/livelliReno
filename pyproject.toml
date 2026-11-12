@@ -5,9 +5,19 @@ description = "Offline training tools for Reno/Samoggia level transfer models (e
 requires-python = ">=3.12"
 dependencies = [
     "duckdb>=1.1",
+    "lightgbm>=4.5",
     "numpy>=2.0",
     "pandas>=2.2",
+    "torch>=2.5",
 ]
 
 [tool.uv]
 package = false
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }

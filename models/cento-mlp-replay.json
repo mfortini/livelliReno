@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "kind": "cento_mlp_raccordo_replay",
+  "disclaimer": "Diagnostica offline: non allertistica.",
+  "note": "Riproduzione della frenata su eventi storici. Lo screenshot window_delta_mlp è compatibile con EMA 0.65 e soprattutto con maxStep da lookback quieto.",
+  "cases": [
+    {
+      "id": "2026-11-11T00:30+01",
+      "now": "2026-11-11T00:30:00+01:00",
+      "y0": -1.42,
+      "dy30": 0.15,
+      "maxStepQuietLookback": 0.05,
+      "obs": { "30": -0.96, "60": -0.35, "90": 0.22, "120": 0.69 },
+      "rawNoClip30": -1.0957,
+      "ema065NoClip30": -1.3065,
+      "emaFracOfRawFirstStep": 0.35,
+      "runtimeClippedStaircase": [-1.37, -1.32, -1.27, -1.22],
+      "finding": "maxStep≈0.05 domina la frenata a gradini; EMA da sola riduce il primo Δ al 35%."
+    },
+    {
+      "id": "2025-10-30T19:00+01",
+      "now": "2025-10-30T19:00:00+01:00",
+      "y0": -1.14,
+      "dy30": 0.22,
+      "maxStepQuietLookback": 0.05,
+      "obs": { "30": -0.57, "60": 0.11, "90": 0.73, "120": 1.29 },
+      "dRaw30": 0.536,
+      "dEma30": 0.188,
+      "emaFracOfRawFirstStep": 0.35,
+      "finding": "Stesso schema su piena storica; MLP grezza segue meglio la salita, clip quieta la annulla."
+    }
+  ],
+  "runtimeFixesApplied": [
+    "forecastWindowMlp default smooth=0 (no EMA brake on independent horizons)",
+    "maxStep floored by |dyLocal| so the last observed 30′ slope is not cancelled",
+    "predictNode forwards smooth; maxStep:null disables the rate limit for offline compare"
+  ],
+  "muskingumStatus": {
+    "reliable": false,
+    "loadCoeffsAdoptsOnlyIfReliable": true,
+    "structuralDefectsAddressedInCode": [
+      "stable K,X decode (2KX<=dt<=2K(1-X))",
+      "historical warm-up",
+      "rain=max gauges + finite-prev deltas",
+      "configurable train cap",
+      "holdout metrics separate from validate",
+      "spread from residual MAD"
+    ],
+    "weightsNotRegenerated": true,
+    "reason": "Attendere esperimenti riproducibili e holdout prima di sovrascrivere models/hybrid-muskingum-cento.json"
+  }
+}

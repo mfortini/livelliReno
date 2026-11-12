@@ -150,7 +150,13 @@ def main() -> int:
 
     config = json.loads(args.config.read_text(encoding="utf-8"))
     stations = set(config.get("sensors", {}).keys())
-    rain_gauges = set() if args.no_rain else set((config.get("rainfall") or {}).get("gauges") or [])
+    raw_gauges = [] if args.no_rain else list((config.get("rainfall") or {}).get("gauges") or [])
+    rain_gauges = set()
+    for entry in raw_gauges:
+        if isinstance(entry, str):
+            rain_gauges.add(entry)
+        elif isinstance(entry, dict) and entry.get("name"):
+            rain_gauges.add(str(entry["name"]))
     if not stations:
         print("Nessuna stazione in config.json", file=sys.stderr)
         return 1

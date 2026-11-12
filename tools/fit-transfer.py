@@ -632,7 +632,12 @@ def main() -> None:
 
     rain = None
     if not args.no_rain:
-        gauges = list((config.get("rainfall") or {}).get("gauges") or [])
+        raw_gauges = list((config.get("rainfall") or {}).get("gauges") or [])
+        gauges = [
+            g if isinstance(g, str) else str(g.get("name"))
+            for g in raw_gauges
+            if isinstance(g, str) or (isinstance(g, dict) and g.get("name"))
+        ]
         rain_dir = args.data / "rain"
         rain = load_rain_basin(rain_dir, gauges, wide.index)
         if rain is not None:

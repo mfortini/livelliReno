@@ -1,0 +1,744 @@
+{
+  "version": 1,
+  "kind": "cento_rc_gru",
+  "disclaimer": "Sperimentale: non operativo, non allertistico.",
+  "note": "Surrogato RC su livelli z-scored: non conserva volumi. Accettori valle = backwater (softplus drain); forecast congela Va all'ultimo obs.",
+  "downstream": "Cento",
+  "upstreams": [
+    "Forcelli",
+    "Sostegno Reno"
+  ],
+  "acceptors": [
+    "Dosso",
+    "Opera Reno Panfilia",
+    "Secondo Salto",
+    "Gallo"
+  ],
+  "lookbackSteps": 48,
+  "gruHidden": 32,
+  "featPerStep": 22,
+  "weightsBytes": 124099,
+  "means": {
+    "Cento": -0.38834565560821493,
+    "Forcelli": 6.920719322546119,
+    "Sostegno Reno": 20.404003420957867,
+    "Bonconvento": 3.2783303953664062,
+    "rain": 0.11265105740181271,
+    "Dosso": 4.116592497010134,
+    "Opera Reno Panfilia": 15.299686695594614,
+    "Secondo Salto": 9.838901409344846,
+    "Gallo": 4.5065614366729685
+  },
+  "stds": {
+    "Cento": 1.8465744270528128,
+    "Forcelli": 0.8133117482986854,
+    "Sostegno Reno": 1.041616931765902,
+    "Bonconvento": 1.5954926906659874,
+    "rain": 0.7370780552342779,
+    "Dosso": 3.1916032693350553,
+    "Opera Reno Panfilia": 1.9677712802880087,
+    "Secondo Salto": 0.4724254970867451,
+    "Gallo": 1.7044040780719838
+  },
+  "lags": {
+    "Forcelli": {
+      "steps": 16,
+      "minutes": 480,
+      "r": 0.861217
+    },
+    "Sostegno Reno": {
+      "steps": 8,
+      "minutes": 240,
+      "r": 0.917533
+    }
+  },
+  "spikeCounts": {
+    "Cento": 0,
+    "Forcelli": 2,
+    "Sostegno Reno": 0,
+    "Bonconvento": 6,
+    "Dosso": 11,
+    "Opera Reno Panfilia": 2906,
+    "Secondo Salto": 1,
+    "Gallo": 4
+  },
+  "trainHistory": {
+    "best_epoch": 35,
+    "best_val_mse": 0.00860068
+  },
+  "subsample": {
+    "usableTrain": 8440,
+    "cap": 12000,
+    "eventKeep": 8000,
+    "kept": 8440,
+    "lostToCap": 0,
+    "mode": "all"
+  },
+  "nTrain": 8440,
+  "nTrainUsable": 8440,
+  "nValidate": 7933,
+  "nHoldout": 3436,
+  "metricsValidate": {
+    "30": {
+      "all": {
+        "rmse": 0.060873,
+        "skill": -0.205518,
+        "mae": 0.025883,
+        "n": 2086
+      },
+      "events": {
+        "rmse": 0.210325,
+        "skill": -0.055593,
+        "mae": 0.196655,
+        "n": 112
+      },
+      "highAcceptor": {
+        "rmse": 0.050884,
+        "skill": 0.051466,
+        "mae": 0.034153,
+        "n": 221
+      },
+      "lowAcceptor": {
+        "rmse": 0.06195,
+        "skill": -0.236308,
+        "mae": 0.024903,
+        "n": 1865
+      },
+      "meanSpread": 0.012997
+    },
+    "60": {
+      "all": {
+        "rmse": 0.111964,
+        "skill": -0.117223,
+        "mae": 0.047257,
+        "n": 2086
+      },
+      "events": {
+        "rmse": 0.331072,
+        "skill": -0.052109,
+        "mae": 0.276707,
+        "n": 194
+      },
+      "highAcceptor": {
+        "rmse": 0.093903,
+        "skill": 0.088179,
+        "mae": 0.063482,
+        "n": 221
+      },
+      "lowAcceptor": {
+        "rmse": 0.113915,
+        "skill": -0.140477,
+        "mae": 0.045335,
+        "n": 1865
+      },
+      "meanSpread": 0.02198
+    },
+    "90": {
+      "all": {
+        "rmse": 0.160317,
+        "skill": -0.073107,
+        "mae": 0.067234,
+        "n": 2086
+      },
+      "events": {
+        "rmse": 0.376241,
+        "skill": -0.022345,
+        "mae": 0.262568,
+        "n": 331
+      },
+      "highAcceptor": {
+        "rmse": 0.132519,
+        "skill": 0.111276,
+        "mae": 0.090323,
+        "n": 221
+      },
+      "lowAcceptor": {
+        "rmse": 0.163297,
+        "skill": -0.092814,
+        "mae": 0.064499,
+        "n": 1865
+      },
+      "meanSpread": 0.030834
+    },
+    "120": {
+      "all": {
+        "rmse": 0.206578,
+        "skill": -0.044903,
+        "mae": 0.086385,
+        "n": 2086
+      },
+      "events": {
+        "rmse": 0.429886,
+        "skill": -0.009487,
+        "mae": 0.27546,
+        "n": 441
+      },
+      "highAcceptor": {
+        "rmse": 0.165478,
+        "skill": 0.137022,
+        "mae": 0.113664,
+        "n": 221
+      },
+      "lowAcceptor": {
+        "rmse": 0.210919,
+        "skill": -0.063129,
+        "mae": 0.083152,
+        "n": 1865
+      },
+      "meanSpread": 0.039299
+    },
+    "150": {
+      "all": {
+        "rmse": 0.250589,
+        "skill": -0.023841,
+        "mae": 0.104137,
+        "n": 2086
+      },
+      "events": {
+        "rmse": 0.493113,
+        "skill": 0.005383,
+        "mae": 0.302685,
+        "n": 502
+      },
+      "highAcceptor": {
+        "rmse": 0.194776,
+        "skill": 0.158945,
+        "mae": 0.135424,
+        "n": 221
+      },
+      "lowAcceptor": {
+        "rmse": 0.256399,
+        "skill": -0.041139,
+        "mae": 0.10043,
+        "n": 1865
+      },
+      "meanSpread": 0.046895
+    },
+    "180": {
+      "all": {
+        "rmse": 0.291946,
+        "skill": -0.005767,
+        "mae": 0.120553,
+        "n": 2086
+      },
+      "events": {
+        "rmse": 0.559502,
+        "skill": 0.017988,
+        "mae": 0.336057,
+        "n": 536
+      },
+      "highAcceptor": {
+        "rmse": 0.219352,
+        "skill": 0.186049,
+        "mae": 0.154575,
+        "n": 221
+      },
+      "lowAcceptor": {
+        "rmse": 0.299384,
+        "skill": -0.023056,
+        "mae": 0.116522,
+        "n": 1865
+      },
+      "meanSpread": 0.054093
+    },
+    "210": {
+      "all": {
+        "rmse": 0.330927,
+        "skill": 0.009456,
+        "mae": 0.135942,
+        "n": 2086
+      },
+      "events": {
+        "rmse": 0.612975,
+        "skill": 0.027962,
+        "mae": 0.361184,
+        "n": 581
+      },
+      "highAcceptor": {
+        "rmse": 0.24331,
+        "skill": 0.205171,
+        "mae": 0.172518,
+        "n": 221
+      },
+      "lowAcceptor": {
+        "rmse": 0.339816,
+        "skill": -0.007618,
+        "mae": 0.131607,
+        "n": 1865
+      },
+      "meanSpread": 0.060467
+    },
+    "240": {
+      "all": {
+        "rmse": 0.367596,
+        "skill": 0.022709,
+        "mae": 0.150768,
+        "n": 2086
+      },
+      "events": {
+        "rmse": 0.662954,
+        "skill": 0.039096,
+        "mae": 0.384101,
+        "n": 616
+      },
+      "highAcceptor": {
+        "rmse": 0.265654,
+        "skill": 0.220267,
+        "mae": 0.189715,
+        "n": 221
+      },
+      "lowAcceptor": {
+        "rmse": 0.377857,
+        "skill": 0.005947,
+        "mae": 0.146153,
+        "n": 1865
+      },
+      "meanSpread": 0.06858
+    }
+  },
+  "metricsHoldout": {
+    "30": {
+      "all": {
+        "rmse": 0.046438,
+        "skill": -0.095277,
+        "mae": 0.011313,
+        "n": 871
+      },
+      "events": {
+        "rmse": 0.40153,
+        "skill": -0.078001,
+        "mae": 0.373893,
+        "n": 11
+      },
+      "highAcceptor": {
+        "rmse": null,
+        "skill": null,
+        "mae": null,
+        "n": 0
+      },
+      "lowAcceptor": {
+        "rmse": 0.046438,
+        "skill": -0.095277,
+        "mae": 0.011313,
+        "n": 871
+      },
+      "meanSpread": 0.01
+    },
+    "60": {
+      "all": {
+        "rmse": 0.090494,
+        "skill": -0.083497,
+        "mae": 0.021845,
+        "n": 871
+      },
+      "events": {
+        "rmse": 0.702271,
+        "skill": -0.072512,
+        "mae": 0.626071,
+        "n": 14
+      },
+      "highAcceptor": {
+        "rmse": null,
+        "skill": null,
+        "mae": null,
+        "n": 0
+      },
+      "lowAcceptor": {
+        "rmse": 0.090494,
+        "skill": -0.083497,
+        "mae": 0.021845,
+        "n": 871
+      },
+      "meanSpread": 0.015287
+    },
+    "90": {
+      "all": {
+        "rmse": 0.131864,
+        "skill": -0.073266,
+        "mae": 0.03241,
+        "n": 871
+      },
+      "events": {
+        "rmse": 0.904863,
+        "skill": -0.062683,
+        "mae": 0.746426,
+        "n": 18
+      },
+      "highAcceptor": {
+        "rmse": null,
+        "skill": null,
+        "mae": null,
+        "n": 0
+      },
+      "lowAcceptor": {
+        "rmse": 0.131864,
+        "skill": -0.073266,
+        "mae": 0.03241,
+        "n": 871
+      },
+      "meanSpread": 0.0235
+    },
+    "120": {
+      "all": {
+        "rmse": 0.170198,
+        "skill": -0.064465,
+        "mae": 0.042392,
+        "n": 871
+      },
+      "events": {
+        "rmse": 1.167923,
+        "skill": -0.053846,
+        "mae": 0.975688,
+        "n": 18
+      },
+      "highAcceptor": {
+        "rmse": null,
+        "skill": null,
+        "mae": null,
+        "n": 0
+      },
+      "lowAcceptor": {
+        "rmse": 0.170198,
+        "skill": -0.064465,
+        "mae": 0.042392,
+        "n": 871
+      },
+      "meanSpread": 0.030542
+    },
+    "150": {
+      "all": {
+        "rmse": 0.204456,
+        "skill": -0.057584,
+        "mae": 0.051495,
+        "n": 871
+      },
+      "events": {
+        "rmse": 1.331007,
+        "skill": -0.046689,
+        "mae": 1.065898,
+        "n": 20
+      },
+      "highAcceptor": {
+        "rmse": null,
+        "skill": null,
+        "mae": null,
+        "n": 0
+      },
+      "lowAcceptor": {
+        "rmse": 0.204456,
+        "skill": -0.057584,
+        "mae": 0.051495,
+        "n": 871
+      },
+      "meanSpread": 0.037535
+    },
+    "180": {
+      "all": {
+        "rmse": 0.233477,
+        "skill": -0.052308,
+        "mae": 0.059813,
+        "n": 871
+      },
+      "events": {
+        "rmse": 1.387214,
+        "skill": -0.040842,
+        "mae": 1.023583,
+        "n": 24
+      },
+      "highAcceptor": {
+        "rmse": null,
+        "skill": null,
+        "mae": null,
+        "n": 0
+      },
+      "lowAcceptor": {
+        "rmse": 0.233477,
+        "skill": -0.052308,
+        "mae": 0.059813,
+        "n": 871
+      },
+      "meanSpread": 0.045177
+    },
+    "210": {
+      "all": {
+        "rmse": 0.257479,
+        "skill": -0.048067,
+        "mae": 0.067698,
+        "n": 871
+      },
+      "events": {
+        "rmse": 1.468318,
+        "skill": -0.035603,
+        "mae": 1.048604,
+        "n": 26
+      },
+      "highAcceptor": {
+        "rmse": null,
+        "skill": null,
+        "mae": null,
+        "n": 0
+      },
+      "lowAcceptor": {
+        "rmse": 0.257479,
+        "skill": -0.048067,
+        "mae": 0.067698,
+        "n": 871
+      },
+      "meanSpread": 0.052483
+    },
+    "240": {
+      "all": {
+        "rmse": 0.277672,
+        "skill": -0.043515,
+        "mae": 0.074989,
+        "n": 871
+      },
+      "events": {
+        "rmse": 1.580477,
+        "skill": -0.029367,
+        "mae": 1.130541,
+        "n": 26
+      },
+      "highAcceptor": {
+        "rmse": null,
+        "skill": null,
+        "mae": null,
+        "n": 0
+      },
+      "lowAcceptor": {
+        "rmse": 0.277672,
+        "skill": -0.043515,
+        "mae": 0.074989,
+        "n": 871
+      },
+      "meanSpread": 0.059323
+    }
+  },
+  "metrics": {
+    "30": {
+      "all": {
+        "rmse": 0.046438,
+        "skill": -0.095277,
+        "mae": 0.011313,
+        "n": 871
+      },
+      "events": {
+        "rmse": 0.40153,
+        "skill": -0.078001,
+        "mae": 0.373893,
+        "n": 11
+      },
+      "highAcceptor": {
+        "rmse": null,
+        "skill": null,
+        "mae": null,
+        "n": 0
+      },
+      "lowAcceptor": {
+        "rmse": 0.046438,
+        "skill": -0.095277,
+        "mae": 0.011313,
+        "n": 871
+      },
+      "meanSpread": 0.01
+    },
+    "60": {
+      "all": {
+        "rmse": 0.090494,
+        "skill": -0.083497,
+        "mae": 0.021845,
+        "n": 871
+      },
+      "events": {
+        "rmse": 0.702271,
+        "skill": -0.072512,
+        "mae": 0.626071,
+        "n": 14
+      },
+      "highAcceptor": {
+        "rmse": null,
+        "skill": null,
+        "mae": null,
+        "n": 0
+      },
+      "lowAcceptor": {
+        "rmse": 0.090494,
+        "skill": -0.083497,
+        "mae": 0.021845,
+        "n": 871
+      },
+      "meanSpread": 0.015287
+    },
+    "90": {
+      "all": {
+        "rmse": 0.131864,
+        "skill": -0.073266,
+        "mae": 0.03241,
+        "n": 871
+      },
+      "events": {
+        "rmse": 0.904863,
+        "skill": -0.062683,
+        "mae": 0.746426,
+        "n": 18
+      },
+      "highAcceptor": {
+        "rmse": null,
+        "skill": null,
+        "mae": null,
+        "n": 0
+      },
+      "lowAcceptor": {
+        "rmse": 0.131864,
+        "skill": -0.073266,
+        "mae": 0.03241,
+        "n": 871
+      },
+      "meanSpread": 0.0235
+    },
+    "120": {
+      "all": {
+        "rmse": 0.170198,
+        "skill": -0.064465,
+        "mae": 0.042392,
+        "n": 871
+      },
+      "events": {
+        "rmse": 1.167923,
+        "skill": -0.053846,
+        "mae": 0.975688,
+        "n": 18
+      },
+      "highAcceptor": {
+        "rmse": null,
+        "skill": null,
+        "mae": null,
+        "n": 0
+      },
+      "lowAcceptor": {
+        "rmse": 0.170198,
+        "skill": -0.064465,
+        "mae": 0.042392,
+        "n": 871
+      },
+      "meanSpread": 0.030542
+    },
+    "150": {
+      "all": {
+        "rmse": 0.204456,
+        "skill": -0.057584,
+        "mae": 0.051495,
+        "n": 871
+      },
+      "events": {
+        "rmse": 1.331007,
+        "skill": -0.046689,
+        "mae": 1.065898,
+        "n": 20
+      },
+      "highAcceptor": {
+        "rmse": null,
+        "skill": null,
+        "mae": null,
+        "n": 0
+      },
+      "lowAcceptor": {
+        "rmse": 0.204456,
+        "skill": -0.057584,
+        "mae": 0.051495,
+        "n": 871
+      },
+      "meanSpread": 0.037535
+    },
+    "180": {
+      "all": {
+        "rmse": 0.233477,
+        "skill": -0.052308,
+        "mae": 0.059813,
+        "n": 871
+      },
+      "events": {
+        "rmse": 1.387214,
+        "skill": -0.040842,
+        "mae": 1.023583,
+        "n": 24
+      },
+      "highAcceptor": {
+        "rmse": null,
+        "skill": null,
+        "mae": null,
+        "n": 0
+      },
+      "lowAcceptor": {
+        "rmse": 0.233477,
+        "skill": -0.052308,
+        "mae": 0.059813,
+        "n": 871
+      },
+      "meanSpread": 0.045177
+    },
+    "210": {
+      "all": {
+        "rmse": 0.257479,
+        "skill": -0.048067,
+        "mae": 0.067698,
+        "n": 871
+      },
+      "events": {
+        "rmse": 1.468318,
+        "skill": -0.035603,
+        "mae": 1.048604,
+        "n": 26
+      },
+      "highAcceptor": {
+        "rmse": null,
+        "skill": null,
+        "mae": null,
+        "n": 0
+      },
+      "lowAcceptor": {
+        "rmse": 0.257479,
+        "skill": -0.048067,
+        "mae": 0.067698,
+        "n": 871
+      },
+      "meanSpread": 0.052483
+    },
+    "240": {
+      "all": {
+        "rmse": 0.277672,
+        "skill": -0.043515,
+        "mae": 0.074989,
+        "n": 871
+      },
+      "events": {
+        "rmse": 1.580477,
+        "skill": -0.029367,
+        "mae": 1.130541,
+        "n": 26
+      },
+      "highAcceptor": {
+        "rmse": null,
+        "skill": null,
+        "mae": null,
+        "n": 0
+      },
+      "lowAcceptor": {
+        "rmse": 0.277672,
+        "skill": -0.043515,
+        "mae": 0.074989,
+        "n": 871
+      },
+      "meanSpread": 0.059323
+    }
+  },
+  "weightsFile": "models/hybrid-rc-cento.json",
+  "gate": {
+    "mlpSkill120Events": 0.802015,
+    "rcSkill120Events": -0.053846,
+    "adoptRuntime": false,
+    "reason": "rc_below_mlp_keep_mlp",
+    "gateSplit": "holdout"
+  },
+  "fittedAt": "2026-11-12T11:01:58Z"
+}

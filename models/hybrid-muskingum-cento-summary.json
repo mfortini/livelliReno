@@ -1,0 +1,183 @@
+{
+  "version": 1,
+  "kind": "cento_muskingum_gru",
+  "disclaimer": "Sperimentale: non operativo, non allertistico.",
+  "note": "Muskingum multi-reach + GRU param encoder; z-score train-only; browser-sized weights.",
+  "downstream": "Cento",
+  "upstreams": [
+    "Forcelli",
+    "Sostegno Reno"
+  ],
+  "lookbackSteps": 48,
+  "gruHidden": 32,
+  "weightsBytes": 98230,
+  "means": {
+    "Cento": -0.38834565560821493,
+    "Forcelli": 6.920719322546119,
+    "Sostegno Reno": 20.404003420957867,
+    "Bonconvento": 3.2783303953664062,
+    "rain": 0.11265105740181271
+  },
+  "stds": {
+    "Cento": 1.8465744270528128,
+    "Forcelli": 0.8133117482986854,
+    "Sostegno Reno": 1.041616931765902,
+    "Bonconvento": 1.5954926906659874,
+    "rain": 0.7370780552342779
+  },
+  "lags": {
+    "Forcelli": {
+      "steps": 16,
+      "minutes": 480,
+      "r": 0.861217
+    },
+    "Sostegno Reno": {
+      "steps": 8,
+      "minutes": 240,
+      "r": 0.917533
+    }
+  },
+  "spikeCounts": {
+    "Cento": 0,
+    "Forcelli": 2,
+    "Sostegno Reno": 0,
+    "Bonconvento": 6
+  },
+  "trainHistory": {
+    "best_epoch": 33,
+    "best_val_mse": 0.00748323
+  },
+  "nTrain": 12000,
+  "nValidate": 14547,
+  "nHoldout": 3436,
+  "metrics": {
+    "30": {
+      "all": {
+        "rmse": 0.053936,
+        "skill": -0.051451,
+        "mae": 0.026345,
+        "n": 4737
+      },
+      "events": {
+        "rmse": 0.214419,
+        "skill": -0.007576,
+        "mae": 0.186014,
+        "n": 243
+      },
+      "meanSpread": 0.126889
+    },
+    "60": {
+      "all": {
+        "rmse": 0.104737,
+        "skill": -0.029308,
+        "mae": 0.050668,
+        "n": 4737
+      },
+      "events": {
+        "rmse": 0.341982,
+        "skill": 0.014562,
+        "mae": 0.267763,
+        "n": 386
+      },
+      "meanSpread": 0.126889
+    },
+    "90": {
+      "all": {
+        "rmse": 0.152104,
+        "skill": -0.005343,
+        "mae": 0.073516,
+        "n": 4737
+      },
+      "events": {
+        "rmse": 0.414839,
+        "skill": 0.04324,
+        "mae": 0.286188,
+        "n": 561
+      },
+      "meanSpread": 0.126889
+    },
+    "120": {
+      "all": {
+        "rmse": 0.19564,
+        "skill": 0.019095,
+        "mae": 0.095037,
+        "n": 4737
+      },
+      "events": {
+        "rmse": 0.4764,
+        "skill": 0.068088,
+        "mae": 0.306158,
+        "n": 709
+      },
+      "meanSpread": 0.126889
+    },
+    "150": {
+      "all": {
+        "rmse": 0.235045,
+        "skill": 0.043342,
+        "mae": 0.114982,
+        "n": 4737
+      },
+      "events": {
+        "rmse": 0.535282,
+        "skill": 0.091418,
+        "mae": 0.333754,
+        "n": 814
+      },
+      "meanSpread": 0.126889
+    },
+    "180": {
+      "all": {
+        "rmse": 0.269996,
+        "skill": 0.06791,
+        "mae": 0.133175,
+        "n": 4737
+      },
+      "events": {
+        "rmse": 0.586237,
+        "skill": 0.114611,
+        "mae": 0.358996,
+        "n": 898
+      },
+      "meanSpread": 0.126889
+    },
+    "210": {
+      "all": {
+        "rmse": 0.300519,
+        "skill": 0.092783,
+        "mae": 0.149775,
+        "n": 4737
+      },
+      "events": {
+        "rmse": 0.620802,
+        "skill": 0.138312,
+        "mae": 0.373699,
+        "n": 994
+      },
+      "meanSpread": 0.126889
+    },
+    "240": {
+      "all": {
+        "rmse": 0.327044,
+        "skill": 0.117518,
+        "mae": 0.165088,
+        "n": 4737
+      },
+      "events": {
+        "rmse": 0.656424,
+        "skill": 0.162119,
+        "mae": 0.393939,
+        "n": 1053
+      },
+      "meanSpread": 0.126889
+    }
+  },
+  "weightsFile": "models/hybrid-muskingum-cento.json",
+  "gate": {
+    "dnnSkill120Events": 0.825961,
+    "hybridSkill120Events": 0.068088,
+    "adoptRuntime": false,
+    "reason": "hybrid_below_dnn_keep_mlp"
+  },
+  "fittedAt": "2026-11-12T09:47:32Z"
+}

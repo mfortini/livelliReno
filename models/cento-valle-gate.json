@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "kind": "cento_valle_acceptors_gate",
+  "disclaimer": "Diagnostica: non allertistica.",
+  "acceptors": ["Dosso", "Opera Reno Panfilia", "Secondo Salto", "Gallo"],
+  "mlpNovalle": {
+    "weights": "models/cento-dnn-novalle.json",
+    "validateEvents120": { "skill": 0.825961, "rmse": 0.05655, "n": 1905 },
+    "holdoutEvents120": { "skill": 0.772488, "rmse": 0.19175, "n": 32 }
+  },
+  "mlpValle": {
+    "weights": "models/cento-dnn-valle.json",
+    "validateEvents120": { "skill": 0.802015, "rmse": 0.064331, "n": 1905 },
+    "holdoutEvents120": { "skill": 0.765652, "rmse": 0.197512, "n": 32 }
+  },
+  "rcGru": {
+    "weights": "models/hybrid-rc-cento.json",
+    "summary": "models/hybrid-rc-cento-summary.json",
+    "holdoutEvents120": { "skill": -0.053846, "rmse": 1.167923, "n": 18 },
+    "reliable": false,
+    "gateReason": "rc_below_mlp_keep_mlp"
+  },
+  "decision": {
+    "promoteMlpValleToTransferCoeffs": false,
+    "promoteRc": false,
+    "keepOperational": "window_delta_mlp without valle (existing transfer-coeffs / cento-dnn)",
+    "reason": "MLP+valle does not beat MLP without valle on validate/holdout event skill@120; RC holdout skill negative. Opera Reno Panfilia loses ~2906 points to spike filter, thinning acceptor coverage."
+  },
+  "comparedAt": "2026-11-12"
+}

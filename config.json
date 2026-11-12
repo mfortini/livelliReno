@@ -3,14 +3,62 @@
     "staleMinutes": 90,
     "rainfall": {
         "gauges": [
-            "Sasso Marconi Arpa",
-            "Vergato",
-            "Riola di Vergato",
-            "Padulle Sala Bolognese",
-            "Zola Predosa",
-            "Lavino di Sopra",
-            "Anzola",
-            "Finale Emilia"
+            {
+                "name": "Sasso Marconi Arpa",
+                "arpaeId": "2291",
+                "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%222291%22%7D",
+                "impacts": ["Cento"],
+                "dagColumn": 0
+            },
+            {
+                "name": "Vergato",
+                "arpaeId": "3104",
+                "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223104%22%7D",
+                "impacts": ["Cento"],
+                "dagColumn": 0
+            },
+            {
+                "name": "Riola di Vergato",
+                "arpaeId": "53434",
+                "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%2253434%22%7D",
+                "impacts": ["Cento"],
+                "dagColumn": 0
+            },
+            {
+                "name": "Padulle Sala Bolognese",
+                "arpaeId": "6264",
+                "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%226264%22%7D",
+                "impacts": ["Cento"],
+                "dagColumn": 1
+            },
+            {
+                "name": "Finale Emilia",
+                "arpaeId": "2",
+                "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%222%22%7D",
+                "impacts": ["Cento"],
+                "dagColumn": 1
+            },
+            {
+                "name": "Zola Predosa",
+                "arpaeId": "7218",
+                "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%227218%22%7D",
+                "impacts": ["Cento"],
+                "dagColumn": 2
+            },
+            {
+                "name": "Lavino di Sopra",
+                "arpaeId": "3124",
+                "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223124%22%7D",
+                "impacts": ["Cento"],
+                "dagColumn": 2
+            },
+            {
+                "name": "Anzola",
+                "arpaeId": "5316",
+                "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%225316%22%7D",
+                "impacts": ["Cento"],
+                "dagColumn": 2
+            }
         ]
     },
     "sensors": {

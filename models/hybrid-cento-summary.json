@@ -1,0 +1,301 @@
+{
+  "version": 1,
+  "kind": "cento_hybrid_volume_mlp",
+  "disclaimer": "Sperimentale: non operativo, non allertistico.",
+  "note": "z-score train-only per station; DNN predicts \u03b8; physics rollout in z-space; metrics in metres.",
+  "downstream": "Cento",
+  "upstreams": [
+    "Forcelli",
+    "Sostegno Reno"
+  ],
+  "upstreamAlt": "Bonconvento",
+  "lookbackSteps": 6,
+  "stepMinutes": 30,
+  "horizonsMinutes": [
+    30,
+    60,
+    90,
+    120
+  ],
+  "means": {
+    "Cento": -0.38834565560821493,
+    "Forcelli": 6.920719322546119,
+    "Sostegno Reno": 20.404003420957867,
+    "Bonconvento": 3.2783303953664062,
+    "rain": 0.11265105740181271
+  },
+  "stds": {
+    "Cento": 1.8465744270528128,
+    "Forcelli": 0.8133117482986854,
+    "Sostegno Reno": 1.041616931765902,
+    "Bonconvento": 1.5954926906659874,
+    "rain": 0.7370780552342779
+  },
+  "lags": {
+    "Forcelli": {
+      "steps": 16,
+      "minutes": 480,
+      "r": 0.861217
+    },
+    "Sostegno Reno": {
+      "steps": 8,
+      "minutes": 240,
+      "r": 0.917533
+    }
+  },
+  "spikeCounts": {
+    "Cento": 0,
+    "Forcelli": 2,
+    "Sostegno Reno": 0,
+    "Bonconvento": 6
+  },
+  "trainHistory": {
+    "best_epoch": 40,
+    "best_val_mse": 0.00264739
+  },
+  "nTrain": 15780,
+  "nValidate": 14731,
+  "nHoldout": 3440,
+  "metrics": {
+    "eval": {
+      "30": {
+        "all": {
+          "rmse": 0.034818,
+          "skill": 0.320294,
+          "mae": 0.013397,
+          "n": 4787
+        },
+        "events": {
+          "rmse": 0.137407,
+          "skill": 0.352369,
+          "mae": 0.096604,
+          "n": 245
+        }
+      },
+      "60": {
+        "all": {
+          "rmse": 0.06677,
+          "skill": 0.342768,
+          "mae": 0.024243,
+          "n": 4787
+        },
+        "events": {
+          "rmse": 0.218684,
+          "skill": 0.360066,
+          "mae": 0.144342,
+          "n": 401
+        }
+      },
+      "90": {
+        "all": {
+          "rmse": 0.097342,
+          "skill": 0.355509,
+          "mae": 0.034298,
+          "n": 4787
+        },
+        "events": {
+          "rmse": 0.269478,
+          "skill": 0.371389,
+          "mae": 0.160463,
+          "n": 578
+        }
+      },
+      "120": {
+        "all": {
+          "rmse": 0.126221,
+          "skill": 0.366029,
+          "mae": 0.044338,
+          "n": 4787
+        },
+        "events": {
+          "rmse": 0.313844,
+          "skill": 0.380898,
+          "mae": 0.176477,
+          "n": 726
+        }
+      }
+    },
+    "train": {
+      "30": {
+        "all": {
+          "rmse": 0.017183,
+          "skill": 0.454232,
+          "mae": 0.008511,
+          "n": 15780
+        },
+        "events": {
+          "rmse": 0.095931,
+          "skill": 0.534367,
+          "mae": 0.066089,
+          "n": 263
+        }
+      },
+      "60": {
+        "all": {
+          "rmse": 0.02945,
+          "skill": 0.525501,
+          "mae": 0.014079,
+          "n": 15780
+        },
+        "events": {
+          "rmse": 0.114573,
+          "skill": 0.589152,
+          "mae": 0.066879,
+          "n": 658
+        }
+      },
+      "90": {
+        "all": {
+          "rmse": 0.040642,
+          "skill": 0.559937,
+          "mae": 0.019269,
+          "n": 15780
+        },
+        "events": {
+          "rmse": 0.11554,
+          "skill": 0.619282,
+          "mae": 0.061531,
+          "n": 1347
+        }
+      },
+      "120": {
+        "all": {
+          "rmse": 0.051359,
+          "skill": 0.579839,
+          "mae": 0.024292,
+          "n": 15780
+        },
+        "events": {
+          "rmse": 0.128087,
+          "skill": 0.634446,
+          "mae": 0.068037,
+          "n": 1825
+        }
+      }
+    },
+    "validate": {
+      "30": {
+        "all": {
+          "rmse": 0.021422,
+          "skill": 0.306818,
+          "mae": 0.010459,
+          "n": 14731
+        },
+        "events": {
+          "rmse": 0.11645,
+          "skill": 0.422138,
+          "mae": 0.086519,
+          "n": 234
+        }
+      },
+      "60": {
+        "all": {
+          "rmse": 0.039101,
+          "skill": 0.35807,
+          "mae": 0.018207,
+          "n": 14731
+        },
+        "events": {
+          "rmse": 0.153769,
+          "skill": 0.41894,
+          "mae": 0.103797,
+          "n": 637
+        }
+      },
+      "90": {
+        "all": {
+          "rmse": 0.056512,
+          "skill": 0.376866,
+          "mae": 0.025608,
+          "n": 14731
+        },
+        "events": {
+          "rmse": 0.163309,
+          "skill": 0.43456,
+          "mae": 0.096224,
+          "n": 1314
+        }
+      },
+      "120": {
+        "all": {
+          "rmse": 0.07354,
+          "skill": 0.387744,
+          "mae": 0.032815,
+          "n": 14731
+        },
+        "events": {
+          "rmse": 0.183041,
+          "skill": 0.436325,
+          "mae": 0.10427,
+          "n": 1901
+        }
+      }
+    },
+    "holdout": {
+      "30": {
+        "all": {
+          "rmse": 0.022702,
+          "skill": -0.037963,
+          "mae": 0.005835,
+          "n": 3440
+        },
+        "events": {
+          "rmse": 0.363392,
+          "skill": 0.024388,
+          "mae": 0.311154,
+          "n": 11
+        }
+      },
+      "60": {
+        "all": {
+          "rmse": 0.04354,
+          "skill": -0.014157,
+          "mae": 0.010208,
+          "n": 3440
+        },
+        "events": {
+          "rmse": 0.517748,
+          "skill": 0.039471,
+          "mae": 0.346973,
+          "n": 21
+        }
+      },
+      "90": {
+        "all": {
+          "rmse": 0.063273,
+          "skill": -0.00194,
+          "mae": 0.014446,
+          "n": 3440
+        },
+        "events": {
+          "rmse": 0.656105,
+          "skill": 0.049237,
+          "mae": 0.402565,
+          "n": 28
+        }
+      },
+      "120": {
+        "all": {
+          "rmse": 0.081597,
+          "skill": 0.009232,
+          "mae": 0.018546,
+          "n": 3440
+        },
+        "events": {
+          "rmse": 0.806604,
+          "skill": 0.057828,
+          "mae": 0.489252,
+          "n": 31
+        }
+      }
+    }
+  },
+  "weightsFile": "models/hybrid-cento.json",
+  "gate": {
+    "dnnSkill120Events": 0.825961,
+    "hybridSkill120Events": 0.380898,
+    "adoptRuntime": false,
+    "reason": "hybrid_below_dnn"
+  },
+  "fittedAt": "2026-11-12T09:38:09Z"
+}

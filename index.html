@@ -251,6 +251,8 @@
         #zoomed-plot { height: min(60dvh, 500px); min-height: 260px; width: 100%; }
         #zoomed-meta { color: var(--muted); font-size: .85rem; padding: 0 1rem; }
         #station-dag .dag-edge { pointer-events: none; }
+        #station-dag .dag-edge-rain { pointer-events: none; }
+        #station-dag .dag-node-rain rect { stroke-dasharray: 3 2; }
         .site-nav { display: flex; gap: .35rem; flex-wrap: wrap; margin-top: 1rem; }
         .site-nav a { color: #d3e5ec; text-decoration: none; border: 1px solid #6b8995; border-radius: .55rem; padding: .45rem .85rem; font-size: .85rem; font-weight: 650; min-height: 40px; display: inline-flex; align-items: center; background: transparent; }
         .site-nav a:hover { color: #fff; border-color: #b5e7ee; background: transparent; }
@@ -479,8 +481,25 @@
     const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const refreshInterval = () => Math.max(5, sensorDataGlobal.config?.refreshMinutes || 5) * 60000;
     const staleMinutes = () => sensorDataGlobal.config?.staleMinutes || 90;
-    function sensorById(id) { return sensorDataGlobal.data?.find(sensor => sensor.id === id); }
-    function blankSensor(name) { return { id: name, name, basin: '', coordinates: null, levels: { yellow: null, orange: null, red: null }, timeSeries: [] }; }
+    function sensorById(id) {
+        return sensorDataGlobal.data?.find(sensor => sensor.id === id)
+            || sensorDataGlobal.rain?.find(sensor => sensor.id === id);
+    }
+    function blankSensor(name, kind = 'level') {
+        return {
+            id: name, name, kind, unit: kind === 'rain' ? 'mm' : 'm', basin: '', coordinates: null,
+            levels: { yellow: null, orange: null, red: null }, impacts: [], dagColumn: 1, timeSeries: []
+        };
+    }
+    function sensorMapAll() {
+        const map = {};
+        for (const sensor of sensorDataGlobal.data || []) map[sensor.id] = sensor;
+        for (const sensor of sensorDataGlobal.rain || []) map[sensor.id] = sensor;
+        return map;
+    }
+    function rainSensorsList() {
+        return (sensorDataGlobal.rain || []).filter(sensor => sensor?.timeSeries?.length);
+    }
 
     function parseRoute(hash = location.hash) {
         const raw = (hash || '#').replace(/^#/, '');
@@ -729,7 +748,8 @@
                 if (bounds) map.fitBounds(bounds, { padding: [35, 35] });
             });
         } else if (sensorDataGlobal.data?.length) {
-            initializeMap(sensorDataGlobal.data).catch(error => console.error('Mappa non disponibile:', error));
+            initializeMap([...(sensorDataGlobal.data || []), ...(sensorDataGlobal.rain || [])])
+                .catch(error => console.error('Mappa non disponibile:', error));
         }
     }
 
@@ -753,15 +773,16 @@
             window.addEventListener('resize', debounce(() => updateStationDag(), 200));
             container.addEventListener('click', evt => {
                 const node = evt.target.closest('[data-sensor]');
-                if (node) navigate({ view: 'sensore', sensorId: node.getAttribute('data-sensor') });
+                if (!node) return;
+                if (node.getAttribute('data-kind') === 'rain') return; // pluviometri: solo label SVG
+                navigate({ view: 'sensore', sensorId: node.getAttribute('data-sensor') });
             });
             container.addEventListener('keydown', evt => {
                 if (evt.key !== 'Enter' && evt.key !== ' ') return;
                 const node = evt.target.closest('[data-sensor]');
-                if (node) {
-                    evt.preventDefault();
-                    navigate({ view: 'sensore', sensorId: node.getAttribute('data-sensor') });
-                }
+                if (!node || node.getAttribute('data-kind') === 'rain') return;
+                evt.preventDefault();
+                navigate({ view: 'sensore', sensorId: node.getAttribute('data-sensor') });
             });
         }
         const svgNS = 'http://www.w3.org/2000/svg';
@@ -829,10 +850,38 @@
                 break;
             }
         }
-        const width = Math.max(containerWidth, needed, 240);
+        const rainGauges = D.rainfallGauges(config);
+        const rainSensors = rainGauges.map(g => {
+            const sensor = sensorById(g.name) || blankSensor(g.name, 'rain');
+            return {
+                ...sensor,
+                kind: 'rain',
+                impacts: g.impacts || sensor.impacts || [],
+                dagColumn: g.dagColumn ?? sensor.dagColumn ?? 1
+            };
+        });
+        const rainValueText = sensor => {
+            const latest = getLatestNonNullValue(sensor);
+            return latest === null ? '—' : `${updateStationDag.fmt(latest)} mm`;
+        };
+        ctx.font = `600 ${nameFontPx}px system-ui, -apple-system, "Segoe UI", sans-serif`;
+        let rainLaneW = 0;
+        const rainNameLines = new Map();
+        for (const sensor of rainSensors) {
+            const wrapped = wrapText(sensor.name, Math.round(56 * 11 / nameFontPx));
+            rainNameLines.set(sensor.id, wrapped);
+            const nw = Math.max(...wrapped.map(line => Math.ceil(ctx.measureText(line).width)));
+            ctx.font = `600 ${Math.max(9, nameFontPx - 1)}px system-ui, -apple-system, "Segoe UI", sans-serif`;
+            const vw = Math.ceil(ctx.measureText(rainValueText(sensor)).width);
+            rainLaneW = Math.max(rainLaneW, PADX * 2 + Math.max(DOT + nw, vw));
+            ctx.font = `600 ${nameFontPx}px system-ui, -apple-system, "Segoe UI", sans-serif`;
+        }
+        const rainGap = rainSensors.length ? 16 : 0;
+        const width = Math.max(containerWidth, needed + rainLaneW + rainGap, 240);
         const colX = [];
-        let bandX = (width - needed) / 2;
+        let bandX = (width - (needed + rainLaneW + rainGap)) / 2 + rainLaneW + rainGap;
         for (let c = 0; c < 3; c++) { colX[c] = bandX; bandX += colW[c] + COLGAP; }
+        const rainLaneX = (width - (needed + rainLaneW + rainGap)) / 2;
 
         const pos = new Map();
         rows.forEach((row, ri) => {
@@ -843,7 +892,23 @@
                 pos.set(id, { x: colX[c] + (colW[c] - w) / 2, y, w, h: H });
             }
         });
-        const height = TOP + (rows.length - 1) * ROWH + H + BOTTOM;
+        // Rain lane: group by dagColumn, stack top→bottom beside the level chain.
+        const rainByCol = [[], [], []];
+        for (const sensor of rainSensors) {
+            const c = Math.min(2, Math.max(0, sensor.dagColumn ?? 1));
+            rainByCol[c].push(sensor);
+        }
+        rainByCol.forEach(list => list.sort((a, b) => a.name.localeCompare(b.name, 'it')));
+        const rainFlat = [...rainByCol[0], ...rainByCol[1], ...rainByCol[2]];
+        const rainPos = new Map();
+        rainFlat.forEach((sensor, i) => {
+            const y = TOP + i * Math.min(ROWH, Math.max(36, (rows.length * ROWH) / Math.max(1, rainFlat.length)));
+            rainPos.set(sensor.id, { x: rainLaneX, y, w: rainLaneW, h: H, sensor });
+        });
+        const height = Math.max(
+            TOP + (rows.length - 1) * ROWH + H + BOTTOM,
+            rainFlat.length ? TOP + (rainFlat.length - 1) * Math.min(ROWH, 48) + H + BOTTOM : 0
+        );
 
         const svg = document.createElementNS(svgNS, 'svg');
         svg.setAttribute('width', width);
@@ -869,6 +934,26 @@
             arrow.setAttribute('fill', '#9bb0ba');
             g.append(path, arrow);
             svg.appendChild(g);
+        }
+
+        for (const [id, rp] of rainPos) {
+            for (const targetId of rp.sensor.impacts || []) {
+                const to = pos.get(targetId);
+                if (!to) continue;
+                const x1 = rp.x + rp.w, y1 = rp.y + rp.h / 2;
+                const x2 = to.x, y2 = to.y + to.h / 2;
+                const g = document.createElementNS(svgNS, 'g');
+                g.setAttribute('class', 'dag-edge-rain');
+                g.setAttribute('aria-hidden', 'true');
+                const path = document.createElementNS(svgNS, 'path');
+                path.setAttribute('d', `M ${x1} ${y1} C ${(x1 + x2) / 2} ${y1}, ${(x1 + x2) / 2} ${y2}, ${x2} ${y2}`);
+                path.setAttribute('fill', 'none');
+                path.setAttribute('stroke', '#7eb6d0');
+                path.setAttribute('stroke-width', '1.25');
+                path.setAttribute('stroke-dasharray', '4 3');
+                g.appendChild(path);
+                svg.appendChild(g);
+            }
         }
 
         for (const [id, p] of pos) {
@@ -917,6 +1002,58 @@
             value.setAttribute('font-weight', '600');
             value.setAttribute('fill', m.latest === null ? '#94a3b8' : statusColor);
             value.textContent = valueText(id);
+            g.append(title, rect, dot, ...texts, value);
+            svg.appendChild(g);
+        }
+
+        for (const [id, p] of rainPos) {
+            const sensor = p.sensor;
+            const status = D.status(sensor);
+            const latest = getLatestNonNullValue(sensor);
+            const label = latest === null ? 'nessuna misura' : `${number(latest)} mm`;
+            const g = document.createElementNS(svgNS, 'g');
+            g.setAttribute('class', 'dag-node dag-node-rain');
+            g.setAttribute('data-sensor', id);
+            g.setAttribute('data-kind', 'rain');
+            g.setAttribute('tabindex', '0');
+            g.setAttribute('role', 'button');
+            g.setAttribute('aria-label', `Pluviometro ${id}: ${label}. Impatta ${((sensor.impacts || []).join(', ')) || 'bacino'}.`);
+            const title = document.createElementNS(svgNS, 'title');
+            title.textContent = `${id} (pioggia) · ${label} · → ${(sensor.impacts || []).join(', ') || '—'}`;
+            const rect = document.createElementNS(svgNS, 'rect');
+            rect.setAttribute('x', p.x); rect.setAttribute('y', p.y);
+            rect.setAttribute('width', p.w); rect.setAttribute('height', p.h);
+            rect.setAttribute('rx', 8);
+            rect.setAttribute('fill', '#f3f9fc');
+            rect.setAttribute('stroke', '#7eb6d0');
+            rect.setAttribute('stroke-width', '1.25');
+            const textX = p.x + PADX + DOT;
+            const lines = rainNameLines.get(id) || [id];
+            const nameCys = lines.length === 1 ? [p.y + 16] : [p.y + 10, p.y + 21];
+            const dot = document.createElementNS(svgNS, 'circle');
+            dot.setAttribute('cx', p.x + PADX + 3.5);
+            dot.setAttribute('cy', nameCys[0]);
+            dot.setAttribute('r', '4');
+            dot.setAttribute('fill', status.color);
+            const texts = lines.map((line, i) => {
+                const name = document.createElementNS(svgNS, 'text');
+                name.setAttribute('x', textX);
+                name.setAttribute('y', nameCys[i]);
+                name.setAttribute('dominant-baseline', 'central');
+                name.setAttribute('font-size', nameFontPx);
+                name.setAttribute('font-weight', '600');
+                name.setAttribute('fill', '#173747');
+                name.textContent = line;
+                return name;
+            });
+            const value = document.createElementNS(svgNS, 'text');
+            value.setAttribute('x', textX);
+            value.setAttribute('y', p.y + H - 9);
+            value.setAttribute('dominant-baseline', 'central');
+            value.setAttribute('font-size', Math.max(9, nameFontPx - 1));
+            value.setAttribute('font-weight', '600');
+            value.setAttribute('fill', latest === null ? '#94a3b8' : status.color);
+            value.textContent = rainValueText(sensor);
             g.append(title, rect, dot, ...texts, value);
             svg.appendChild(g);
         }
@@ -970,11 +1107,14 @@
         if (hint) hint.textContent = routeHash({ view: 'predizioni', ...selectedEdge });
         const up = sensorById(selectedEdge.upstream) || blankSensor(selectedEdge.upstream);
         const down = sensorById(selectedEdge.downstream) || blankSensor(selectedEdge.downstream);
-        selectedPrediction = P.predictEdge(up, down, {
+        selectedPrediction = P.predictNode(down, [up], {
             hours: currentRange,
             now: renderTime,
             coeffs: transferCoeffs,
-            horizonHours: 2
+            horizonHours: 2,
+            downstreamId: selectedEdge.downstream,
+            sensorMap: sensorMapAll(),
+            rainSensors: rainSensorsList()
         });
         if (!selectedPrediction?.ok) {
             meta.textContent = `${selectedEdge.upstream} → ${selectedEdge.downstream}: ${selectedPrediction?.reason || 'Predizione non disponibile.'}`;
@@ -1065,23 +1205,22 @@
 
     // ===== Create custom marker for the map =====
     function createCustomMarker(sensor) {
-        const latestValue = getLatestNonNullValue(sensor); // Use the latest non-null value
+        const latestValue = getLatestNonNullValue(sensor);
         const color = getMarkerColor(sensor);
-        const textColor = color === 'yellow' ? 'black' : 'white'; // Use black text for yellow markers
-
-        // Updated HTML content without the sensor name
+        const textColor = color === 'yellow' || color === '#1d6f9f' ? (color === 'yellow' ? 'black' : 'white') : 'white';
+        const unit = sensor.kind === 'rain' ? ' mm' : ' m';
         const htmlContent = `
             <div class="map-marker-rect" style="background-color: ${color}; 
             border-radius: 8px; color: ${textColor}; padding: 4px 8px; font-weight: bold; 
-            text-align: center; line-height: 1.2;">
-                ${number(latestValue)} m
+            text-align: center; line-height: 1.2;${sensor.kind === 'rain' ? ' border-style: dashed;' : ''}">
+                ${number(latestValue)}${unit}
             </div>`;
 
         return L.divIcon({
-            html: htmlContent.trim(),  // Trim extra white space
-            className: '',  // No additional class
-            iconSize: [70, 40],  // Customize size of the icon
-            iconAnchor: [35, 20]  // Position the icon properly
+            html: htmlContent.trim(),
+            className: '',
+            iconSize: [70, 40],
+            iconAnchor: [35, 20]
         });
     }
 
@@ -1548,8 +1687,13 @@
         const marker = L.marker(coordinates, { icon: customMarker })
             .addTo(map);
 
-        // Add click event to scroll to the corresponding graph
-        marker.on('click', () => scrollToSensorCard(sensor.id));
+        marker.on('click', () => {
+            if (sensor.kind === 'rain') {
+                marker.openTooltip?.();
+                return;
+            }
+            scrollToSensorCard(sensor.id);
+        });
 
         markerById.set(sensor.id, marker);
         updateMarkerLabel(marker, sensor);
@@ -1558,13 +1702,14 @@
 
     function updateMarkerLabel(marker, sensor) {
         const point = D.latestPoint(sensor);
+        const unit = sensor.kind === 'rain' ? ' mm' : ' m';
         const label = document.createElement('span');
-        label.textContent = `${sensor.name} · ${point ? number(point.value) + ' m · ' + dateTime(point.time) : 'nessuna misura'} · ${D.status(sensor).label}${D.isStale(sensor, renderTime, staleMinutes()) ? ' · misura non recente' : ''}${sensor.cached ? ' · da cache' : ''}`;
+        label.textContent = `${sensor.name}${sensor.kind === 'rain' ? ' (pioggia)' : ''} · ${point ? number(point.value) + unit + ' · ' + dateTime(point.time) : 'nessuna misura'} · ${D.status(sensor).label}${D.isStale(sensor, renderTime, staleMinutes()) ? ' · misura non recente' : ''}${sensor.cached ? ' · da cache' : ''}`;
         if (marker.getTooltip()) marker.setTooltipContent(label);
         else marker.bindTooltip(label);
         const icon = marker.getElement();
         if (icon) {
-            icon.setAttribute('aria-label', label.textContent + '. Vai alla stazione.');
+            icon.setAttribute('aria-label', label.textContent + (sensor.kind === 'rain' ? '.' : '. Vai alla stazione.'));
             icon.setAttribute('title', label.textContent);
         }
     }
@@ -1697,7 +1842,10 @@
             if (!levelContainer.parentElement) dashboardDiv.appendChild(levelContainer);
         });
         // Initialize the map (only once) with all sensors, when its tab is shown
-        if (mapRequested) initializeMap(sensorDataGlobal.data).catch(error => console.error('Mappa non disponibile:', error));
+        if (mapRequested) {
+            initializeMap([...(sensorDataGlobal.data || []), ...(sensorDataGlobal.rain || [])])
+                .catch(error => console.error('Mappa non disponibile:', error));
+        }
         updateStationDag();
         refreshPredictionPage();
         if (currentRoute.view === 'sensore' && currentRoute.sensorId) {
@@ -1753,16 +1901,24 @@
             lastAttempt = Date.now();
             const result = await client.load(config);
             // Filter out null sensors (those that failed to fetch or parse)
-            const validSensorData = Object.entries(result.items).filter(([name, item]) => D.parseSensorData(name, item));
+            const rainNames = new Set(D.rainfallGauges(config).map(g => g.name));
+            const validSensorData = Object.entries(result.items).filter(([name, item]) => {
+                const kind = rainNames.has(name) ? 'rain' : 'level';
+                const gauge = D.rainfallGauges(config).find(g => g.name === name);
+                return D.parseSensorData(name, item, {
+                    kind,
+                    impacts: gauge?.impacts,
+                    dagColumn: gauge?.dagColumn
+                });
+            });
             const now = Date.now();
             validSensorData.forEach(([name, item]) => { records[name] = { item, fetchedAt: now }; });
             D.saveCache(storage, records);
-            // Store the fetched data globally
             syncRecords(new Set(validSensorData.map(([name]) => name)));
-            // Show last update time
-            updateTime.textContent = `Ultimo tentativo di recupero: ${dateTime(new Date(lastAttempt))} · ${validSensorData.length}/${sensorNames.length} stazioni recuperate. Orari delle misure nelle schede.`;
+            const levelOk = validSensorData.filter(([name]) => config.sensors[name]).length;
+            const rainOk = validSensorData.filter(([name]) => rainNames.has(name)).length;
+            updateTime.textContent = `Ultimo tentativo di recupero: ${dateTime(new Date(lastAttempt))} · ${levelOk}/${sensorNames.length} idro · ${rainOk}/${rainNames.size} pioggia. Orari delle misure nelle schede.`;
             lastUpdate.hidden = false;
-            // Show warning if some sensors failed
             const failedCount = result.failed.length;
             if (failedCount > 0) {
                 errorText.textContent = `${failedCount} stazioni non recuperate: ${result.failed.join(', ')}. Dove disponibili sono mantenuti i dati precedenti, indicati come cache; le altre stazioni restano senza misura.`;
@@ -1785,14 +1941,26 @@
 
     function syncRecords(freshIds) {
         const now = Date.now();
-        sensorDataGlobal.data = Object.keys(sensorDataGlobal.config.sensors).map(name => {
+        const config = sensorDataGlobal.config;
+        sensorDataGlobal.data = Object.keys(config.sensors).map(name => {
             const record = records[name];
             if (!record || now - record.fetchedAt > 24 * 3600000) {
                 delete records[name];
                 return blankSensor(name);
             }
-            const sensor = D.parseSensorData(name, record.item) || blankSensor(name);
+            const sensor = D.parseSensorData(name, record.item, { kind: 'level' }) || blankSensor(name);
             return { ...sensor, fetchedAt: record.fetchedAt, cached: !freshIds.has(name) };
+        });
+        sensorDataGlobal.rain = D.rainfallGauges(config).map(gauge => {
+            const record = records[gauge.name];
+            if (!record || now - record.fetchedAt > 24 * 3600000) {
+                delete records[gauge.name];
+                return { ...blankSensor(gauge.name, 'rain'), impacts: gauge.impacts, dagColumn: gauge.dagColumn };
+            }
+            const sensor = D.parseSensorData(gauge.name, record.item, {
+                kind: 'rain', impacts: gauge.impacts, dagColumn: gauge.dagColumn
+            }) || { ...blankSensor(gauge.name, 'rain'), impacts: gauge.impacts, dagColumn: gauge.dagColumn };
+            return { ...sensor, fetchedAt: record.fetchedAt, cached: !freshIds.has(gauge.name) };
         });
     }
 

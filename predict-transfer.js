@@ -352,15 +352,499 @@
         return n ? sum : 0;
     }
 
+    function rainSeriesStepMs(series, fallback = DEFAULT_STEP_MS) {
+        const gaps = [];
+        for (let i = 1; i < (series?.length || 0) && gaps.length < 40; i++) {
+            const dt = +series[i].time - +series[i - 1].time;
+            if (dt > 0 && dt < 6 * HOUR) gaps.push(dt);
+        }
+        if (!gaps.length) return fallback;
+        gaps.sort((a, b) => a - b);
+        const median = gaps[Math.floor(gaps.length / 2)];
+        // Live ARPAE precip is typically 1 h cumulata; storico is denser.
+        return median >= 45 * MINUTE ? HOUR : fallback;
+    }
+
     function basinRainAt(rainSensors, targetMs, stepMs = DEFAULT_STEP_MS) {
         const list = (rainSensors || []).filter(Boolean);
         if (!list.length) return { rain6h: 0, rain24h: 0 };
         let r6 = 0, r24 = 0;
         for (const sensor of list) {
-            r6 = Math.max(r6, rainCumulAt(sensor.timeSeries, targetMs, RAIN6_STEPS, stepMs));
-            r24 = Math.max(r24, rainCumulAt(sensor.timeSeries, targetMs, RAIN24_STEPS, stepMs));
+            const sampleMs = rainSeriesStepMs(sensor.timeSeries, stepMs);
+            const steps6 = Math.max(1, Math.round(6 * HOUR / sampleMs));
+            const steps24 = Math.max(1, Math.round(24 * HOUR / sampleMs));
+            r6 = Math.max(r6, rainCumulAt(sensor.timeSeries, targetMs, steps6, sampleMs));
+            r24 = Math.max(r24, rainCumulAt(sensor.timeSeries, targetMs, steps24, sampleMs));
         }
         return { rain6h: r6, rain24h: r24 };
+    }
+
+    function mlpForward(x, layers) {
+        let cur = x.slice();
+        for (const layer of layers || []) {
+            const W = layer.W, b = layer.b;
+            if (!Array.isArray(W) || !Array.isArray(b) || W.length !== b.length) return null;
+            const next = new Array(b.length);
+            for (let o = 0; o < b.length; o++) {
+                let sum = b[o];
+                const row = W[o];
+                if (!Array.isArray(row) || row.length !== cur.length) return null;
+                for (let i = 0; i < cur.length; i++) sum += row[i] * cur[i];
+                next[o] = layer.activation === 'relu' ? Math.max(0, sum) : sum;
+            }
+            cur = next;
+        }
+        return cur.length === 1 ? cur[0] : null;
+    }
+
+    function safeFeatureName(station) {
+        return String(station).replace(/ /g, '_');
+    }
+
+    function buildWindowFeatureVector(sensorMap, stations, lookback, nowMs, stepMs, rainSensors, useRain) {
+        const values = {};
+        for (const station of stations) {
+            const series = sensorMap?.[station]?.timeSeries;
+            const tag = safeFeatureName(station);
+            for (let k = 0; k < lookback; k++) {
+                const t = nowMs - k * stepMs;
+                const level = sampleAt(series, t);
+                const prev = sampleAt(series, t - stepMs);
+                const miss = finite(level) ? 0 : 1;
+                const delta = finite(level) && finite(prev) ? level - prev : null;
+                values[`level_${tag}_lag${k}`] = finite(level) ? level : null;
+                values[`delta_${tag}_lag${k}`] = delta;
+                values[`miss_${tag}_lag${k}`] = miss;
+            }
+        }
+        if (useRain) {
+            const rain = basinRainAt(rainSensors, nowMs, stepMs);
+            values.rain6h = rain.rain6h;
+            values.rain24h = rain.rain24h;
+        }
+        return values;
+    }
+
+    function standardizeWindowFeatures(values, featureNames, mean, std) {
+        if (!Array.isArray(featureNames) || !Array.isArray(mean) || !Array.isArray(std)) return null;
+        if (featureNames.length !== mean.length || featureNames.length !== std.length) return null;
+        const out = new Array(featureNames.length);
+        for (let i = 0; i < featureNames.length; i++) {
+            const name = featureNames[i];
+            const raw = values[name];
+            if (name.startsWith('miss_')) {
+                out[i] = finite(raw) ? raw : 1;
+                continue;
+            }
+            const mu = mean[i], sd = std[i] || 1;
+            if (!finite(raw)) {
+                out[i] = 0;
+                continue;
+            }
+            out[i] = (raw - mu) / (sd < 1e-6 ? 1 : sd);
+        }
+        return out;
+    }
+
+    function sigmoid(x) {
+        return 1 / (1 + Math.exp(-Math.max(-60, Math.min(60, x))));
+    }
+
+    function gruCell(x, h, weightIh, weightHh, biasIh, biasHh) {
+        // PyTorch GRU: gates ordered reset, update, new.
+        const hidden = h.length;
+        const r = new Array(hidden);
+        const z = new Array(hidden);
+        const n = new Array(hidden);
+        const out = new Array(hidden);
+        for (let i = 0; i < hidden; i++) {
+            let ir = biasIh[i], iz = biasIh[hidden + i], inew = biasIh[2 * hidden + i];
+            let hr = biasHh[i], hz = biasHh[hidden + i], hnew = biasHh[2 * hidden + i];
+            for (let j = 0; j < x.length; j++) {
+                ir += weightIh[i][j] * x[j];
+                iz += weightIh[hidden + i][j] * x[j];
+                inew += weightIh[2 * hidden + i][j] * x[j];
+            }
+            for (let j = 0; j < hidden; j++) {
+                hr += weightHh[i][j] * h[j];
+                hz += weightHh[hidden + i][j] * h[j];
+                hnew += weightHh[2 * hidden + i][j] * h[j];
+            }
+            r[i] = sigmoid(ir + hr);
+            z[i] = sigmoid(iz + hz);
+            n[i] = Math.tanh(inew + r[i] * hnew);
+            out[i] = (1 - z[i]) * n[i] + z[i] * h[i];
+        }
+        return out;
+    }
+
+    function gruForward(seq, gru) {
+        let h = new Array(gru.hiddenSize).fill(0);
+        for (const x of seq) h = gruCell(x, h, gru.weightIh, gru.weightHh, gru.biasIh, gru.biasHh);
+        return h;
+    }
+
+    function decodeKX(rawK, rawX, dt = 1, xMin = 0.05, xMax = 0.45) {
+        // Stable box: 2·K·X ≤ dt ≤ 2·K·(1−X) ⇒ non-negative Muskingum coeffs.
+        const x = xMin + (xMax - xMin) * sigmoid(rawX);
+        const kMin = (0.5 * dt) / Math.max(1e-3, 1 - x);
+        const kMax = (0.5 * dt) / Math.max(1e-3, x);
+        const k = kMin + (kMax - kMin) * sigmoid(rawK);
+        return { K: k, X: x };
+    }
+
+    function decodeMuskingumTheta(raw, options = {}) {
+        const s = i => sigmoid(raw[i]);
+        const stable = options.stableKX === true || options.paramDecode?.stableKX === true;
+        if (stable) {
+            const dt = finite(Number(options.paramDecode?.dt)) ? Number(options.paramDecode.dt) : 1;
+            const xMin = finite(Number(options.paramDecode?.xMin)) ? Number(options.paramDecode.xMin) : 0.05;
+            const xMax = finite(Number(options.paramDecode?.xMax)) ? Number(options.paramDecode.xMax) : 0.45;
+            const f = decodeKX(raw[0], raw[1], dt, xMin, xMax);
+            const sReach = decodeKX(raw[2], raw[3], dt, xMin, xMax);
+            return {
+                K_f: f.K, X_f: f.X,
+                K_s: sReach.K, X_s: sReach.X,
+                g_f: 0.05 + 0.95 * s(4),
+                g_s: 0.05 + 0.95 * s(5),
+                lam: 0.05 + 0.9 * s(6),
+                alpha: 0.5 * s(7),
+                spread: 0.01 + 0.25 * s(8)
+            };
+        }
+        // Legacy unbounded decode (kept for older weight files).
+        return {
+            K_f: 1 + 23 * s(0),
+            X_f: 0.05 + 0.4 * s(1),
+            K_s: 1 + 23 * s(2),
+            X_s: 0.05 + 0.4 * s(3),
+            g_f: 0.05 + 0.95 * s(4),
+            g_s: 0.05 + 0.95 * s(5),
+            lam: 0.05 + 0.9 * s(6),
+            alpha: 0.5 * s(7),
+            spread: 0.01 + 0.25 * s(8)
+        };
+    }
+
+    function muskingumCoeffs(K, X, dt = 1) {
+        const denom = Math.max(1e-3, K - K * X + 0.5 * dt);
+        return {
+            c0: (-K * X + 0.5 * dt) / denom,
+            c1: (K * X + 0.5 * dt) / denom,
+            c2: (K - K * X - 0.5 * dt) / denom
+        };
+    }
+
+    function muskingumStep(I2, I1, O1, K, X, dt = 1) {
+        const { c0, c1, c2 } = muskingumCoeffs(K, X, dt);
+        return c0 * I2 + c1 * I1 + c2 * O1;
+    }
+
+    function muskingumWarmup(Iseq, K, X, dt = 1) {
+        if (!Iseq?.length) return { I_prev: 0, O: 0 };
+        let I_prev = Iseq[0];
+        let O = Iseq[0];
+        for (let k = 1; k < Iseq.length; k++) {
+            const I = Iseq[k];
+            O = muskingumStep(I, I_prev, O, K, X, dt);
+            I_prev = I;
+        }
+        return { I_prev, O };
+    }
+
+    function sampleNormLevel(series, tMs, mu, sd, stepMs) {
+        const v = sampleAt(series, tMs);
+        if (!finite(v) || !finite(mu) || !finite(sd) || sd < 1e-6) return null;
+        return (v - mu) / sd;
+    }
+
+    function parseMuskingumGruNode(node) {
+        if (!node || node.kind !== 'muskingum_gru') return null;
+        if (!node.gru || !node.head || !node.means || !node.stds) return null;
+        const lookbackSteps = Number(node.lookbackSteps);
+        if (!finite(lookbackSteps) || lookbackSteps < 1) return null;
+        if (!Array.isArray(node.gru.weightIh) || !Array.isArray(node.head.W)) return null;
+        return {
+            kind: 'muskingum_gru',
+            source: 'offline',
+            downstream: node.downstream || 'Cento',
+            upstreams: Array.isArray(node.upstreams) ? node.upstreams.slice() : ['Forcelli', 'Sostegno Reno'],
+            upstreamAlt: node.upstreamAlt || 'Bonconvento',
+            lookbackSteps,
+            stepMinutes: finite(Number(node.stepMinutes)) ? Number(node.stepMinutes) : 30,
+            featPerStep: finite(Number(node.featPerStep)) ? Number(node.featPerStep) : 10,
+            means: node.means,
+            stds: node.stds,
+            lags: node.lags || {},
+            gru: node.gru,
+            head: node.head,
+            spreadLow: finite(Number(node.spreadLow)) ? Number(node.spreadLow) : 0.05,
+            spreadHigh: finite(Number(node.spreadHigh)) ? Number(node.spreadHigh) : 0.05,
+            reliable: node.reliable === true,
+            skill120: finite(Number(node.skill120)) ? Number(node.skill120) : null,
+            paramDecode: node.paramDecode || null,
+            lagMinutes: [
+                Number(node.lags?.Forcelli?.minutes) || 0,
+                Number(node.lags?.['Sostegno Reno']?.minutes) || 0
+            ],
+            a: [],
+            b: 0,
+            c: [],
+            r: finite(Number(node.skill120)) ? Number(node.skill120) : null,
+            rmse: null
+        };
+    }
+
+    function buildMuskingumSeq(model, sensorMap, rainSensors, nowMs, stepMs) {
+        const L = model.lookbackSteps;
+        const mu = model.means;
+        const sd = model.stds;
+        const lagF = (Number(model.lags?.Forcelli?.steps) || 0) * stepMs;
+        const lagS = (Number(model.lags?.['Sostegno Reno']?.steps) || 0) * stepMs;
+        const down = sensorMap[model.downstream];
+        const upF = sensorMap['Forcelli'];
+        const upS = sensorMap['Sostegno Reno'] || sensorMap[model.upstreamAlt];
+        const seq = [];
+        // Finite previous only (matches Python: missing prev ⇒ delta 0, do not carry filled 0).
+        let prevC = null, prevF = null, prevS = null;
+        for (let k = L - 1; k >= 0; k--) {
+            const t = nowMs - k * stepMs;
+            let zc = sampleNormLevel(down?.timeSeries, t, mu.Cento ?? mu[model.downstream], sd.Cento ?? sd[model.downstream], stepMs);
+            let zf = sampleNormLevel(upF?.timeSeries, t - lagF, mu.Forcelli, sd.Forcelli, stepMs);
+            let zs = sampleNormLevel(upS?.timeSeries, t - lagS, mu['Sostegno Reno'], sd['Sostegno Reno'], stepMs);
+            if (zs == null && sensorMap[model.upstreamAlt]) {
+                zs = sampleNormLevel(
+                    sensorMap[model.upstreamAlt].timeSeries, t - lagS,
+                    mu.Bonconvento ?? mu[model.upstreamAlt],
+                    sd.Bonconvento ?? sd[model.upstreamAlt],
+                    stepMs
+                );
+            }
+            const missC = zc == null ? 1 : 0;
+            const missF = zf == null ? 1 : 0;
+            const missS = zs == null ? 1 : 0;
+            const dzc = (zc != null && prevC != null) ? zc - prevC : 0;
+            const dzf = (zf != null && prevF != null) ? zf - prevF : 0;
+            const dzs = (zs != null && prevS != null) ? zs - prevS : 0;
+            if (zc != null) prevC = zc;
+            if (zf != null) prevF = zf;
+            if (zs != null) prevS = zs;
+            if (zc == null) zc = 0;
+            if (zf == null) zf = 0;
+            if (zs == null) zs = 0;
+            let rain = 0;
+            if (rainSensors?.length && finite(mu.rain) && finite(sd.rain) && sd.rain > 1e-6) {
+                // Basin step rain: max across gauges (same as Python load_rain_step).
+                let peak = null;
+                for (const g of rainSensors) {
+                    const v = sampleAt(g?.timeSeries, t);
+                    if (!finite(v)) continue;
+                    peak = peak == null ? v : Math.max(peak, v);
+                }
+                if (peak != null) rain = (peak - mu.rain) / sd.rain;
+            }
+            seq.push([zc, missC, dzc, zf, missF, dzf, zs, missS, dzs, rain]);
+        }
+        return seq;
+    }
+
+    function forecastMuskingumGru(model, sensorMap, rainSensors, horizonHours, now = new Date(), stepMs = DEFAULT_STEP_MS, options = {}) {
+        const anchor = options.anchor;
+        if (!finite(anchor?.value)) return [];
+        const nowMs = +now;
+        const steps = Math.max(1, Math.round(horizonHours * HOUR / stepMs));
+        const seq = buildMuskingumSeq(model, sensorMap, rainSensors, nowMs, stepMs);
+        if (!seq.length) return [];
+        const h = gruForward(seq, model.gru);
+        const raw = [];
+        for (let i = 0; i < model.head.W.length; i++) {
+            let s = model.head.b[i] || 0;
+            for (let j = 0; j < h.length; j++) s += model.head.W[i][j] * h[j];
+            raw.push(s);
+        }
+        const theta = decodeMuskingumTheta(raw, { paramDecode: model.paramDecode, stableKX: model.paramDecode?.stableKX });
+        const muC = model.means.Cento;
+        const sdC = model.stds.Cento;
+        let z = (anchor.value - muC) / (sdC < 1e-6 ? 1 : sdC);
+        const lagF = (Number(model.lags?.Forcelli?.steps) || 0) * stepMs;
+        const lagS = (Number(model.lags?.['Sostegno Reno']?.steps) || 0) * stepMs;
+        const upF = sensorMap.Forcelli;
+        const upS = sensorMap['Sostegno Reno'] || sensorMap[model.upstreamAlt];
+        const L = model.lookbackSteps;
+        const warmF = [];
+        const warmS = [];
+        for (let k = L - 1; k >= 0; k--) {
+            const t = nowMs - k * stepMs;
+            warmF.push(sampleNormLevel(upF?.timeSeries, t - lagF, model.means.Forcelli, model.stds.Forcelli, stepMs) ?? z);
+            let zs = sampleNormLevel(upS?.timeSeries, t - lagS, model.means['Sostegno Reno'], model.stds['Sostegno Reno'], stepMs);
+            if (zs == null && sensorMap[model.upstreamAlt]) {
+                zs = sampleNormLevel(
+                    sensorMap[model.upstreamAlt].timeSeries, t - lagS,
+                    model.means.Bonconvento ?? model.means[model.upstreamAlt],
+                    model.stds.Bonconvento ?? model.stds[model.upstreamAlt],
+                    stepMs
+                );
+            }
+            warmS.push(zs ?? z);
+        }
+        const warmFState = muskingumWarmup(warmF, theta.K_f, theta.X_f);
+        const warmSState = muskingumWarmup(warmS, theta.K_s, theta.X_s);
+        let I_f_prev = warmFState.I_prev, O_f = warmFState.O;
+        let I_s_prev = warmSState.I_prev, O_s = warmSState.O;
+        const rain0 = seq.at(-1)?.[9] || 0;
+        const points = [{
+            time: anchor.time instanceof Date ? anchor.time : new Date(anchor.time),
+            value: anchor.value,
+            regime: 'anchor',
+            spreadLow: 0,
+            spreadHigh: 0
+        }];
+        for (let k = 1; k <= steps; k++) {
+            const t = nowMs + k * stepMs;
+            // Lagged upstream at t is still observed when lag ≥ horizon.
+            let zf = sampleNormLevel(upF?.timeSeries, t - lagF, model.means.Forcelli, model.stds.Forcelli, stepMs);
+            let zs = sampleNormLevel(upS?.timeSeries, t - lagS, model.means['Sostegno Reno'], model.stds['Sostegno Reno'], stepMs);
+            if (zf == null) zf = I_f_prev;
+            if (zs == null) zs = I_s_prev;
+            O_f = muskingumStep(zf, I_f_prev, O_f, theta.K_f, theta.X_f);
+            O_s = muskingumStep(zs, I_s_prev, O_s, theta.K_s, theta.X_s);
+            const routed = theta.g_f * O_f + theta.g_s * O_s;
+            z = (1 - theta.lam) * z + theta.lam * routed + theta.alpha * rain0;
+            I_f_prev = zf;
+            I_s_prev = zs;
+            const value = z * sdC + muC;
+            points.push({
+                time: new Date(t),
+                value,
+                regime: 'muskingum',
+                spreadLow: theta.spread,
+                spreadHigh: theta.spread
+            });
+        }
+        return points;
+    }
+
+    function parseWindowMlpNode(node) {
+        if (!node || node.kind !== 'window_delta_mlp') return null;
+        if (!Array.isArray(node.stations) || !Array.isArray(node.featureNames) || !node.horizons) return null;
+        const lookbackSteps = Number(node.lookbackSteps);
+        if (!finite(lookbackSteps) || lookbackSteps < 1) return null;
+        const horizons = {};
+        for (const [key, block] of Object.entries(node.horizons)) {
+            if (!block?.layers?.length || !Array.isArray(block.mean) || !Array.isArray(block.std)) continue;
+            if (block.mean.length !== node.featureNames.length || block.std.length !== node.featureNames.length) continue;
+            horizons[key] = {
+                layers: block.layers,
+                mean: block.mean,
+                std: block.std,
+                spreadLow: finite(Number(block.spreadLow)) ? Number(block.spreadLow) : null,
+                spreadHigh: finite(Number(block.spreadHigh)) ? Number(block.spreadHigh) : null,
+                spreadLowHigh: finite(Number(block.spreadLowHigh)) ? Number(block.spreadLowHigh) : null,
+                spreadHighHigh: finite(Number(block.spreadHighHigh)) ? Number(block.spreadHighHigh) : null,
+                skill: finite(Number(block.validate?.skill)) ? Number(block.validate.skill) : null,
+                rmse: finite(Number(block.validate?.rmse)) ? Number(block.validate.rmse) : null
+            };
+        }
+        if (!Object.keys(horizons).length) return null;
+        const h120 = horizons['120'] || Object.values(horizons).at(-1);
+        return {
+            kind: 'window_delta_mlp',
+            source: 'offline',
+            downstream: node.downstream || 'Cento',
+            stations: node.stations.slice(),
+            upstreams: Array.isArray(node.upstreams) ? node.upstreams.slice() : node.stations.filter(s => s !== (node.downstream || 'Cento')),
+            acceptors: Array.isArray(node.acceptors) ? node.acceptors.slice() : [],
+            featureNames: node.featureNames.slice(),
+            lookbackSteps,
+            stepMinutes: finite(Number(node.stepMinutes)) ? Number(node.stepMinutes) : 30,
+            useRain: node.useRain === true,
+            rainGauges: Array.isArray(node.rainGauges) ? node.rainGauges.slice() : [],
+            horizons,
+            reliable: node.reliable !== false && (node.skill120 == null || node.skill120 >= SKILL_KEEP),
+            skill120: finite(Number(node.skill120)) ? Number(node.skill120) : (h120?.skill ?? null),
+            r: h120?.skill ?? null,
+            rmse: h120?.rmse ?? null,
+            spreadLow: h120?.spreadLow ?? null,
+            spreadHigh: h120?.spreadHigh ?? null,
+            lagMinutes: Array.isArray(node.upstreams) ? node.upstreams.map(() => node.lookbackSteps * 30) : [],
+            a: [],
+            b: 0,
+            c: [],
+            trainedAt: typeof node.trainedAt === 'string' ? node.trainedAt : null
+        };
+    }
+
+    function forecastWindowMlp(model, sensorMap, rainSensors, horizonHours, now = new Date(), stepMs = DEFAULT_STEP_MS, options = {}) {
+        const anchor = options.anchor;
+        if (!finite(anchor?.value) || !model?.horizons) return Object.assign([], { bias: null });
+        const nowMs = +now;
+        const end = nowMs + horizonHours * HOUR;
+        const y0 = anchor.value;
+        const yPrev = sampleAt(options.downstream?.timeSeries, +anchor.time - stepMs);
+        const dyLocal = finite(yPrev) ? y0 - yPrev : 0;
+        const points = [];
+        if (anchor?.time) {
+            points.push({
+                time: anchor.time instanceof Date ? anchor.time : new Date(anchor.time),
+                value: y0,
+                regime: 'anchor',
+                spreadLow: 0,
+                spreadHigh: 0
+            });
+        }
+        let previous = y0;
+        // Floor maxStep with the last observed 30′ move so quiet lookback p95 cannot
+        // cancel an already-rising limb (causal; does not invent peaks).
+        let maxStep = options.maxStep;
+        if (finite(maxStep) && finite(dyLocal)) {
+            maxStep = Math.max(maxStep, Math.abs(dyLocal));
+        }
+        // Independent horizon MLPs already target y0+Δh. Default smooth=0 (raw knots).
+        // Optional EMA (legacy 0.65) shrinks the first increment to (1−smooth)·Δ — see tests.
+        const smooth = finite(options.smooth) ? Math.min(0.9, Math.max(0, options.smooth)) : 0;
+        const horizonKeys = Object.keys(model.horizons).map(Number).filter(Number.isFinite).sort((a, b) => a - b)
+            .filter(minutes => minutes * MINUTE <= horizonHours * HOUR + 1);
+        for (const blockMinutes of horizonKeys) {
+            const block = model.horizons[String(blockMinutes)];
+            if (!block) continue;
+            const target = Math.ceil((nowMs + blockMinutes * MINUTE) / stepMs) * stepMs;
+            if (target > end + 1) continue;
+            const raw = buildWindowFeatureVector(
+                sensorMap, model.stations, model.lookbackSteps, nowMs, stepMs, rainSensors, model.useRain
+            );
+            const x = standardizeWindowFeatures(raw, model.featureNames, block.mean, block.std);
+            if (!x) continue;
+            const delta = mlpForward(x, block.layers);
+            if (!finite(delta)) continue;
+            let value = smooth * previous + (1 - smooth) * (y0 + delta);
+            if (finite(maxStep) && finite(previous)) {
+                const steps = Math.max(1, Math.round((target - (points.at(-1) ? +points.at(-1).time : nowMs)) / stepMs));
+                const d = value - previous;
+                if (Math.abs(d) > maxStep * steps) value = previous + Math.sign(d || 1) * maxStep * steps;
+            }
+            let recentMove = Math.abs(dyLocal) >= 0.05;
+            if (!recentMove && options.downstream?.timeSeries) {
+                const yRecent = sampleAt(options.downstream.timeSeries, nowMs - 2 * HOUR);
+                if (finite(yRecent)) recentMove = Math.abs(y0 - yRecent) >= 0.05;
+            }
+            const useHigh = Math.abs(delta) >= 0.05 || recentMove;
+            const spreadLow = useHigh
+                ? (finite(block.spreadLowHigh) ? block.spreadLowHigh : block.spreadLow)
+                : block.spreadLow;
+            const spreadHigh = useHigh
+                ? (finite(block.spreadHighHigh) ? block.spreadHighHigh : block.spreadHigh)
+                : block.spreadHigh;
+            points.push({
+                time: new Date(target),
+                value,
+                regime: useHigh ? 'high' : 'base',
+                spreadLow,
+                spreadHigh
+            });
+            previous = value;
+        }
+        points.bias = null;
+        return points;
     }
 
     function driverIsHigh(upstreams, model, nowMs, stepMs = DEFAULT_STEP_MS) {
@@ -451,9 +935,215 @@
         };
     }
 
+    function softplus(x, beta = 5) {
+        // Stable softplus
+        const bx = beta * x;
+        if (bx > 20) return x;
+        if (bx < -20) return Math.exp(bx) / beta;
+        return Math.log1p(Math.exp(bx)) / beta;
+    }
+
+    function decodeRcTheta(raw, paramDecode = {}) {
+        const gMin = finite(Number(paramDecode.gMin)) ? Number(paramDecode.gMin) : 0.02;
+        const gMax = finite(Number(paramDecode.gMax)) ? Number(paramDecode.gMax) : 2.5;
+        const cMin = finite(Number(paramDecode.cMin)) ? Number(paramDecode.cMin) : 0.5;
+        const cMax = finite(Number(paramDecode.cMax)) ? Number(paramDecode.cMax) : 12;
+        const pos = (i, lo, hi) => lo + (hi - lo) * sigmoid(raw[i]);
+        return {
+            G_f: pos(0, gMin, gMax),
+            G_s: pos(1, gMin, gMax),
+            G_d: pos(2, gMin, gMax),
+            G_p: pos(3, gMin, gMax),
+            G_2: pos(4, gMin, gMax),
+            G_g: pos(5, gMin, gMax),
+            C_c: pos(6, cMin, cMax),
+            alpha: 0.5 * sigmoid(raw[7]),
+            spread: 0.01 + 0.25 * sigmoid(raw[8])
+        };
+    }
+
+    function rcStep(z, zf, zs, zAcc, rain, theta, dt = 1) {
+        const gAcc = [theta.G_d, theta.G_p, theta.G_2, theta.G_g];
+        let drain = 0;
+        for (let i = 0; i < 4; i++) drain += gAcc[i] * softplus(z - (zAcc[i] ?? 0));
+        const inflow = theta.G_f * (zf - z) + theta.G_s * (zs - z);
+        const cc = Math.max(theta.C_c, 0.5);
+        return z + (inflow - drain + theta.alpha * rain) * (dt / cc);
+    }
+
+    function parseRcGruNode(node) {
+        if (!node || node.kind !== 'rc_gru') return null;
+        if (!node.gru || !node.head || !node.means || !node.stds) return null;
+        const lookbackSteps = Number(node.lookbackSteps);
+        if (!finite(lookbackSteps) || lookbackSteps < 1) return null;
+        if (!Array.isArray(node.gru.weightIh) || !Array.isArray(node.head.W)) return null;
+        return {
+            kind: 'rc_gru',
+            source: 'offline',
+            downstream: node.downstream || 'Cento',
+            upstreams: Array.isArray(node.upstreams) ? node.upstreams.slice() : ['Forcelli', 'Sostegno Reno'],
+            upstreamAlt: node.upstreamAlt || 'Bonconvento',
+            acceptors: Array.isArray(node.acceptors) ? node.acceptors.slice()
+                : ['Dosso', 'Opera Reno Panfilia', 'Secondo Salto', 'Gallo'],
+            lookbackSteps,
+            stepMinutes: finite(Number(node.stepMinutes)) ? Number(node.stepMinutes) : 30,
+            featPerStep: finite(Number(node.featPerStep)) ? Number(node.featPerStep) : 22,
+            means: node.means,
+            stds: node.stds,
+            lags: node.lags || {},
+            gru: node.gru,
+            head: node.head,
+            paramDecode: node.paramDecode || null,
+            spreadLow: finite(Number(node.spreadLow)) ? Number(node.spreadLow) : 0.05,
+            spreadHigh: finite(Number(node.spreadHigh)) ? Number(node.spreadHigh) : 0.05,
+            reliable: node.reliable === true,
+            skill120: finite(Number(node.skill120)) ? Number(node.skill120) : null,
+            lagMinutes: [
+                Number(node.lags?.Forcelli?.minutes) || 0,
+                Number(node.lags?.['Sostegno Reno']?.minutes) || 0
+            ],
+            a: [],
+            b: 0,
+            c: [],
+            r: finite(Number(node.skill120)) ? Number(node.skill120) : null,
+            rmse: null
+        };
+    }
+
+    function buildRcSeq(model, sensorMap, rainSensors, nowMs, stepMs) {
+        const L = model.lookbackSteps;
+        const mu = model.means;
+        const sd = model.stds;
+        const lagF = (Number(model.lags?.Forcelli?.steps) || 0) * stepMs;
+        const lagS = (Number(model.lags?.['Sostegno Reno']?.steps) || 0) * stepMs;
+        const acceptors = model.acceptors || [];
+        const down = sensorMap[model.downstream];
+        const upF = sensorMap.Forcelli;
+        const upS = sensorMap['Sostegno Reno'] || sensorMap[model.upstreamAlt];
+        const seq = [];
+        let prevC = null, prevF = null, prevS = null;
+        const prevA = acceptors.map(() => null);
+        for (let k = L - 1; k >= 0; k--) {
+            const t = nowMs - k * stepMs;
+            let zc = sampleNormLevel(down?.timeSeries, t, mu.Cento ?? mu[model.downstream], sd.Cento ?? sd[model.downstream], stepMs);
+            let zf = sampleNormLevel(upF?.timeSeries, t - lagF, mu.Forcelli, sd.Forcelli, stepMs);
+            let zs = sampleNormLevel(upS?.timeSeries, t - lagS, mu['Sostegno Reno'], sd['Sostegno Reno'], stepMs);
+            if (zs == null && sensorMap[model.upstreamAlt]) {
+                zs = sampleNormLevel(
+                    sensorMap[model.upstreamAlt].timeSeries, t - lagS,
+                    mu.Bonconvento ?? mu[model.upstreamAlt],
+                    sd.Bonconvento ?? sd[model.upstreamAlt],
+                    stepMs
+                );
+            }
+            const row = [];
+            const pushSeries = (z, prev) => {
+                const miss = z == null ? 1 : 0;
+                const dz = (z != null && prev != null) ? z - prev : 0;
+                const nextPrev = z != null ? z : prev;
+                row.push(z == null ? 0 : z, miss, dz);
+                return nextPrev;
+            };
+            prevC = pushSeries(zc, prevC);
+            prevF = pushSeries(zf, prevF);
+            prevS = pushSeries(zs, prevS);
+            for (let ai = 0; ai < 4; ai++) {
+                const name = acceptors[ai];
+                let za = null;
+                if (name) za = sampleNormLevel(sensorMap[name]?.timeSeries, t, mu[name], sd[name], stepMs);
+                prevA[ai] = pushSeries(za, prevA[ai]);
+            }
+            let rain = 0;
+            if (rainSensors?.length && finite(mu.rain) && finite(sd.rain) && sd.rain > 1e-6) {
+                let peak = null;
+                for (const g of rainSensors) {
+                    const v = sampleAt(g?.timeSeries, t);
+                    if (!finite(v)) continue;
+                    peak = peak == null ? v : Math.max(peak, v);
+                }
+                if (peak != null) rain = (peak - mu.rain) / sd.rain;
+            }
+            row.push(rain);
+            seq.push(row);
+        }
+        return seq;
+    }
+
+    function forecastRcGru(model, sensorMap, rainSensors, horizonHours, now = new Date(), stepMs = DEFAULT_STEP_MS, options = {}) {
+        const anchor = options.anchor;
+        if (!finite(anchor?.value)) return [];
+        const nowMs = +now;
+        const steps = Math.max(1, Math.round(horizonHours * HOUR / stepMs));
+        const seq = buildRcSeq(model, sensorMap, rainSensors, nowMs, stepMs);
+        if (!seq.length) return [];
+        const h = gruForward(seq, model.gru);
+        const raw = [];
+        for (let i = 0; i < model.head.W.length; i++) {
+            let s = model.head.b[i] || 0;
+            for (let j = 0; j < h.length; j++) s += model.head.W[i][j] * h[j];
+            raw.push(s);
+        }
+        const theta = decodeRcTheta(raw, model.paramDecode || {});
+        const muC = model.means.Cento;
+        const sdC = model.stds.Cento;
+        let z = (anchor.value - muC) / (sdC < 1e-6 ? 1 : sdC);
+        const lagF = (Number(model.lags?.Forcelli?.steps) || 0) * stepMs;
+        const lagS = (Number(model.lags?.['Sostegno Reno']?.steps) || 0) * stepMs;
+        const upF = sensorMap.Forcelli;
+        const upS = sensorMap['Sostegno Reno'] || sensorMap[model.upstreamAlt];
+        const acceptors = model.acceptors || [];
+        // Freeze acceptors at last observed (backwater persistence).
+        const zAcc0 = [];
+        for (let ai = 0; ai < 4; ai++) {
+            const name = acceptors[ai];
+            let za = name
+                ? sampleNormLevel(sensorMap[name]?.timeSeries, nowMs, model.means[name], model.stds[name], stepMs)
+                : null;
+            zAcc0.push(za == null ? z : za);
+        }
+        const rain0 = seq.at(-1)?.at(-1) || 0;
+        // Warm lookback
+        let zWarm = seq[0][0];
+        for (let k = 1; k < seq.length; k++) {
+            const zf = seq[k][3];
+            const zs = seq[k][6];
+            const zAcc = [seq[k][9], seq[k][12], seq[k][15], seq[k][18]];
+            const rain = seq[k][21] || 0;
+            zWarm = rcStep(zWarm, zf, zs, zAcc, rain, theta);
+        }
+        z = (anchor.value - muC) / (sdC < 1e-6 ? 1 : sdC);
+        const points = [{
+            time: anchor.time instanceof Date ? anchor.time : new Date(anchor.time),
+            value: anchor.value,
+            regime: 'anchor',
+            spreadLow: 0,
+            spreadHigh: 0
+        }];
+        for (let k = 1; k <= steps; k++) {
+            const t = nowMs + k * stepMs;
+            let zf = sampleNormLevel(upF?.timeSeries, t - lagF, model.means.Forcelli, model.stds.Forcelli, stepMs);
+            let zs = sampleNormLevel(upS?.timeSeries, t - lagS, model.means['Sostegno Reno'], model.stds['Sostegno Reno'], stepMs);
+            if (zf == null) zf = z;
+            if (zs == null) zs = z;
+            z = rcStep(z, zf, zs, zAcc0, rain0, theta);
+            points.push({
+                time: new Date(t),
+                value: z * sdC + muC,
+                regime: 'rc',
+                spreadLow: theta.spread,
+                spreadHigh: theta.spread
+            });
+        }
+        return points;
+    }
+
     function parseOfflineNode(coeffs, downstreamId, upstreamIds) {
         const node = coeffs?.nodes?.[downstreamId];
-        if (!node || !Array.isArray(node.upstreams) || !Array.isArray(node.lagMinutes)) return null;
+        if (!node) return null;
+        if (node.kind === 'rc_gru') return parseRcGruNode(node);
+        if (node.kind === 'muskingum_gru') return parseMuskingumGruNode(node);
+        if (node.kind === 'window_delta_mlp') return parseWindowMlpNode(node);
+        if (!Array.isArray(node.upstreams) || !Array.isArray(node.lagMinutes)) return null;
         if (node.upstreams.length !== upstreamIds.length) return null;
         if (!upstreamIds.every((id, i) => id === node.upstreams[i])) return null;
         const lagMinutes = node.lagMinutes.map(Number);
@@ -714,6 +1404,202 @@
 
         const anchor = latestFinite(downstream?.timeSeries);
         const maxStep = maxStepFromSeries(downstream?.timeSeries, stepMs);
+
+        // Offline RC+GRU (passive circuit with valle acceptors); only when reliable.
+        if (offlineNode?.kind === 'rc_gru') {
+            if (offlineNode.reliable !== true) {
+                return {
+                    ok: false,
+                    reason: 'Nessuna stima affidabile: RC+GRU sotto soglia vs MLP; resta il modello precedente.',
+                    source: 'offline',
+                    kind: offlineNode.kind,
+                    skill120: offlineNode.skill120,
+                    reliable: false
+                };
+            }
+            if (!finite(anchor?.value)) {
+                return { ok: false, reason: 'Manca l’ultima misura a valle per ancorare la previsione.' };
+            }
+            const sensorMap = { ...(options.sensorMap || {}) };
+            if (downstream?.id) sensorMap[downstream.id] = downstream;
+            for (const up of list) {
+                if (up?.id) sensorMap[up.id] = up;
+            }
+            for (const name of offlineNode.acceptors || []) {
+                if (!sensorMap[name] && options.sensorMap?.[name]) sensorMap[name] = options.sensorMap[name];
+            }
+            const rainSensors = options.rainSensors || [];
+            const rawForecast = forecastRcGru(offlineNode, sensorMap, rainSensors, horizonHours, now, stepMs, {
+                anchor, maxStep, downstream
+            });
+            if (!rawForecast.length) {
+                return { ok: false, reason: 'Rollout RC incompleto.' };
+            }
+            const forecast = rawForecast.map(point => {
+                const lo = finite(point.spreadLow) ? point.spreadLow : offlineNode.spreadLow;
+                const hi = finite(point.spreadHigh) ? point.spreadHigh : offlineNode.spreadHigh;
+                const fork = forkAround(point.value, lo, hi);
+                return fork
+                    ? { time: point.time, value: fork.med, min: fork.min, med: fork.med, max: fork.max }
+                    : { time: point.time, value: point.value, min: point.value, med: point.value, max: point.value };
+            });
+            return {
+                ok: true,
+                source: 'offline',
+                kind: 'rc_gru',
+                reliable: true,
+                upstreams: offlineNode.upstreams,
+                acceptors: offlineNode.acceptors,
+                lagMinutes: offlineNode.lagMinutes,
+                a: [],
+                b: 0,
+                c: [],
+                r: offlineNode.skill120,
+                skill120: offlineNode.skill120,
+                mae: null,
+                rmse: null,
+                forkSpread: offlineNode.spreadLow,
+                spreadLow: offlineNode.spreadLow,
+                spreadHigh: offlineNode.spreadHigh,
+                bias: null,
+                maxStep,
+                predicted: [],
+                observed: [],
+                times: [],
+                forecast,
+                next: nextHalfHourForks(forecast, Math.max(6, Math.round(horizonHours * 2)), now),
+                reason: null
+            };
+        }
+
+        // Offline Muskingum+GRU (dense physics rollout); only when reliable/adopted.
+        if (offlineNode?.kind === 'muskingum_gru') {
+            if (offlineNode.reliable !== true) {
+                return {
+                    ok: false,
+                    reason: 'Nessuna stima affidabile: Muskingum+GRU sotto soglia vs MLP; resta il modello precedente.',
+                    source: 'offline',
+                    kind: offlineNode.kind,
+                    skill120: offlineNode.skill120,
+                    reliable: false
+                };
+            }
+            if (!finite(anchor?.value)) {
+                return { ok: false, reason: 'Manca l’ultima misura a valle per ancorare la previsione.' };
+            }
+            const sensorMap = { ...(options.sensorMap || {}) };
+            if (downstream?.id) sensorMap[downstream.id] = downstream;
+            for (const up of list) {
+                if (up?.id) sensorMap[up.id] = up;
+            }
+            const rainSensors = options.rainSensors || [];
+            const rawForecast = forecastMuskingumGru(offlineNode, sensorMap, rainSensors, horizonHours, now, stepMs, {
+                anchor, maxStep, downstream
+            });
+            if (!rawForecast.length) {
+                return { ok: false, reason: 'Rollout Muskingum incompleto.' };
+            }
+            const forecast = rawForecast.map(point => {
+                const lo = finite(point.spreadLow) ? point.spreadLow : offlineNode.spreadLow;
+                const hi = finite(point.spreadHigh) ? point.spreadHigh : offlineNode.spreadHigh;
+                const fork = forkAround(point.value, lo, hi);
+                return fork
+                    ? { time: point.time, value: fork.med, min: fork.min, med: fork.med, max: fork.max }
+                    : { time: point.time, value: point.value, min: point.value, med: point.value, max: point.value };
+            });
+            return {
+                ok: true,
+                source: 'offline',
+                kind: 'muskingum_gru',
+                reliable: true,
+                upstreams: offlineNode.upstreams,
+                lagMinutes: offlineNode.lagMinutes,
+                a: [],
+                b: 0,
+                c: [],
+                r: offlineNode.skill120,
+                skill120: offlineNode.skill120,
+                mae: null,
+                rmse: null,
+                forkSpread: offlineNode.spreadLow,
+                spreadLow: offlineNode.spreadLow,
+                spreadHigh: offlineNode.spreadHigh,
+                bias: null,
+                maxStep,
+                predicted: [],
+                observed: [],
+                times: [],
+                forecast,
+                next: nextHalfHourForks(forecast, Math.max(6, Math.round(horizonHours * 2)), now),
+                reason: null
+            };
+        }
+
+        // Offline window MLP (Cento): feature window + rain, no upstream-id match required.
+        if (offlineNode?.kind === 'window_delta_mlp') {
+            if (offlineNode.reliable === false) {
+                return {
+                    ok: false,
+                    reason: 'Nessuna stima affidabile: il modello MLP non batte la persistenza in validazione.',
+                    source: 'offline',
+                    kind: offlineNode.kind,
+                    skill120: offlineNode.skill120,
+                    reliable: false
+                };
+            }
+            if (!finite(anchor?.value)) {
+                return { ok: false, reason: 'Manca l’ultima misura a valle per ancorare la previsione.' };
+            }
+            const sensorMap = { ...(options.sensorMap || {}) };
+            if (downstream?.id) sensorMap[downstream.id] = downstream;
+            for (const up of list) {
+                if (up?.id) sensorMap[up.id] = up;
+            }
+            const rainSensors = options.rainSensors || [];
+            const rawForecast = forecastWindowMlp(offlineNode, sensorMap, rainSensors, horizonHours, now, stepMs, {
+                anchor,
+                maxStep: options.maxStep === null ? null : maxStep,
+                downstream,
+                smooth: options.smooth
+            });
+            if (!rawForecast.length) {
+                return { ok: false, reason: 'Finestra feature incompleta per la MLP.' };
+            }
+            const forecast = rawForecast.map(point => {
+                const lo = finite(point.spreadLow) ? point.spreadLow : offlineNode.spreadLow;
+                const hi = finite(point.spreadHigh) ? point.spreadHigh : offlineNode.spreadHigh;
+                const fork = forkAround(point.value, lo, hi);
+                return fork
+                    ? { time: point.time, value: fork.med, min: fork.min, med: fork.med, max: fork.max }
+                    : { time: point.time, value: point.value, min: point.value, med: point.value, max: point.value };
+            });
+            return {
+                ok: true,
+                source: 'offline',
+                kind: 'window_delta_mlp',
+                reliable: true,
+                upstreams: offlineNode.upstreams,
+                lagMinutes: offlineNode.lagMinutes,
+                a: offlineNode.a,
+                b: offlineNode.b,
+                c: offlineNode.c,
+                r: offlineNode.r,
+                skill120: offlineNode.skill120,
+                mae: null,
+                rmse: offlineNode.rmse,
+                forkSpread: offlineNode.spreadLow,
+                spreadLow: offlineNode.spreadLow,
+                spreadHigh: offlineNode.spreadHigh,
+                bias: null,
+                maxStep,
+                predicted: [],
+                observed: [],
+                times: [],
+                forecast,
+                next: nextHalfHourForks(forecast, Math.max(6, Math.round(horizonHours * 2)), now),
+                reason: null
+            };
+        }
 
         // Offline direct-horizon: usa solo se reliable (skill validato ≥ soglia).
         if (offlineNode?.kind === 'direct_horizon_delta_ridge') {
@@ -982,8 +1868,36 @@
             const response = await fetcher(url, { cache: 'no-store' });
             if (!response?.ok) return null;
             const data = await response.json();
-            if (data?.edges || data?.nodes) return data;
-            return null;
+            if (!(data?.edges || data?.nodes)) return null;
+            // Soft-adopt RC or Muskingum only when export marked reliable (gate passed).
+            // Prefer RC over Muskingum when both reliable (newer physics path).
+            try {
+                const rcRes = await fetcher('models/hybrid-rc-cento.json', { cache: 'no-store' });
+                if (rcRes?.ok) {
+                    const rc = await rcRes.json();
+                    if (rc?.kind === 'rc_gru' && rc.reliable === true && rc.downstream) {
+                        data.nodes = data.nodes || {};
+                        data.nodes[rc.downstream] = rc;
+                    }
+                }
+            } catch {
+                /* keep transfer-coeffs node */
+            }
+            try {
+                const muskRes = await fetcher('models/hybrid-muskingum-cento.json', { cache: 'no-store' });
+                if (muskRes?.ok) {
+                    const musk = await muskRes.json();
+                    if (musk?.kind === 'muskingum_gru' && musk.reliable === true && musk.downstream) {
+                        data.nodes = data.nodes || {};
+                        if (data.nodes[musk.downstream]?.kind !== 'rc_gru') {
+                            data.nodes[musk.downstream] = musk;
+                        }
+                    }
+                }
+            } catch {
+                /* keep transfer-coeffs node */
+            }
+            return data;
         } catch {
             return null;
         }
@@ -992,8 +1906,12 @@
     const api = {
         edgeKey, buildGraph, rankNodes, alignSeries, estimateLag, fitAffine, fitMultiAffine, applyAffine, applyMulti,
         pickRegime, latestFinite, maxStepFromSeries, predictEdge, predictNode, forecastForward, forecastForwardMulti,
-        forecastDirectHorizon, parseOfflineNode, nextHalfHourForks, forkAround, withFork, loadCoeffs, pearson, residuals,
-        estimateRecentBias, driverIsHigh, basinRainAt, DEFAULT_STEP_MS, FORK_K, SKILL_KEEP
+        forecastDirectHorizon, forecastWindowMlp, forecastMuskingumGru, forecastRcGru, parseOfflineNode,
+        parseWindowMlpNode, parseMuskingumGruNode, parseRcGruNode, gruForward, muskingumStep, muskingumCoeffs,
+        muskingumWarmup, decodeMuskingumTheta, decodeKX, decodeRcTheta, rcStep, softplus, mlpForward,
+        sampleAt, sampleNormLevel, buildMuskingumSeq, buildRcSeq,
+        buildWindowFeatureVector, standardizeWindowFeatures, nextHalfHourForks, forkAround, withFork, loadCoeffs,
+        pearson, residuals, estimateRecentBias, driverIsHigh, basinRainAt, DEFAULT_STEP_MS, FORK_K, SKILL_KEEP
     };
     if (typeof module !== 'undefined' && module.exports) module.exports = api;
     else root.RenoPredict = api;

@@ -220,8 +220,10 @@
         for (const node of nodes) {
             const down = sensorsById[node.downstream] || blank(node.downstream);
             const ups = node.upstreams.map(id => sensorsById[id] || blank(id));
+            const rainSensors = Object.values(sensorsById).filter(s => s?.kind === 'rain' && s.timeSeries?.length);
             const prediction = P.predictNode(down, ups, {
-                hours: 72, now: renderTime, coeffs, horizonHours: 2, downstreamId: node.downstream
+                hours: 72, now: renderTime, coeffs, horizonHours: 2, downstreamId: node.downstream,
+                sensorMap: sensorsById, rainSensors
             });
             const card = document.createElement('article');
             card.className = 'edge-card';
@@ -312,9 +314,20 @@
             D.saveCache(window.localStorage, records);
             sensorsById = Object.fromEntries(Object.keys(config.sensors).map(name => {
                 const record = records[name];
-                const parsed = record ? D.parseSensorData(name, record.item) : null;
+                const parsed = record ? D.parseSensorData(name, record.item, { kind: 'level' }) : null;
                 return [name, parsed || blank(name)];
             }));
+            for (const gauge of D.rainfallGauges(config)) {
+                const record = records[gauge.name];
+                const parsed = record
+                    ? D.parseSensorData(gauge.name, record.item, {
+                        kind: 'rain', impacts: gauge.impacts, dagColumn: gauge.dagColumn
+                    })
+                    : null;
+                sensorsById[gauge.name] = parsed || {
+                    ...blank(gauge.name), kind: 'rain', unit: 'mm', impacts: gauge.impacts, dagColumn: gauge.dagColumn
+                };
+            }
             renderAll();
         } catch (error) {
             document.getElementById('status-line').textContent = error.message || 'Impossibile caricare i dati.';

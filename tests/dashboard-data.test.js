@@ -174,6 +174,56 @@ test('request timeout aborts its fetch', async () => {
     await assert.rejects(client.json('https://example.test/timeout'), /aborted/);
 });
 
+test('rainfall gauges parse precipitazione and status is rain-colored', () => {
+    const raw = {
+        _id: '5316',
+        anagrafica: {
+            nome: 'Anzola',
+            geometry: { coordinates: [11.2, 44.6] },
+            sensori: { precipitazione_cumulata_1h: {} }
+        },
+        dati: { '20261111': { '1500': { precipitazione_cumulata_1h: 1.5 }, '1600': { precipitazione_cumulata_1h: 0 } } }
+    };
+    const parsed = D.parseSensorData('Anzola', raw, { kind: 'rain', impacts: ['Cento'], dagColumn: 2 });
+    assert.equal(parsed.kind, 'rain');
+    assert.equal(parsed.unit, 'mm');
+    assert.deepEqual(parsed.impacts, ['Cento']);
+    assert.equal(parsed.dagColumn, 2);
+    assert.deepEqual(parsed.timeSeries.map(p => p.value), [1.5, 0]);
+    assert.equal(D.status(parsed).key, 'rain');
+    assert.equal(D.parseSensorData('Anzola', raw, { kind: 'rain' }) === null, false);
+    const empty = structuredClone(raw);
+    empty.dati = { '20261111': { '1500': { livello_idro: 3 } } };
+    assert.equal(D.parseSensorData('Anzola', empty, { kind: 'rain' }), null);
+});
+
+test('rainfallGauges normalizes string and object entries', () => {
+    const gauges = D.rainfallGauges({
+        rainfall: {
+            gauges: [
+                'Legacy',
+                { name: 'Anzola', arpaeId: '5316', url: 'https://example.test/5316', impacts: ['Cento'], dagColumn: 2 }
+            ]
+        }
+    });
+    assert.equal(gauges[0].name, 'Legacy');
+    assert.equal(gauges[1].arpaeId, '5316');
+    assert.deepEqual(gauges[1].impacts, ['Cento']);
+});
+
+test('config rainfall gauges have unique arpae IDs and matching URLs', () => {
+    const cfg = JSON.parse(readFileSync(new URL('../config.json', `file://${__filename}`), 'utf8'));
+    const gauges = D.rainfallGauges(cfg);
+    assert.ok(gauges.length >= 8);
+    const ids = gauges.map(g => g.arpaeId);
+    assert.equal(new Set(ids).size, ids.length);
+    for (const gauge of gauges) {
+        assert.ok(gauge.arpaeId && gauge.url);
+        assert.equal(JSON.parse(new URL(gauge.url).searchParams.get('where'))._id, gauge.arpaeId);
+        assert.ok(Array.isArray(gauge.impacts));
+    }
+});
+
 test('cache validates version, age, station ID and survives unavailable storage', () => {
     const now = Date.now();
     const records = { Cento: { item: item('1'), fetchedAt: now } };
