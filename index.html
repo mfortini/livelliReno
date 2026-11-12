@@ -26,7 +26,6 @@
 
     <!-- Plotly.js for charts (using specific version) -->
     <script defer src="https://cdn.plot.ly/plotly-basic-2.35.2.min.js"></script>
-    <!-- Cytoscape DAG for dependency graph -->
     <meta name="description" content="Livelli osservati del Reno e del Samoggia: misure ARPAE, grafici delle ultime 72 ore e mappa delle stazioni. Dati e soglie, non previsioni di piena.">
 
     <style>
@@ -162,12 +161,28 @@
         :focus-visible { outline: 3px solid #007f95; outline-offset: 4px; }
         .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 2000; padding: .8rem; background: white; }
         .skip-link:focus { top: 1rem; }
-        .site-header { padding: 2rem clamp(1rem, 4vw, 4rem) 1.7rem; background: #123847; color: #fff; }
+        :root { --header-h: 10rem; }
+        .site-header {
+            position: sticky; top: 0; z-index: 1100;
+            padding: 1.35rem clamp(1rem, 4vw, 4rem) 1.1rem; background: #123847; color: #fff;
+            transition: padding .2s ease, box-shadow .2s ease;
+        }
+        .site-header.is-compact {
+            padding: .45rem clamp(1rem, 4vw, 3rem);
+            box-shadow: 0 1px 12px #00000033;
+        }
         .header-inner { max-width: 1600px; margin: auto; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
-        .eyebrow { font-size: .75rem; letter-spacing: .14em; font-weight: 700; text-transform: uppercase; margin-bottom: .6rem; }
-        h1 { font-size: clamp(1.7rem, 3vw, 2.5rem); font-weight: 700; letter-spacing: -.04em; margin: 0 0 .5rem; }
-        .site-header p:last-child { margin: 0; color: #d3e5ec; max-width: 55ch; }
-        .source-link { color: #e5f7fc; border: 1px solid #6b8995; border-radius: .65rem; padding: .75rem 1rem; white-space: nowrap; }
+        .eyebrow { font-size: .75rem; letter-spacing: .14em; font-weight: 700; text-transform: uppercase; margin-bottom: .45rem; }
+        h1 { font-size: clamp(1.55rem, 2.8vw, 2.35rem); font-weight: 700; letter-spacing: -.04em; margin: 0 0 .4rem; transition: font-size .2s ease, margin .2s ease; }
+        .header-tagline { margin: 0; color: #d3e5ec; max-width: 55ch; }
+        .site-header.is-compact .eyebrow,
+        .site-header.is-compact .header-tagline,
+        .site-header.is-compact .source-link { display: none; }
+        .site-header.is-compact h1 { font-size: 1.1rem; margin: 0; }
+        .site-header.is-compact .site-nav { margin-top: .35rem; }
+        .site-header.is-compact .site-nav a { min-height: 32px; padding: .28rem .65rem; font-size: .78rem; }
+        .site-header.is-compact .header-inner { gap: .65rem; align-items: center; }
+        .source-link { color: #e5f7fc; border: 1px solid #6b8995; border-radius: .65rem; padding: .65rem .9rem; white-space: nowrap; }
         .page-shell { max-width: 1680px; margin: auto; padding: 1.5rem clamp(1rem, 3vw, 3rem) 3rem; }
         .overview { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
         .overview-item { background: var(--surface); border: 1px solid var(--line); border-radius: .8rem; padding: 1rem 1.2rem; }
@@ -193,8 +208,9 @@
         .level-container { min-width: 0; }
         .level-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
         .level-row > .sensor-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
-        .sensor-card { background: var(--surface); border: 1px solid var(--line); border-radius: .9rem; overflow: hidden; min-width: 0; scroll-margin-top: 1rem; }
-        .sensor-card:target, .sensor-card:focus { border-color: var(--accent); }
+        .sensor-card { background: var(--surface); border: 1px solid var(--line); border-radius: .9rem; overflow: hidden; min-width: 0; scroll-margin-top: calc(var(--header-h) + .75rem); }
+        .sensor-card:target, .sensor-card:focus, .sensor-card.is-target { border-color: var(--accent); box-shadow: 0 0 0 2px #08657533; }
+        #osservazioni, #predizioni { scroll-margin-top: calc(var(--header-h) + .75rem); }
         .sensor-card-header { padding: 1.15rem 1.15rem .7rem; }
         .sensor-card h3 { font-size: 1.05rem; font-weight: 700; margin: 0; line-height: 1.35; }
         .sensor-basin { font-size: .7rem; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); margin: .25rem 0 .8rem; }
@@ -208,7 +224,7 @@
         .detail-button { border: 0; background: none; color: #086575; font-size: .8rem; font-weight: 650; padding: .6rem 0; min-height: 44px; text-align: right; }
         .sensor-plot { border: 0; margin: 0; width: 100%; height: 245px; min-height: 245px; display: block; font-size: .85rem; color: var(--muted); }
         .sensor-plot > p { padding: 1.5rem; text-align: center; }
-        #map-container { grid-column: 1; grid-row: 1; position: sticky; top: 1rem; height: auto; padding: 0; background: white; border: 1px solid var(--line); border-radius: .9rem; overflow: hidden; min-width: 0; }
+        #map-container { grid-column: 1; grid-row: 1; position: sticky; top: calc(var(--header-h) + .5rem); height: auto; padding: 0; background: white; border: 1px solid var(--line); border-radius: .9rem; overflow: hidden; min-width: 0; }
 
         #map { height: min(58vh, 540px); min-height: 320px; width: 100%; background: #e7eff2; }
         .map-tools { padding: .8rem 1rem; }
@@ -234,21 +250,32 @@
         .modal-content { border: 0; border-radius: 1rem; }
         #zoomed-plot { height: min(60dvh, 500px); min-height: 260px; width: 100%; }
         #zoomed-meta { color: var(--muted); font-size: .85rem; padding: 0 1rem; }
-        .dependency-panel { background: var(--surface); border: 1px solid var(--line); border-radius: .9rem; padding: 1rem 1.1rem 1.15rem; margin-bottom: 1.25rem; }
-        .dependency-panel h2 { font-size: 1.15rem; font-weight: 700; margin: 0 0 .35rem; }
-        .dependency-panel .panel-lead { margin: 0 0 .85rem; color: var(--muted); font-size: .85rem; max-width: 90ch; }
-        .dependency-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(260px, .85fr); gap: 1rem; align-items: stretch; }
-        #dependency-graph { height: 360px; min-height: 280px; border: 1px solid var(--line); border-radius: .7rem; background: #f8fbfc; }
-        .prediction-pane { display: flex; flex-direction: column; gap: .65rem; min-width: 0; }
-        .prediction-meta { font-size: .82rem; color: var(--muted); line-height: 1.55; margin: 0; }
+        #station-dag .dag-edge { pointer-events: none; }
+        .site-nav { display: flex; gap: .35rem; flex-wrap: wrap; margin-top: 1rem; }
+        .site-nav a { color: #d3e5ec; text-decoration: none; border: 1px solid #6b8995; border-radius: .55rem; padding: .45rem .85rem; font-size: .85rem; font-weight: 650; min-height: 40px; display: inline-flex; align-items: center; background: transparent; }
+        .site-nav a:hover { color: #fff; border-color: #b5e7ee; background: transparent; }
+        .site-nav a[aria-current="page"],
+        .site-nav a[aria-current="page"]:hover { background: #fff; color: #123847; border-color: #fff; }
+        .header-actions { display: flex; flex-direction: column; align-items: flex-end; gap: .75rem; }
+        .prediction-layout { display: grid; grid-template-columns: minmax(240px, 320px) minmax(0, 1fr); gap: 1.25rem; align-items: start; }
+        .prediction-controls { background: var(--surface); border: 1px solid var(--line); border-radius: .9rem; padding: 1rem 1.1rem; }
+        .prediction-controls h2 { font-size: 1.15rem; margin: 0 0 .35rem; }
+        .prediction-controls .panel-lead { color: var(--muted); font-size: .85rem; margin: 0 0 1rem; line-height: 1.5; }
+        .prediction-field { display: flex; flex-direction: column; gap: .35rem; margin-bottom: .75rem; font-size: .82rem; color: var(--muted); }
+        .prediction-field label { font-weight: 650; color: var(--ink); }
+        .prediction-field select { min-height: 40px; border: 1px solid var(--line); border-radius: .5rem; padding: .4rem .55rem; background: #fff; color: var(--ink); }
+        .prediction-meta { font-size: .82rem; color: var(--muted); line-height: 1.55; margin: 0 0 .75rem; }
         .prediction-meta strong { color: var(--ink); font-weight: 650; }
-        .fork-table { width: 100%; border-collapse: collapse; font-size: .8rem; font-variant-numeric: tabular-nums; }
+        .fork-table { width: 100%; border-collapse: collapse; font-size: .8rem; font-variant-numeric: tabular-nums; margin-bottom: .75rem; }
         .fork-table th, .fork-table td { padding: .35rem .4rem; border-bottom: 1px solid #eef3f5; text-align: right; }
         .fork-table th:first-child, .fork-table td:first-child { text-align: left; }
         .fork-table th { color: var(--muted); font-weight: 600; }
-        #prediction-plot { height: 180px; min-height: 160px; width: 100%; }
-        .prediction-disclaimer { font-size: .75rem; color: var(--muted); margin: 0; line-height: 1.5; }
-        @media (max-width: 900px) { .dependency-grid { grid-template-columns: 1fr; } #dependency-graph { height: 300px; } }
+        .prediction-disclaimer { font-size: .75rem; color: var(--muted); margin: .65rem 0 0; line-height: 1.5; }
+        #prediction-main-plot { height: min(55vh, 420px); min-height: 280px; width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: .9rem; }
+        .prediction-main { min-width: 0; }
+        #predizioni { margin-top: 2rem; padding-top: 1.25rem; border-top: 1px solid var(--line); }
+        @media (max-width: 900px) { .prediction-layout { grid-template-columns: 1fr; } .header-actions { align-items: flex-start; width: 100%; } }
+        @media (prefers-reduced-motion: reduce) { .site-header, .site-header h1 { transition: none; } }
         [hidden] { display: none !important; }
         @media (min-width: 1500px) {
             .level-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -295,17 +322,24 @@
 <body>
 
 <a class="skip-link" href="#main-content">Vai alle misure</a>
-<header class="site-header">
+<header class="site-header" id="site-header">
     <div class="header-inner">
         <div>
             <p class="eyebrow">Osservatorio dei livelli · Bacino del Reno</p>
-            <h1>Il fiume, a colpo d’occhio.</h1>
-            <p>Livelli e soglie di Reno, Samoggia e affluenti.</p>
+            <h1>Il Reno, a colpo d’occhio.</h1>
+            <p class="header-tagline">Livelli e soglie di Reno, Samoggia e affluenti.</p>
+            <nav class="site-nav" aria-label="Sezioni principali">
+                <a id="nav-osservazioni" href="#osservazioni">Osservazioni</a>
+                <a id="nav-predizioni" href="predizioni.html">Predizioni (sperimentali)</a>
+            </nav>
         </div>
-        <a class="source-link" href="https://www.arpae.it/it/temi-ambientali/acqua/dati-acque/acque-superficiali/dati-idrometrici-in-tempo-reale-1">Dati originali ARPAE ↗</a>
+        <div class="header-actions">
+            <a class="source-link" href="https://www.arpae.it/it/temi-ambientali/acqua/dati-acque/acque-superficiali/dati-idrometrici-in-tempo-reale-1">Dati originali ARPAE ↗</a>
+        </div>
     </div>
 </header>
 <div class="page-shell">
+    <section id="osservazioni" aria-label="Osservazioni">
     <dl class="overview" aria-label="Riepilogo delle osservazioni">
         <div class="overview-item"><dt>Stazioni con misure</dt><dd id="available-count">—</dd></div>
         <div class="overview-item"><dt>Misura valida più recente</dt><dd id="latest-measurement">—</dd></div>
@@ -320,7 +354,7 @@
             </div>
             <div id="panel-chain" role="tabpanel" aria-labelledby="tab-chain">
                 <div class="mini-dag">
-                    <p class="mini-dag-title">Da monte a valle. Tocca una stazione per aprire la sua scheda.</p>
+                    <p class="mini-dag-title">Da monte a valle. Tocca una stazione per la scheda.</p>
                     <div id="station-dag" role="group" aria-label="Grafo delle dipendenze tra stazioni"></div>
                 </div>
             </div>
@@ -374,30 +408,46 @@
             </div>
         </main>
     </div>
+    </section>
+
+    <section id="predizioni" aria-labelledby="prediction-title">
+    <div class="prediction-layout">
+        <aside class="prediction-controls">
+            <h2 id="prediction-title">Predizioni sperimentali</h2>
+            <p class="panel-lead">Prova tecnica senza valore operativo: non è previsione di piena, non è ufficiale e non va usata per decisioni. Preferisci la pagina dedicata <a href="predizioni.html">Predizioni (sperimentali)</a>.</p>
+            <div class="prediction-field">
+                <label for="prediction-downstream-select">Stazione a valle</label>
+                <select id="prediction-downstream-select"></select>
+            </div>
+            <div class="prediction-field">
+                <label for="prediction-upstream-select">Stazione a monte</label>
+                <select id="prediction-upstream-select"></select>
+            </div>
+            <p id="prediction-meta" class="prediction-meta">Seleziona un arco monte→valle.</p>
+            <div id="prediction-forks" hidden>
+                <table class="fork-table" aria-label="Previsioni a mezz’ora con forchetta min med max">
+                    <thead>
+                        <tr><th>Ora</th><th>Min</th><th>Med</th><th>Max</th></tr>
+                    </thead>
+                    <tbody id="prediction-fork-body"></tbody>
+                </table>
+            </div>
+            <p class="prediction-disclaimer">Sperimentale e potenzialmente priva di significato. URI: <code id="prediction-uri-hint">#predizioni</code>. Forchetta ±RMSE empirica; livelli non confrontabili in assoluto tra stazioni.</p>
+        </aside>
+        <div class="prediction-main">
+            <div id="prediction-main-plot" role="img" aria-label="Grafico osservato e previsto"></div>
+        </div>
+    </div>
+    </section>
+
     <footer class="source-notes">
         <h2>Fonti, aggiornamento e limiti</h2>
-        <p>Osservazioni e soglie: <a href="https://www.arpae.it/">Arpae Emilia-Romagna</a>, <a href="https://creativecommons.org/licenses/by/4.0/deed.it">CC BY 4.0</a>. Questa pagina rielabora i dati per la visualizzazione e il calcolo delle medie; non è un prodotto ufficiale ARPAE né una previsione di piena.</p>
+        <p>Osservazioni e soglie: <a href="https://www.arpae.it/">Arpae Emilia-Romagna</a>, <a href="https://creativecommons.org/licenses/by/4.0/deed.it">CC BY 4.0</a>. Questa pagina rielabora i dati per la visualizzazione e le medie. Le eventuali <a href="predizioni.html">predizioni sperimentali</a> non sono un prodotto ARPAE, non hanno valore allertistico e non vanno interpretate come previsione di piena.</p>
         <p id="freshness-note">Controllo dei dati ogni 5 minuti mentre la pagina è visibile. Una misura più vecchia di 90 minuti è segnalata come non recente. La cache locale conserva al massimo 24 ore ed è sempre indicata quando utilizzata.</p>
         <p>Il superamento delle soglie di una stazione non coincide con un’allerta territoriale. Per allerte e indicazioni ufficiali consulta <a href="https://allertameteo.regione.emilia-romagna.it/">Allerta meteo Emilia-Romagna</a>.</p>
         <p>Cartografia e tracciati fluviali: © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>, ODbL. Radar storico: <a href="https://www.rainviewer.com/">RainViewer</a>, servizio esterno senza garanzia di disponibilità; <a href="https://www.rainviewer.com/api.html">condizioni d’uso</a>.</p>
     </footer>
     <noscript><p class="alert alert-warning">Per visualizzare misure e grafici è necessario JavaScript. Puoi comunque consultare le fonti ufficiali dai collegamenti in questa pagina.</p></noscript>
-</div>
-
-<!-- Bootstrap Modal for Zoomed Graph -->
-<div class="modal fade" id="zoomedGraphModal" tabindex="-1" aria-labelledby="zoomedGraphModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered modal-fullscreen-sm-down">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title fs-5" id="zoomedGraphModalLabel"></h2>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi dettaglio"></button>
-            </div>
-            <div class="modal-body">
-                <p id="zoomed-meta"></p>
-                <div id="zoomed-plot" role="img" aria-label="Grafico di dettaglio"></div>
-            </div>
-        </div>
-    </div>
 </div>
 
 <script src="dashboard-data.js"></script>
@@ -418,11 +468,11 @@
     let records = {}, refreshing = false, lastAttempt = 0, refreshTimer, observer, activeSensorId;
     let renderTime = new Date(), mapHasFitted = false;
     let storage;
-    let cyGraph = null;
     let selectedEdge = { upstream: 'Sostegno Reno', downstream: 'Cento' };
     let selectedPrediction = null;
     let transferCoeffs = null;
-    let graphReady = false;
+    let coeffsPromise = null;
+    let currentRoute = { view: 'osservazioni' };
     try { storage = window.localStorage; } catch {}
     const number = value => value === null ? '—' : new Intl.NumberFormat('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
     const dateTime = date => new Intl.DateTimeFormat('it-IT', { timeZone: 'Europe/Rome', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(date);
@@ -432,10 +482,110 @@
     function sensorById(id) { return sensorDataGlobal.data?.find(sensor => sensor.id === id); }
     function blankSensor(name) { return { id: name, name, basin: '', coordinates: null, levels: { yellow: null, orange: null, red: null }, timeSeries: [] }; }
 
+    function parseRoute(hash = location.hash) {
+        const raw = (hash || '#').replace(/^#/, '');
+        const parts = raw.split('/').filter(Boolean).map(part => {
+            try { return decodeURIComponent(part); } catch { return part; }
+        });
+        const head = (parts[0] || 'osservazioni').toLowerCase();
+        if (head === 'predizioni') return { view: 'predizioni', upstream: parts[1] || null, downstream: parts[2] || null };
+        if (head === 'sensore' && parts[1]) return { view: 'sensore', sensorId: parts[1] };
+        return { view: 'osservazioni' };
+    }
+
+    function routeHash(route) {
+        if (route.view === 'predizioni') {
+            if (route.upstream && route.downstream) {
+                return `#predizioni/${encodeURIComponent(route.upstream)}/${encodeURIComponent(route.downstream)}`;
+            }
+            return '#predizioni';
+        }
+        if (route.view === 'sensore' && route.sensorId) return `#sensore/${encodeURIComponent(route.sensorId)}`;
+        return '#osservazioni';
+    }
+
+    function navigate(route, { replace = false } = {}) {
+        const next = routeHash(route);
+        if (replace) {
+            if (`${location.pathname}${location.search}${location.hash}` !== `${location.pathname}${location.search}${next}`) {
+                history.replaceState(null, '', next);
+            }
+            applyRoute();
+            return;
+        }
+        if (location.hash === next) applyRoute();
+        else location.hash = next;
+    }
+
+    function updateHeaderCompact() {
+        const header = document.getElementById('site-header');
+        if (!header) return;
+        header.classList.toggle('is-compact', window.scrollY > 20);
+        document.documentElement.style.setProperty('--header-h', `${header.offsetHeight}px`);
+    }
+
+    function setActiveNav(view) {
+        const obs = document.getElementById('nav-osservazioni');
+        const pred = document.getElementById('nav-predizioni');
+        if (obs) obs.setAttribute('aria-current', view === 'predizioni' ? 'false' : 'page');
+        if (pred) pred.setAttribute('aria-current', view === 'predizioni' ? 'page' : 'false');
+    }
+
+    function scrollToElement(el) {
+        if (!el) return;
+        updateHeaderCompact();
+        el.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'start' });
+        if (typeof el.focus === 'function') {
+            try { el.focus({ preventScroll: true }); } catch { el.focus(); }
+        }
+    }
+
+    function clearSensorTarget() {
+        document.querySelectorAll('.sensor-card.is-target').forEach(card => card.classList.remove('is-target'));
+    }
+
+    async function applyRoute() {
+        currentRoute = parseRoute();
+        setActiveNav(currentRoute.view);
+        updateHeaderCompact();
+        clearSensorTarget();
+        if (currentRoute.view === 'predizioni') {
+            if (currentRoute.upstream && currentRoute.downstream) {
+                selectedEdge = { upstream: currentRoute.upstream, downstream: currentRoute.downstream };
+            } else if (sensorDataGlobal.config) {
+                ensureSelectedEdge(sensorDataGlobal.config);
+                const next = routeHash({ view: 'predizioni', upstream: selectedEdge.upstream, downstream: selectedEdge.downstream });
+                if (location.hash !== next) {
+                    history.replaceState(null, '', next);
+                    currentRoute = parseRoute();
+                }
+            }
+            await ensureTransferCoeffs();
+            refreshPredictionPage();
+            updateStationDag();
+            scrollToElement(document.getElementById('predizioni'));
+            return;
+        }
+        if (currentRoute.view === 'sensore') {
+            activeSensorId = currentRoute.sensorId;
+            const card = document.getElementById(`card-${currentRoute.sensorId}`);
+            if (card) {
+                card.classList.add('is-target');
+                scrollToElement(card);
+            } else {
+                scrollToElement(document.getElementById('osservazioni'));
+            }
+            return;
+        }
+        activeSensorId = null;
+        scrollToElement(document.getElementById('osservazioni'));
+    }
+
     // Add event listener to the toggle switch
     document.getElementById('toggleNormalized').addEventListener('change', function(e) {
         isNormalized = e.target.checked;
-        renderDashboardWithRange(currentRange); // Re-render the dashboard with the selected mode
+        renderDashboardWithRange(currentRange);
+        refreshPredictionPage();
     });
 
     // ===== Fetch the Configuration from config.json =====
@@ -532,8 +682,16 @@
         return P.rankNodes(config);
     }
 
-    function ensureSelectedEdge(config) {
+    function ensureSelectedEdge(config, downstreamId = null) {
         const graph = P.buildGraph(config);
+        if (downstreamId) {
+            const incoming = graph.edges.filter(edge => edge.downstream === downstreamId);
+            if (incoming.length) {
+                const keep = incoming.find(edge => edge.upstream === selectedEdge.upstream && edge.downstream === downstreamId);
+                selectedEdge = keep || incoming.find(edge => edge.upstream === 'Sostegno Reno') || incoming[0];
+                return selectedEdge;
+            }
+        }
         const has = graph.edges.some(edge => edge.upstream === selectedEdge.upstream && edge.downstream === selectedEdge.downstream);
         if (has) return selectedEdge;
         const preferred = graph.edges.find(edge => edge.upstream === 'Sostegno Reno' && edge.downstream === 'Cento');
@@ -541,83 +699,18 @@
         return selectedEdge;
     }
 
-    function updateDependencyGraph() {
-        const config = sensorDataGlobal.config;
-        const container = document.getElementById('dependency-graph');
-        if (!config || !container) return;
-        if (!window.cytoscape) {
-            container.textContent = 'Grafo non disponibile (Cytoscape non caricato).';
-            return;
-        }
-        if (window.cytoscapeDagre && !graphReady) {
-            try { cytoscape.use(cytoscapeDagre); } catch {}
-            graphReady = true;
-        }
-        const edge = ensureSelectedEdge(config);
-        const elements = [
-            ...Object.keys(config.sensors).map(id => {
-                const sensor = sensorById(id) || blankSensor(id);
-                const status = D.status(sensor);
-                return {
-                    data: { id, label: id, color: status.color },
-                    classes: id === edge.downstream || id === edge.upstream ? 'selected-node' : ''
-                };
-            }),
-            ...P.buildGraph(config).edges.map(item => ({
-                data: { id: item.id, source: item.upstream, target: item.downstream },
-                classes: item.upstream === edge.upstream && item.downstream === edge.downstream ? 'selected-edge' : ''
-            }))
-        ];
-        if (!cyGraph) {
-            cyGraph = cytoscape({
-                container,
-                elements,
-                style: [
-                    { selector: 'node', style: {
-                        label: 'data(label)', 'text-valign': 'center', 'text-halign': 'center',
-                        'background-color': 'data(color)', color: '#fff', 'font-size': 9,
-                        'text-wrap': 'wrap', 'text-max-width': 72, width: 78, height: 28,
-                        'border-width': 2, 'border-color': '#fff', 'text-outline-width': 1, 'text-outline-color': '#17374788'
-                    }},
-                    { selector: 'edge', style: {
-                        width: 2, 'line-color': '#9bb0ba', 'target-arrow-color': '#9bb0ba',
-                        'target-arrow-shape': 'triangle', 'curve-style': 'bezier'
-                    }},
-                    { selector: '.selected-edge', style: { width: 4, 'line-color': '#086575', 'target-arrow-color': '#086575' } },
-                    { selector: '.selected-node', style: { 'border-color': '#086575', 'border-width': 3 } }
-                ],
-                layout: { name: window.cytoscapeDagre || typeof dagre !== 'undefined' ? 'dagre' : 'breadthfirst', rankDir: 'TB', nodeSep: 28, rankSep: 42, padding: 16 },
-                userZoomingEnabled: true,
-                userPanningEnabled: true,
-                boxSelectionEnabled: false
-            });
-            cyGraph.on('tap', 'edge', evt => {
-                const data = evt.target.data();
-                selectedEdge = { upstream: data.source, downstream: data.target };
-                refreshPrediction();
-                updateDependencyGraph();
-            });
-            cyGraph.on('tap', 'node', evt => {
-                const downstream = evt.target.id();
-                const incoming = P.buildGraph(config).edges.filter(item => item.downstream === downstream);
-                if (!incoming.length) return;
-                selectedEdge = incoming.find(item => item.upstream === 'Sostegno Reno') || incoming[0];
-                refreshPrediction();
-                updateDependencyGraph();
-            });
-        } else {
-            cyGraph.json({ elements });
-            cyGraph.layout({ name: window.cytoscapeDagre || typeof dagre !== 'undefined' ? 'dagre' : 'breadthfirst', rankDir: 'TB', nodeSep: 28, rankSep: 42, padding: 16 }).run();
-        }
+    function ensureTransferCoeffs() {
+        if (transferCoeffs || coeffsPromise) return coeffsPromise || Promise.resolve(transferCoeffs);
+        coeffsPromise = P.loadCoeffs(window.fetch.bind(window)).then(coeffs => {
+            transferCoeffs = coeffs;
+            return coeffs;
+        }).finally(() => { coeffsPromise = null; });
+        return coeffsPromise;
     }
 
-    // ===== Mini dependency DAG under the map: clickable pills, one per station =====
+    // ===== Mini dependency DAG: pills → #sensore/… (scroll), edges → #predizioni/… =====
     function scrollToSensorCard(sensorId) {
-        const plotElement = document.getElementById(`card-${sensorId}`);
-        if (plotElement) {
-            plotElement.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'start' });
-            plotElement.focus({ preventScroll: true });
-        }
+        navigate({ view: 'sensore', sensorId });
     }
 
     function showStationPanel(panel) {
@@ -660,12 +753,15 @@
             window.addEventListener('resize', debounce(() => updateStationDag(), 200));
             container.addEventListener('click', evt => {
                 const node = evt.target.closest('[data-sensor]');
-                if (node) scrollToSensorCard(node.getAttribute('data-sensor'));
+                if (node) navigate({ view: 'sensore', sensorId: node.getAttribute('data-sensor') });
             });
             container.addEventListener('keydown', evt => {
                 if (evt.key !== 'Enter' && evt.key !== ' ') return;
                 const node = evt.target.closest('[data-sensor]');
-                if (node) { evt.preventDefault(); scrollToSensorCard(node.getAttribute('data-sensor')); }
+                if (node) {
+                    evt.preventDefault();
+                    navigate({ view: 'sensore', sensorId: node.getAttribute('data-sensor') });
+                }
             });
         }
         const svgNS = 'http://www.w3.org/2000/svg';
@@ -688,7 +784,7 @@
             const latest = meta.get(id).latest;
             return latest === null ? '—' : `${updateStationDag.fmt(latest)} m`;
         };
-        const PADX = 8, DOT = 14, H = 42, ROWH = 58, COLGAP = 14, TOP = 10, BOTTOM = 10;
+        const PADX = 5, DOT = 12, H = 42, ROWH = 58, COLGAP = 10, TOP = 10, BOTTOM = 10;
         const containerWidth = Math.max(container.clientWidth || 0, 240);
         const columns = [[], [], []];
         for (const id of graph.nodes) columns[DAG_COLUMN[id] ?? 1].push(id);
@@ -760,16 +856,19 @@
             const x1 = from.x + from.w / 2, y1 = from.y + from.h;
             const x2 = to.x + to.w / 2, y2 = to.y;
             const midY = (y1 + y2) / 2;
+            const g = document.createElementNS(svgNS, 'g');
+            g.setAttribute('class', 'dag-edge');
+            g.setAttribute('aria-hidden', 'true');
             const path = document.createElementNS(svgNS, 'path');
             path.setAttribute('d', `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2 - 4}`);
             path.setAttribute('fill', 'none');
             path.setAttribute('stroke', '#9bb0ba');
             path.setAttribute('stroke-width', '1.5');
-            svg.appendChild(path);
             const arrow = document.createElementNS(svgNS, 'path');
             arrow.setAttribute('d', `M ${x2 - 3.5} ${y2 - 4} L ${x2 + 3.5} ${y2 - 4} L ${x2} ${y2 - 0.5} Z`);
             arrow.setAttribute('fill', '#9bb0ba');
-            svg.appendChild(arrow);
+            g.append(path, arrow);
+            svg.appendChild(g);
         }
 
         for (const [id, p] of pos) {
@@ -824,34 +923,70 @@
         container.replaceChildren(svg);
     }
 
-    function refreshPrediction() {
+    function fillPredictionSelects() {
+        const config = sensorDataGlobal.config;
+        const downSelect = document.getElementById('prediction-downstream-select');
+        const upSelect = document.getElementById('prediction-upstream-select');
+        if (!config || !downSelect || !upSelect) return;
+        const graph = P.buildGraph(config);
+        const downstreams = [...new Set(graph.edges.map(edge => edge.downstream))].sort();
+        downSelect.replaceChildren();
+        for (const id of downstreams) {
+            const option = document.createElement('option');
+            option.value = id;
+            option.textContent = id;
+            if (id === selectedEdge.downstream) option.selected = true;
+            downSelect.appendChild(option);
+        }
+        if (!downstreams.includes(selectedEdge.downstream) && downstreams[0]) {
+            selectedEdge.downstream = downstreams[0];
+            downSelect.value = downstreams[0];
+        }
+        const incoming = graph.edges.filter(edge => edge.downstream === selectedEdge.downstream);
+        upSelect.replaceChildren();
+        for (const edge of incoming) {
+            const option = document.createElement('option');
+            option.value = edge.upstream;
+            option.textContent = edge.upstream;
+            if (edge.upstream === selectedEdge.upstream) option.selected = true;
+            upSelect.appendChild(option);
+        }
+        if (!incoming.some(edge => edge.upstream === selectedEdge.upstream) && incoming[0]) {
+            selectedEdge.upstream = incoming[0].upstream;
+            upSelect.value = incoming[0].upstream;
+        }
+        upSelect.disabled = incoming.length <= 1;
+    }
+
+    function refreshPredictionPage() {
         const config = sensorDataGlobal.config;
         const meta = document.getElementById('prediction-meta');
         const forksWrap = document.getElementById('prediction-forks');
         const forkBody = document.getElementById('prediction-fork-body');
-        const plot = document.getElementById('prediction-plot');
+        const hint = document.getElementById('prediction-uri-hint');
         if (!config || !meta) return;
-        const edge = ensureSelectedEdge(config);
-        const up = sensorById(edge.upstream) || blankSensor(edge.upstream);
-        const down = sensorById(edge.downstream) || blankSensor(edge.downstream);
+        ensureSelectedEdge(config, selectedEdge.downstream);
+        fillPredictionSelects();
+        if (hint) hint.textContent = routeHash({ view: 'predizioni', ...selectedEdge });
+        const up = sensorById(selectedEdge.upstream) || blankSensor(selectedEdge.upstream);
+        const down = sensorById(selectedEdge.downstream) || blankSensor(selectedEdge.downstream);
         selectedPrediction = P.predictEdge(up, down, {
             hours: currentRange,
             now: renderTime,
             coeffs: transferCoeffs,
-            horizonHours: 3
+            horizonHours: 2
         });
         if (!selectedPrediction?.ok) {
-            meta.textContent = `${edge.upstream} → ${edge.downstream}: ${selectedPrediction?.reason || 'Predizione non disponibile.'}`;
+            meta.textContent = `${selectedEdge.upstream} → ${selectedEdge.downstream}: ${selectedPrediction?.reason || 'Predizione non disponibile.'}`;
             forksWrap.hidden = true;
             forkBody.replaceChildren();
-            if (window.Plotly && plot.data) Plotly.purge(plot);
-            plot.textContent = 'Seleziona un arco con serie sufficienti.';
+            drawPredictionMainPlot(down, null);
             return;
         }
         const lagLabel = `${Math.round(selectedPrediction.lagMinutes)} min`;
         const rLabel = selectedPrediction.r == null ? 'n/d' : selectedPrediction.r.toFixed(2);
         const rmseLabel = selectedPrediction.rmse == null ? 'n/d' : number(selectedPrediction.rmse) + ' m';
-        meta.innerHTML = `<strong>${edge.upstream} → ${edge.downstream}</strong> · lag ${lagLabel} · r=${rLabel} · RMSE ${rmseLabel} · fonte ${selectedPrediction.source}${selectedPrediction.reason ? ' · ' + selectedPrediction.reason : ''}. Prossime mezz’ore (min/med/max):`;
+        meta.innerHTML = `<strong>${selectedEdge.upstream} → ${selectedEdge.downstream}</strong> · lag ${lagLabel} · r=${rLabel} · RMSE ${rmseLabel} · fonte ${selectedPrediction.source}${selectedPrediction.reason ? ' · ' + selectedPrediction.reason : ''}. Prossime mezz’ore (min/med/max):`;
         forkBody.replaceChildren();
         for (const point of selectedPrediction.next || []) {
             const row = document.createElement('tr');
@@ -865,70 +1000,67 @@
             forkBody.appendChild(row);
         }
         forksWrap.hidden = !(selectedPrediction.next || []).length;
-        drawPredictionPlot(down, selectedPrediction);
-        if (visiblePlots.has(down.id)) drawTimeSeries(down, `plot-${down.id}`, currentRange);
+        drawPredictionMainPlot(down, selectedPrediction);
     }
 
-    function drawPredictionPlot(downstream, prediction) {
-        const element = document.getElementById('prediction-plot');
+    function drawPredictionMainPlot(downstream, prediction) {
+        const element = document.getElementById('prediction-main-plot');
         if (!element || !window.Plotly) return;
         if (!prediction?.ok) {
-            element.textContent = 'Predizione non disponibile.';
+            if (element.data) Plotly.purge(element);
+            element.textContent = 'Predizione non disponibile per questo arco.';
             return;
         }
-        const observed = D.filter(downstream, currentRange, renderTime).filter(p => p.value !== null);
-        const hist = prediction.predicted || [];
+        const pastH = 12;
+        const futH = 2;
+        const forecastRed = '#c62828';
+        const observed = D.filter(downstream, pastH, renderTime).filter(p => p.value !== null);
         const forecast = prediction.forecast || [];
+        const lastObs = observed.at(-1);
+        const bridge = lastObs && forecast.length
+            ? [{ time: lastObs.time, min: lastObs.value, med: lastObs.value, max: lastObs.value }]
+            : [];
+        const band = bridge.concat(forecast);
         const hover = new Intl.DateTimeFormat('it-IT', { timeZone: 'Europe/Rome', dateStyle: 'short', timeStyle: 'short' });
         const traces = [
             {
                 x: observed.map(p => +p.time), y: observed.map(p => p.value),
                 type: 'scatter', mode: 'lines', name: 'Osservato',
-                line: { color: '#087e91', width: 2 },
+                line: { color: '#087e91', width: 2.5 },
                 customdata: observed.map(p => hover.format(p.time)),
                 hovertemplate: '%{customdata}<br>%{y:.2f} m<extra>Osservato</extra>'
             },
             {
-                x: hist.map(p => +p.time), y: hist.map(p => p.med),
-                type: 'scatter', mode: 'lines', name: 'Ricostruito',
-                line: { color: '#64748b', width: 1.5, dash: 'dot' },
-                hovertemplate: '%{y:.2f} m<extra>Ricostruito</extra>'
+                x: band.map(p => +p.time), y: band.map(p => p.max),
+                type: 'scatter', mode: 'lines', name: 'Max', line: { width: 0 }, hoverinfo: 'skip', showlegend: false
             },
             {
-                x: forecast.map(p => +p.time), y: forecast.map(p => p.max),
-                type: 'scatter', mode: 'lines', name: 'Max',
-                line: { width: 0 }, hoverinfo: 'skip', showlegend: false
+                x: band.map(p => +p.time), y: band.map(p => p.min),
+                type: 'scatter', mode: 'lines', name: 'Forchetta', fill: 'tonexty',
+                fillcolor: 'rgba(198,40,40,.16)', line: { width: 0 }, hoverinfo: 'skip', showlegend: false
             },
             {
-                x: forecast.map(p => +p.time), y: forecast.map(p => p.min),
-                type: 'scatter', mode: 'lines', name: 'Forchetta',
-                fill: 'tonexty', fillcolor: 'rgba(8,101,117,.18)',
-                line: { width: 0 },
-                hovertemplate: 'min %{y:.2f} m<extra></extra>'
-            },
-            {
-                x: forecast.map(p => +p.time), y: forecast.map(p => p.med),
-                type: 'scatter', mode: 'lines+markers', name: 'Mediana',
-                line: { color: '#086575', width: 2.5, dash: 'dash' },
-                marker: { size: 5 },
-                customdata: forecast.map(p => [hover.format(p.time), number(p.min), number(p.max)]),
+                x: band.map(p => +p.time), y: band.map(p => p.med),
+                type: 'scatter', mode: 'lines', name: 'Mediana',
+                line: { color: forecastRed, width: 2.5 },
+                customdata: band.map(p => [hover.format(p.time), number(p.min), number(p.max)]),
                 hovertemplate: '%{customdata[0]}<br>med %{y:.2f} m<br>min %{customdata[1]} · max %{customdata[2]}<extra></extra>'
             }
         ];
-        const start = +renderTime - currentRange * 3600000;
-        const end = +renderTime + 3 * 3600000;
+        const start = +renderTime - pastH * 3600000;
+        const end = +renderTime + futH * 3600000;
         const layout = {
-            margin: { t: 10, r: 12, b: 30, l: 42 }, height: 180, showlegend: false,
+            margin: { t: 16, r: 18, b: 40, l: 48 }, showlegend: false,
             paper_bgcolor: '#fff', plot_bgcolor: '#fff',
-            font: { color: '#536b78', family: 'system-ui, sans-serif', size: 10 },
+            font: { color: '#536b78', family: 'system-ui, sans-serif', size: 11 },
             xaxis: { type: 'date', range: [start, end], gridcolor: '#e7eef2' },
-            yaxis: { title: { text: 'm', font: { size: 10 } }, gridcolor: '#e7eef2', zeroline: false },
+            yaxis: { title: { text: 'm' }, gridcolor: '#e7eef2', zeroline: false },
             shapes: [{ type: 'line', x0: +renderTime, x1: +renderTime, y0: 0, y1: 1, yref: 'paper', line: { color: '#9bb0ba', width: 1, dash: 'dot' } }]
         };
-        const config = { responsive: true, displayModeBar: false, staticPlot: isTouchDevice() };
-        element.setAttribute('aria-label', `Previsione ${selectedEdge.upstream} verso ${downstream.name}, forchetta min med max a mezz’ora`);
-        if (element.data) Plotly.react(element, traces, layout, config);
-        else { element.textContent = ''; Plotly.newPlot(element, traces, layout, config); }
+        element.style.height = '';
+        element.setAttribute('aria-label', `Previsione ${selectedEdge.upstream} verso ${downstream.name}`);
+        if (element.data) Plotly.react(element, traces, layout, { responsive: true, displayModeBar: false });
+        else { element.textContent = ''; Plotly.newPlot(element, traces, layout, { responsive: true, displayModeBar: false }); }
     }
 
     // ===== Create custom marker for the map =====
@@ -1029,33 +1161,6 @@
             hovertemplate: '%{customdata}<br><b>%{y:.2f}' + (isNormalized ? '' : ' m') + '</b><extra></extra>',
             line: { color: '#087e91', width: 2.5 }
         }];
-        const canOverlay = !isNormalized && !zoomed && selectedPrediction?.ok &&
-            selectedEdge.downstream === sensor.id && Array.isArray(selectedPrediction.forecast);
-        if (canOverlay) {
-            const forecast = selectedPrediction.forecast;
-            traces.push(
-                {
-                    x: forecast.map(p => +p.time), y: forecast.map(p => p.max),
-                    type: 'scatter', mode: 'lines', name: 'Max', line: { width: 0 }, hoverinfo: 'skip', showlegend: false
-                },
-                {
-                    x: forecast.map(p => +p.time), y: forecast.map(p => p.min),
-                    type: 'scatter', mode: 'lines', name: 'Forchetta', fill: 'tonexty',
-                    fillcolor: 'rgba(8,101,117,.16)', line: { width: 0 }, hoverinfo: 'skip', showlegend: false
-                },
-                {
-                    x: forecast.map(p => +p.time), y: forecast.map(p => p.med),
-                    type: 'scatter', mode: 'lines', name: 'Previsto',
-                    line: { color: '#086575', width: 2, dash: 'dash' },
-                    hovertemplate: 'med %{y:.2f} m<extra>Previsto</extra>'
-                }
-            );
-            const forecastVals = forecast.flatMap(p => [p.min, p.max]).filter(v => v !== null);
-            if (forecastVals.length) {
-                // extend y range below after min/max computed
-                element._forecastExtrema = [Math.min(...forecastVals), Math.max(...forecastVals)];
-            }
-        } else element._forecastExtrema = null;
         
         // Calculate the weighted average using only the filtered data
         const weightedAverage = D.weightedAverage(sensor, filteredData, isNormalized);
@@ -1067,10 +1172,8 @@
         
         const padding = 0.5; // Adjust as needed
         const finiteValues = values.filter(v => v !== null);
-        const ext = element._forecastExtrema || [];
-        const rangePool = finiteValues.concat(ext.length ? ext : []);
-        const minValue = rangePool.length ? Math.min(...rangePool) : 0;
-        const maxValue = rangePool.length ? Math.max(...rangePool) : 1;
+        const minValue = finiteValues.length ? Math.min(...finiteValues) : 0;
+        const maxValue = finiteValues.length ? Math.max(...finiteValues) : 1;
 
         // Adjust y-axis range to include all thresholds and start at least at -1m
         let yAxisMin = Math.min(-1, minValue - padding, lowestThreshold !== null ? lowestThreshold - padding : minValue - padding);
@@ -1079,6 +1182,7 @@
         // For normalized data, set y-axis from 0 to 1.2
         const yAxisRange = isNormalized ? [Math.min(0, minValue - .05), Math.max(1.2, maxValue + .05)] : [yAxisMin, yAxisMax];
         const start = +renderTime - range * 3600000;
+        const end = +renderTime;
         const tickCount = zoomed ? 7 : 4;
         const ticks = Array.from({ length: tickCount }, (_, i) => start + i * range * 3600000 / (tickCount - 1));
 
@@ -1091,7 +1195,7 @@
             dragmode: zoomed ? 'zoom' : false,
             uirevision: `${range}-${isNormalized}`,
             xaxis: { 
-                type: 'date', range: [start, +renderTime],
+                type: 'date', range: [start, end],
                 tickmode: 'array', tickvals: ticks,
                 ticktext: ticks.map(t => D.romeTime(new Date(t)).slice(8, 10) + '/' + D.romeTime(new Date(t)).slice(5, 7) + '<br>' + D.romeTime(new Date(t)).slice(11, 16)),
                 fixedrange: !zoomed, zeroline: false, automargin: true,
@@ -1185,7 +1289,6 @@
                 dash: 'dot'
             }
         });
-
         // Ensure the element exists before calling Plotly
         element.setAttribute('aria-label', `${sensor.name}: andamento delle ultime ${range} ore, ${isNormalized ? 'rapporto sulla massima soglia' : 'livello in metri'}. Orari italiani.`);
         element.renderPromise = (element.renderPromise || Promise.resolve()).catch(() => {}).then(async () => {
@@ -1557,9 +1660,9 @@
                     const detail = document.createElement('button');
                     detail.type = 'button';
                     detail.className = 'detail-button';
-                    detail.textContent = 'Apri dettaglio ↗';
-                    detail.setAttribute('aria-label', `Apri dettaglio di ${sensor.id}`);
-                    detail.addEventListener('click', () => openZoomedGraph(sensorById(sensor.id) || blankSensor(sensor.id), currentRange)); // Add event listener to open modal
+                    detail.textContent = 'Vai alla scheda ↗';
+                    detail.setAttribute('aria-label', `Vai alla scheda di ${sensor.id}`);
+                    detail.addEventListener('click', () => navigate({ view: 'sensore', sensorId: sensor.id }));
                     footer.append(source, detail);
                     cardDiv.append(cardHeader, cardBody, footer);
                     cards.set(sensor.id, cardDiv);
@@ -1595,40 +1698,16 @@
         });
         // Initialize the map (only once) with all sensors, when its tab is shown
         if (mapRequested) initializeMap(sensorDataGlobal.data).catch(error => console.error('Mappa non disponibile:', error));
-        updateDependencyGraph();
         updateStationDag();
-        refreshPrediction();
-        if (activeSensorId && document.getElementById('zoomedGraphModal').classList.contains('show')) {
-            const sensor = sensorById(activeSensorId) || blankSensor(activeSensorId);
-            updateZoomedMeta(sensor);
-            drawTimeSeries(sensor, 'zoomed-plot', range, true);
+        refreshPredictionPage();
+        if (currentRoute.view === 'sensore' && currentRoute.sensorId) {
+            const card = document.getElementById(`card-${currentRoute.sensorId}`);
+            if (card) {
+                card.classList.add('is-target');
+                scrollToElement(card);
+            }
         }
         updateOverview();
-    }
-
-    // Function to open the zoomed graph in the modal
-    function openZoomedGraph(sensor, range) {
-        const modalTitle = document.getElementById('zoomedGraphModalLabel');
-        modalTitle.textContent = sensor.name;
-        activeSensorId = sensor.id;
-        updateZoomedMeta(sensor);
-        const modalElement = document.getElementById('zoomedGraphModal');
-        // Show the modal
-        if (!window.bootstrap) {
-            document.getElementById('error-text').textContent = 'Dettaglio non disponibile. Consulta il grafico nella scheda o la fonte ARPAE.';
-            document.getElementById('error-message').hidden = false;
-            return;
-        }
-        const zoomedGraphModal = bootstrap.Modal.getOrCreateInstance(modalElement);
-        const opener = document.activeElement;
-        modalElement.addEventListener('hidden.bs.modal', () => {
-            if (opener instanceof HTMLElement && opener.isConnected) opener.focus();
-        }, { once: true });
-        // Render the zoomed chart in the modal after the modal is shown
-        modalElement.addEventListener('shown.bs.modal', () => {
-            drawTimeSeries(sensorById(activeSensorId) || sensor, 'zoomed-plot', currentRange, true);
-        }, { once: true });
-        zoomedGraphModal.show();
     }
 
     // Convert a Date object to Europe/Rome timezone Date object
@@ -1733,12 +1812,6 @@
         document.getElementById('latest-measurement').textContent = points.length ? dateTime(new Date(Math.max(...points.map(point => +point.time)))) : 'Nessuna misura';
     }
 
-    function updateZoomedMeta(sensor) {
-        const point = D.latestPoint(sensor);
-        const thresholds = ['yellow', 'orange', 'red'].map((key, i) => `Soglia ${i + 1}: ${sensor.levels[key] === null ? 'non disponibile' : number(sensor.levels[key]) + ' m'}`).join(' · ');
-        document.getElementById('zoomed-meta').textContent = `${point ? number(point.value) + ' m · misura del ' + dateTime(point.time) : 'Nessuna misura valida'} · ${D.status(sensor).label}${D.isStale(sensor, new Date(), staleMinutes()) ? ' · misura non recente' : ''}${sensor.cached ? ' · dati da cache' : ''}. ${thresholds}.`;
-    }
-
     // Handle range button clicks
     document.getElementById('range-buttons').addEventListener('click', (e) => {
         if (e.target.classList.contains('range-button')) {
@@ -1784,22 +1857,27 @@
         document.getElementById('refresh-button').addEventListener('click', renderDashboard);
         document.getElementById('tab-chain').addEventListener('click', () => showStationPanel('chain'));
         document.getElementById('tab-map').addEventListener('click', () => showStationPanel('map'));
-        document.getElementById('zoomedGraphModal').addEventListener('hidden.bs.modal', () => {
-            activeSensorId = null;
-            const plot = document.getElementById('zoomed-plot');
-            plot.renderVersion = (plot.renderVersion || 0) + 1;
-            if (window.Plotly && plot.data) Plotly.purge(plot);
+        document.getElementById('prediction-downstream-select').addEventListener('change', evt => {
+            selectedEdge = { ...selectedEdge, downstream: evt.target.value };
+            ensureSelectedEdge(sensorDataGlobal.config, selectedEdge.downstream);
+            navigate({ view: 'predizioni', upstream: selectedEdge.upstream, downstream: selectedEdge.downstream }, { replace: true });
         });
+        document.getElementById('prediction-upstream-select').addEventListener('change', evt => {
+            selectedEdge = { upstream: evt.target.value, downstream: selectedEdge.downstream };
+            navigate({ view: 'predizioni', upstream: selectedEdge.upstream, downstream: selectedEdge.downstream }, { replace: true });
+        });
+        window.addEventListener('hashchange', () => applyRoute());
+        window.addEventListener('scroll', debounce(updateHeaderCompact, 50), { passive: true });
+        window.addEventListener('resize', debounce(updateHeaderCompact, 100));
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden) { updateRefreshButton(); renderDashboard(); }
         });
         refreshTimer = setInterval(() => {
             if (!document.hidden) { updateRefreshButton(); updateOverview(); renderDashboard(); }
         }, 30000);
-        if (document.getElementById('dependency-graph')) P.loadCoeffs(window.fetch.bind(window)).then(coeffs => {
-            transferCoeffs = coeffs;
-            if (sensorDataGlobal.config) refreshPrediction();
-        });
+        if (!location.hash) history.replaceState(null, '', '#osservazioni');
+        updateHeaderCompact();
+        applyRoute();
         renderDashboard();
     });
 

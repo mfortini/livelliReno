@@ -1,6 +1,18 @@
 {
     "refreshMinutes": 5,
     "staleMinutes": 90,
+    "rainfall": {
+        "gauges": [
+            "Sasso Marconi Arpa",
+            "Vergato",
+            "Riola di Vergato",
+            "Padulle Sala Bolognese",
+            "Zola Predosa",
+            "Lavino di Sopra",
+            "Anzola",
+            "Finale Emilia"
+        ]
+    },
     "sensors": {
         "Bonconvento": {
             "arpaeId": "3141",

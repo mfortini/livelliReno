@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Predizioni sperimentali · Livelli Reno</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#123847">
+    <meta name="description" content="Prova sperimentale di trasferimento monte→valle sui livelli ARPAE. Non ufficiale, non affidabile, non è una previsione di piena e non va usata per decisioni.">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <script defer src="https://cdn.plot.ly/plotly-basic-2.35.2.min.js"></script>
+    <style>
+        :root { --ink: #173747; --muted: #536b78; --accent: #086b78; --line: #dce6eb; --surface: #fff; --header-h: 10rem; }
+        * { box-sizing: border-box; }
+        body { margin: 0; background: #f3f7f9; color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+        a { color: #086575; text-underline-offset: .2em; }
+        :focus-visible { outline: 3px solid #007f95; outline-offset: 4px; }
+        .site-header {
+            position: sticky; top: 0; z-index: 1100;
+            padding: 1.35rem clamp(1rem, 4vw, 4rem) 1.1rem; background: #123847; color: #fff;
+            transition: padding .2s ease, box-shadow .2s ease;
+        }
+        .site-header.is-compact { padding: .45rem clamp(1rem, 4vw, 3rem); box-shadow: 0 1px 12px #00000033; }
+        .header-inner { max-width: 1600px; margin: auto; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
+        .eyebrow { font-size: .75rem; letter-spacing: .14em; font-weight: 700; text-transform: uppercase; margin-bottom: .45rem; }
+        h1 { font-size: clamp(1.55rem, 2.8vw, 2.35rem); font-weight: 700; letter-spacing: -.04em; margin: 0 0 .4rem; transition: font-size .2s ease; }
+        .header-tagline { margin: 0; color: #d3e5ec; white-space: nowrap; }
+        .site-header.is-compact .eyebrow,
+        .site-header.is-compact .header-tagline,
+        .site-header.is-compact .source-link { display: none; }
+        .site-header.is-compact h1 { font-size: 1.1rem; margin: 0; }
+        .site-header.is-compact .site-nav { margin-top: .35rem; }
+        .site-header.is-compact .site-nav a { min-height: 32px; padding: .28rem .65rem; font-size: .78rem; }
+        .source-link { color: #e5f7fc; border: 1px solid #6b8995; border-radius: .65rem; padding: .65rem .9rem; white-space: nowrap; text-decoration: none; }
+        .site-nav { display: flex; gap: .35rem; flex-wrap: wrap; margin-top: 1rem; }
+        .site-nav a { color: #d3e5ec; text-decoration: none; border: 1px solid #6b8995; border-radius: .55rem; padding: .45rem .85rem; font-size: .85rem; font-weight: 650; min-height: 40px; display: inline-flex; align-items: center; background: transparent; }
+        .site-nav a:hover { color: #fff; border-color: #b5e7ee; background: transparent; }
+        .site-nav a[aria-current="page"],
+        .site-nav a[aria-current="page"]:hover { background: #fff; color: #123847; border-color: #fff; }
+        .page-shell { max-width: 1680px; margin: auto; padding: 1.5rem clamp(1rem, 3vw, 3rem) 3rem; }
+        .page-intro { margin-bottom: 1.25rem; max-width: 75ch; color: var(--muted); font-size: .92rem; line-height: 1.55; }
+        .page-intro h2 { color: var(--ink); font-size: 1.45rem; margin: 0 0 .4rem; }
+        .experiment-banner {
+            background: #fff4e5; border: 2px solid #be5900; border-radius: .85rem;
+            padding: 1rem 1.15rem; margin-bottom: 1.25rem; color: #5c3a00;
+        }
+        .experiment-banner strong { display: block; font-size: 1.05rem; margin-bottom: .4rem; color: #8a4500; }
+        .experiment-banner p { margin: 0; font-size: .9rem; line-height: 1.55; }
+        .status-line { font-size: .8rem; color: var(--muted); margin-bottom: 1rem; }
+        .edge-badge {
+            display: inline-block; font-size: .68rem; font-weight: 700; letter-spacing: .04em;
+            text-transform: uppercase; color: #8a4500; background: #fff4e5; border: 1px solid #e0a35a;
+            border-radius: .35rem; padding: .15rem .45rem; margin-bottom: .5rem;
+        }
+        .edge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
+        .edge-card {
+            background: var(--surface); border: 1px solid var(--line); border-radius: .9rem; padding: 1rem 1.05rem;
+            scroll-margin-top: calc(var(--header-h) + .75rem); min-width: 0;
+        }
+        .edge-card.is-target { border-color: var(--accent); box-shadow: 0 0 0 2px #08657533; }
+        .edge-card h3 { font-size: 1rem; margin: 0 0 .35rem; }
+        .edge-meta { font-size: .78rem; color: var(--muted); line-height: 1.5; margin: 0 0 .65rem; }
+        .edge-meta strong { color: var(--ink); }
+        .fork-table { width: 100%; border-collapse: collapse; font-size: .78rem; font-variant-numeric: tabular-nums; margin-bottom: .55rem; }
+        .fork-table th, .fork-table td { padding: .3rem .35rem; border-bottom: 1px solid #eef3f5; text-align: right; }
+        .fork-table th:first-child, .fork-table td:first-child { text-align: left; }
+        .fork-table th { color: var(--muted); font-weight: 600; }
+        .edge-plot { height: 180px; width: 100%; }
+        .edge-fail { color: var(--muted); font-size: .85rem; margin: 0; }
+        .source-notes { margin-top: 2rem; border-top: 1px solid var(--line); padding-top: 1.25rem; font-size: .8rem; color: var(--muted); line-height: 1.7; }
+        .source-notes h2 { font-size: 1rem; font-weight: 700; color: var(--ink); }
+        [hidden] { display: none !important; }
+        @media (max-width: 800px) {
+            .header-inner { flex-direction: column; align-items: start; }
+            .site-header { padding: 1.25rem 1rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .site-header, .site-header h1 { transition: none; }
+            *, *::before, *::after { scroll-behavior: auto !important; }
+        }
+    </style>
+</head>
+<body>
+<header class="site-header" id="site-header">
+    <div class="header-inner">
+        <div>
+            <p class="eyebrow">Osservatorio dei livelli · Bacino del Reno</p>
+            <h1>Il Reno, a colpo d’occhio.</h1>
+            <p class="header-tagline">Solo osservazioni ufficiali in Osservazioni. Qui: prova sperimentale, senza valore operativo.</p>
+            <nav class="site-nav" aria-label="Sezioni principali">
+                <a href="index.html#osservazioni">Osservazioni</a>
+                <a href="predizioni.html" aria-current="page">Predizioni (sperimentali)</a>
+            </nav>
+        </div>
+        <div>
+            <a class="source-link" href="https://www.arpae.it/it/temi-ambientali/acqua/dati-acque/acque-superficiali/dati-idrometrici-in-tempo-reale-1">Dati originali ARPAE ↗</a>
+        </div>
+    </div>
+</header>
+
+<main class="page-shell">
+    <div class="experiment-banner" role="status">
+        <strong>Sperimentale — non usare per decisioni</strong>
+        <p>Queste curve e forchette <em>non</em> sono previsioni di piena, <em>non</em> sono un prodotto ARPAE o di Protezione civile, e <em>non</em> hanno valore operativo o allertistico. Sono un esercizio tecnico sul trasferimento empirico di livelli tra stazioni. Possono essere sbagliate, instabili o prive di significato idraulico. Per allerte e indicazioni ufficiali consulta <a href="https://allertameteo.regione.emilia-romagna.it/">Allerta meteo Emilia-Romagna</a>.</p>
+    </div>
+    <div class="page-intro">
+        <h2>Prove di trasferimento monte→valle</h2>
+        <p>Per ogni stazione a valle: modello multi-ingresso a orizzonte (incrementi a 30/60/90/120′) con lag dai monti e forchetta min/med/max. Solo dove il backtest batte la persistenza; resto senza curva. Indizi statistici, non una previsione affidabile.</p>
+    </div>
+    <p id="status-line" class="status-line" role="status">Caricamento osservazioni ARPAE…</p>
+    <div id="edge-grid" class="edge-grid" aria-live="polite"></div>
+    <footer class="source-notes">
+        <h2>Limiti e disclaimer</h2>
+        <p>I numeri mostrati non certificano il livello futuro di nessuna stazione. Non sostituiscono modelli idraulici, radar, pioggia prevista né bollettini ufficiali. Non basare su di essi evacuazioni, aperture di paratoie o comunicazioni al pubblico.</p>
+    </footer>
+</main>
+
+<script src="dashboard-data.js"></script>
+<script src="predict-transfer.js"></script>
+<script>
+(function () {
+    const D = RenoData;
+    const P = RenoPredict;
+    const client = D.createClient(window.fetch.bind(window));
+    const number = value => value == null || !Number.isFinite(value)
+        ? '—'
+        : new Intl.NumberFormat('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+    const dateTime = date => new Intl.DateTimeFormat('it-IT', {
+        timeZone: 'Europe/Rome', day: '2-digit', month: '2-digit',
+        hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+    }).format(date);
+    const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let config, sensorsById = {}, coeffs = null, renderTime = new Date();
+
+    function updateHeaderCompact() {
+        const header = document.getElementById('site-header');
+        header.classList.toggle('is-compact', window.scrollY > 20);
+        document.documentElement.style.setProperty('--header-h', `${header.offsetHeight}px`);
+    }
+
+    function parseEdgeHash() {
+        const raw = (location.hash || '#').replace(/^#/, '');
+        if (!raw) return null;
+        const parts = raw.split('/').filter(Boolean).map(part => {
+            try { return decodeURIComponent(part); } catch { return part; }
+        });
+        if (parts.length >= 2) return { upstream: parts[0], downstream: parts[1] };
+        return null;
+    }
+
+    function edgeAnchor(upstream, downstream) {
+        return `${encodeURIComponent(upstream)}/${encodeURIComponent(downstream)}`;
+    }
+
+    function blank(name) {
+        return { id: name, name, basin: '', coordinates: null, levels: { yellow: null, orange: null, red: null }, timeSeries: [] };
+    }
+
+    const PAST_H = 12;
+    const FUT_H = 2;
+    const FORECAST_RED = '#c62828';
+
+    function drawMiniPlot(elementId, down, prediction) {
+        const el = document.getElementById(elementId);
+        if (!el || !window.Plotly || !prediction?.ok) return;
+        const observed = D.filter(down, PAST_H, renderTime).filter(p => p.value != null);
+        const forecast = prediction.forecast || [];
+        const lastObs = observed.at(-1);
+        const bridge = lastObs && forecast.length
+            ? [{ time: lastObs.time, min: lastObs.value, med: lastObs.value, max: lastObs.value }]
+            : [];
+        const band = bridge.concat(forecast);
+        const traces = [
+            { x: observed.map(p => +p.time), y: observed.map(p => p.value), type: 'scatter', mode: 'lines', line: { color: '#087e91', width: 2 }, name: 'Oss.' },
+            { x: band.map(p => +p.time), y: band.map(p => p.max), type: 'scatter', mode: 'lines', line: { width: 0 }, hoverinfo: 'skip', showlegend: false },
+            { x: band.map(p => +p.time), y: band.map(p => p.min), type: 'scatter', mode: 'lines', fill: 'tonexty', fillcolor: 'rgba(198,40,40,.16)', line: { width: 0 }, hoverinfo: 'skip', showlegend: false },
+            { x: band.map(p => +p.time), y: band.map(p => p.med), type: 'scatter', mode: 'lines', line: { color: FORECAST_RED, width: 2.25 }, name: 'Med' }
+        ];
+        const layout = {
+            margin: { t: 8, r: 8, b: 28, l: 36 }, height: 180, showlegend: false,
+            paper_bgcolor: '#fff', plot_bgcolor: '#fff',
+            font: { size: 10, color: '#536b78' },
+            xaxis: { type: 'date', range: [+renderTime - PAST_H * 3600000, +renderTime + FUT_H * 3600000], gridcolor: '#e7eef2' },
+            yaxis: { gridcolor: '#e7eef2', zeroline: false },
+            shapes: [{ type: 'line', x0: +renderTime, x1: +renderTime, y0: 0, y1: 1, yref: 'paper', line: { color: '#9bb0ba', width: 1, dash: 'dot' } }]
+        };
+        el.style.height = '';
+        if (el.data) Plotly.react(el, traces, layout, { responsive: true, displayModeBar: false, staticPlot: true });
+        else Plotly.newPlot(el, traces, layout, { responsive: true, displayModeBar: false, staticPlot: true });
+    }
+
+    function downstreamNodes() {
+        const byDown = new Map();
+        for (const edge of P.buildGraph(config).edges) {
+            if (!byDown.has(edge.downstream)) byDown.set(edge.downstream, []);
+            byDown.get(edge.downstream).push(edge.upstream);
+        }
+        const ranks = P.rankNodes(config);
+        // Stesso ordine della catena: monte (rank alto) → valle (rank 0)
+        return [...byDown.entries()]
+            .map(([downstream, upstreams]) => ({ downstream, upstreams }))
+            .sort((a, b) => (ranks[b.downstream] || 0) - (ranks[a.downstream] || 0)
+                || a.downstream.localeCompare(b.downstream, 'it'));
+    }
+
+    function formatLags(prediction) {
+        const lags = Array.isArray(prediction.lagMinutes) ? prediction.lagMinutes : [prediction.lagMinutes];
+        const ups = prediction.upstreams || [];
+        return lags.map((lag, i) => `${ups[i] || 'monte'} ${Math.round(lag)}′`).join(' · ');
+    }
+
+    function renderAll() {
+        const grid = document.getElementById('edge-grid');
+        const status = document.getElementById('status-line');
+        const nodes = downstreamNodes();
+        const focus = parseEdgeHash();
+        renderTime = new Date();
+        grid.replaceChildren();
+        let okCount = 0;
+        for (const node of nodes) {
+            const down = sensorsById[node.downstream] || blank(node.downstream);
+            const ups = node.upstreams.map(id => sensorsById[id] || blank(id));
+            const prediction = P.predictNode(down, ups, {
+                hours: 72, now: renderTime, coeffs, horizonHours: 2, downstreamId: node.downstream
+            });
+            const card = document.createElement('article');
+            card.className = 'edge-card';
+            card.id = `node-${node.downstream}`.replace(/\s+/g, '_');
+            card.dataset.downstream = node.downstream;
+            card.dataset.upstream = node.upstreams[0] || '';
+            if (focus && focus.downstream === node.downstream) card.classList.add('is-target');
+
+            const badge = document.createElement('span');
+            badge.className = 'edge-badge';
+            badge.textContent = 'Sperimentale';
+            card.appendChild(badge);
+            const title = document.createElement('h3');
+            const anchorUp = node.upstreams[0] || node.downstream;
+            title.innerHTML = `<a href="#${edgeAnchor(anchorUp, node.downstream)}">${node.downstream}</a>`;
+            card.appendChild(title);
+
+            const meta = document.createElement('p');
+            meta.className = 'edge-meta';
+            if (!prediction.ok) {
+                meta.textContent = prediction.reason || 'Non disponibile';
+                card.appendChild(meta);
+                const fail = document.createElement('p');
+                fail.className = 'edge-fail';
+                fail.textContent = prediction.reliable === false
+                    ? 'Nessuna stima affidabile per questa stazione: in validazione il modello non batte la persistenza.'
+                    : 'Servono più dati allineati o un modello offline addestrato su storico umido (non solo magra).';
+                card.appendChild(fail);
+            } else {
+                okCount++;
+                const upsLabel = (prediction.upstreams || node.upstreams).join(' + ');
+                const skillLabel = prediction.skill120 == null ? '' : ` · skill@2h ${prediction.skill120.toFixed(2)}`;
+                meta.innerHTML = `da <strong>${upsLabel}</strong><br>lag ${formatLags(prediction)} · r=${prediction.r == null ? 'n/d' : prediction.r.toFixed(2)} · RMSE ${number(prediction.rmse)} m · fonte <strong>${prediction.source}</strong>${prediction.kind ? ' · ' + prediction.kind : ''}${skillLabel}${prediction.reason ? '<br>' + prediction.reason : ''}`;
+                card.appendChild(meta);
+                const table = document.createElement('table');
+                table.className = 'fork-table';
+                table.innerHTML = '<thead><tr><th>Ora</th><th>Min</th><th>Med</th><th>Max</th></tr></thead>';
+                const body = document.createElement('tbody');
+                for (const point of prediction.next || []) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<th scope="row">${dateTime(point.time)}</th><td>${number(point.min)}</td><td>${number(point.med)}</td><td>${number(point.max)}</td>`;
+                    body.appendChild(row);
+                }
+                table.appendChild(body);
+                card.appendChild(table);
+                const plot = document.createElement('div');
+                plot.className = 'edge-plot';
+                plot.id = `plot-${card.id}`;
+                card.appendChild(plot);
+                grid.appendChild(card);
+                requestAnimationFrame(() => drawMiniPlot(plot.id, down, prediction));
+                continue;
+            }
+            grid.appendChild(card);
+        }
+        const offline = (coeffs?.nodes && Object.keys(coeffs.nodes).length)
+            || (coeffs?.edges && Object.keys(coeffs.edges).length);
+        status.textContent = `Sperimentale · ${okCount}/${nodes.length} stazioni a valle · aggiornato ${dateTime(renderTime)} · modello offline ${offline ? 'caricato' : 'assente'} · senza valore operativo`;
+        const target = grid.querySelector('.edge-card.is-target');
+        if (target) {
+            updateHeaderCompact();
+            target.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'start' });
+        }
+    }
+
+    async function boot() {
+        updateHeaderCompact();
+        window.addEventListener('scroll', () => updateHeaderCompact(), { passive: true });
+        window.addEventListener('hashchange', () => {
+            document.querySelectorAll('.edge-card.is-target').forEach(el => el.classList.remove('is-target'));
+            const focus = parseEdgeHash();
+            if (!focus) return;
+            const card = [...document.querySelectorAll('.edge-card')].find(el =>
+                el.dataset.upstream === focus.upstream && el.dataset.downstream === focus.downstream);
+            if (card) {
+                card.classList.add('is-target');
+                card.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'start' });
+            }
+        });
+        try {
+            config = await client.json('config.json');
+            coeffs = await P.loadCoeffs(window.fetch.bind(window));
+            const cache = D.readCache(window.localStorage, config);
+            const result = await client.load(config);
+            const now = Date.now();
+            const records = { ...cache };
+            Object.entries(result.items).forEach(([name, item]) => { records[name] = { item, fetchedAt: now }; });
+            D.saveCache(window.localStorage, records);
+            sensorsById = Object.fromEntries(Object.keys(config.sensors).map(name => {
+                const record = records[name];
+                const parsed = record ? D.parseSensorData(name, record.item) : null;
+                return [name, parsed || blank(name)];
+            }));
+            renderAll();
+        } catch (error) {
+            document.getElementById('status-line').textContent = error.message || 'Impossibile caricare i dati.';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', boot);
+})();
+</script>
+</body>
+</html>

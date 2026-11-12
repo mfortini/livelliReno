@@ -1,0 +1,13 @@
+# Storico ARPAE scaricato offline (pesante)
+storico/*.csv
+storico/rain/
+storico/raw/
+storico/manifest.json
+!storico/.gitkeep
+models/backtest-summary.json
+
+# uv / Python
+.venv/
+__pycache__/
+*.pyc
+.python-version
