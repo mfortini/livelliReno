@@ -30,6 +30,24 @@ function loadSeries(name, dir) {
     return { times, values, byTime };
 }
 
+/** E5: hide observations newer than cutoffMs (simulates publish lag at each now). */
+function seriesUntil(series, cutoffMs) {
+    if (!series?.times?.length) return series;
+    const times = [], values = [], byTime = new Map();
+    for (let i = 0; i < series.times.length; i++) {
+        const t = series.times[i];
+        if (t > cutoffMs) break;
+        times.push(t);
+        values.push(series.values[i]);
+        byTime.set(t, series.values[i]);
+    }
+    return { times, values, byTime };
+}
+
+function emptySeries() {
+    return { times: [], values: [], byTime: new Map() };
+}
+
 function lowerBound(arr, target) {
     let lo = 0, hi = arr.length;
     while (lo < hi) {
@@ -40,14 +58,27 @@ function lowerBound(arr, target) {
     return lo;
 }
 
-function windowSensor(name, series, now) {
+function windowSensor(name, series, now, cutoffMs = null) {
     const start = lowerBound(series.times, now - WINDOW);
-    const end = lowerBound(series.times, now + 1);
+    const endLimit = cutoffMs == null ? now + 1 : Math.min(now + 1, cutoffMs + 1);
+    const end = lowerBound(series.times, endLimit);
     const timeSeries = [];
     for (let i = start; i < end; i++) {
         timeSeries.push({ time: new Date(series.times[i]), value: series.values[i] });
     }
     return { id: name, name, timeSeries };
+}
+
+function valueAtOrBefore(series, t, cutoffMs = null) {
+    if (cutoffMs != null && t > cutoffMs) t = cutoffMs;
+    const v = series.byTime.get(t);
+    if (Number.isFinite(v)) return v;
+    // walk back one step on lattice
+    if (cutoffMs != null) {
+        const snapped = Math.floor(Math.min(t, cutoffMs) / STEP) * STEP;
+        return series.byTime.get(snapped);
+    }
+    return v;
 }
 
 function forceReliable(node) {
@@ -166,6 +197,18 @@ function buildCandidatesForNode(node, ctx) {
             out.rc_gru = { coeffs: { nodes: { [node]: force(rc) } } };
         }
     }
+    // Optional extra MLP weights for A/B (E3 block-split, E2 recipe winners)
+    for (const [label, file] of Object.entries(ctx.extraMlp || {})) {
+        const mlp = loadJson(file);
+        if (!mlp) continue;
+        const nodePayload = mlp.kind ? mlp : (mlp.nodes || {})[node];
+        if (!nodePayload) continue;
+        out[label] = {
+            coeffs: { nodes: { [node]: force(nodePayload) } },
+            smooth: 0,
+            note: path.relative(ctx.root, file)
+        };
+    }
     return out;
 }
 
@@ -216,6 +259,17 @@ function run(options = {}) {
     const mdOut = path.resolve(root, opt('md', 'models/eval-table.md'));
     const seed = Number(opt('seed', 1));
     const stationFilter = opt('stations', null); // comma-separated optional
+    const publishLagMin = Number(opt('publish-lag-min', 0));
+    const dropUpstream = opt('drop-upstream', null);
+    // --extra-mlp label=path (repeatable): add MLP candidates for A/B
+    const extraMlp = {};
+    for (let i = 0; i < args.length; i++) {
+        if (args[i] !== '--extra-mlp' || args[i + 1] === undefined) continue;
+        const spec = args[++i];
+        const eq = spec.indexOf('=');
+        if (eq < 1) continue;
+        extraMlp[spec.slice(0, eq)] = path.resolve(root, spec.slice(eq + 1));
+    }
 
     if (!fs.existsSync(eventsPath)) {
         console.error(`Missing event catalog: ${eventsPath}. Run tools/build-event-catalog.js first.`);
@@ -227,12 +281,25 @@ function run(options = {}) {
     const ridgeCoeffs = loadJson(ridgePath) || prodCoeffs;
 
     const names = Object.keys(config.sensors);
-    const data = Object.fromEntries(names.map(n => [n, loadSeries(n, dataDir)]));
+    const dataFull = Object.fromEntries(names.map(n => [n, loadSeries(n, dataDir)]));
+    if (dropUpstream) {
+        if (!dataFull[dropUpstream]) {
+            console.error(`Unknown --drop-upstream: ${dropUpstream}`);
+            process.exit(1);
+        }
+        dataFull[dropUpstream] = emptySeries();
+        console.log(`[protocol] drop-upstream=${dropUpstream}`);
+    }
+    const data = dataFull;
     const rainGauges = ((config.rainfall && config.rainfall.gauges) || []).map(e =>
         typeof e === 'string' ? e : e?.name
     ).filter(Boolean);
     const rainDir = path.join(dataDir, 'rain');
-    const rainData = Object.fromEntries(rainGauges.map(n => [n, loadSeries(n, rainDir)]));
+    const rainDataFull = Object.fromEntries(rainGauges.map(n => [n, loadSeries(n, rainDir)]));
+    const rainData = rainDataFull;
+    if (publishLagMin > 0) {
+        console.log(`[protocol] publish-lag-min=${publishLagMin}`);
+    }
 
     const allTimes = names.flatMap(n => [data[n].times[0], data[n].times.at(-1)]).filter(Number.isFinite);
     if (!allTimes.length) {
@@ -253,7 +320,7 @@ function run(options = {}) {
 
     const horizons = PROTOCOL_HORIZONS;
     const horizonHours = Math.max(...horizons) * 0.5;
-    const ctx = { root, prodCoeffs, ridgeCoeffs };
+    const ctx = { root, prodCoeffs, ridgeCoeffs, extraMlp };
 
     const table = {
         kind: 'fase0_eval_table',
@@ -265,7 +332,10 @@ function run(options = {}) {
             baselines: ['persist', 'poly2_6pt', 'ridge'],
             eventSource: path.relative(root, eventsPath),
             sampling: 'dense_30min',
-            ma3: false
+            ma3: false,
+            publishLagMin: publishLagMin > 0 ? publishLagMin : null,
+            dropUpstream: dropUpstream || null,
+            rawData: 'blocked: only validated storico CSV in repo (no distinct raw corpus)'
         },
         from: new Date(from).toISOString(),
         to: new Date(to).toISOString(),
@@ -278,8 +348,18 @@ function run(options = {}) {
     const t0 = Date.now();
     console.log(`[protocol] ${new Date(from).toISOString()} → ${new Date(to).toISOString()} · nodes=${nodes.join(',')} · horizons=30–360′ · seed=${seed}`);
 
+    const onlyCandOpt = opt('only-candidates', null);
+    const onlyCand = onlyCandOpt
+        ? new Set(onlyCandOpt.split(',').map(s => s.trim()).filter(Boolean))
+        : null;
+
     for (const node of nodes) {
-        const candidates = buildCandidatesForNode(node, ctx);
+        let candidates = buildCandidatesForNode(node, ctx);
+        if (onlyCand) {
+            candidates = Object.fromEntries(
+                Object.entries(candidates).filter(([k]) => onlyCand.has(k))
+            );
+        }
         const candKeys = Object.keys(candidates);
         const stationEvents = EP.eventsForStation(catalog, node);
         const eventWindows = stationEvents.map(e => ({
@@ -299,7 +379,7 @@ function run(options = {}) {
             }
         }
 
-        const series = data[node];
+        const seriesTruth = data[node]; // full series for scoring actuals
         const first = Math.ceil(from / STEP) * STEP;
         const nows = [];
         for (let now = first; now <= to; now += STEP) nows.push(now);
@@ -313,15 +393,27 @@ function run(options = {}) {
             if (done === 1 || done % 2000 === 0 || done === nows.length) {
                 console.log(`[protocol] ${node} progress ${done}/${nows.length} (~${((Date.now() - t0) / 1000).toFixed(1)}s)`);
             }
-            let anchorVal = series.byTime.get(now);
+            // Publish lag: wall clock is `now`, but observations after cutoff are hidden
+            // → recent lags become miss / last finite becomes anchor (staleMinutes-like).
+            const cutoff = publishLagMin > 0 ? now - publishLagMin * 60000 : null;
+
             let anchorTime = now;
+            let anchorVal = cutoff == null
+                ? seriesTruth.byTime.get(now)
+                : valueAtOrBefore(seriesTruth, now, cutoff);
             if (!Number.isFinite(anchorVal)) {
-                // 15′ series may miss a lattice point; use latest finite within one step
-                const down0 = windowSensor(node, series, now);
+                const down0 = windowSensor(node, seriesTruth, now, cutoff);
                 const a = P.latestFinite(down0.timeSeries);
-                if (!a || now - +a.time > STEP) continue;
+                if (!a || now - +a.time > STEP + (publishLagMin > 0 ? publishLagMin * 60000 : 0)) continue;
                 anchorTime = +a.time;
                 anchorVal = a.value;
+            } else if (cutoff != null) {
+                anchorTime = Math.floor(Math.min(now, cutoff) / STEP) * STEP;
+                while (anchorTime >= cutoff - WINDOW && !Number.isFinite(seriesTruth.byTime.get(anchorTime))) {
+                    anchorTime -= STEP;
+                }
+                anchorVal = seriesTruth.byTime.get(anchorTime);
+                if (!Number.isFinite(anchorVal)) continue;
             }
 
             const activeEvent = eventWindows.find(e => now >= e.start && now <= e.end) || null;
@@ -330,28 +422,29 @@ function run(options = {}) {
             const poly2Pred = {};
             let anyH = false;
             for (const h of horizons) {
-                const actual = series.byTime.get(now + h * STEP);
+                const actual = seriesTruth.byTime.get(now + h * STEP);
                 if (!Number.isFinite(actual)) continue;
                 anyH = true;
-                persistPred[h] = series.byTime.get(anchorTime);
-                if (!Number.isFinite(persistPred[h])) persistPred[h] = anchorVal;
-                poly2Pred[h] = EP.poly2At(series.byTime, anchorTime, h, EP.POLY2_POINTS);
+                persistPred[h] = anchorVal;
+                poly2Pred[h] = EP.poly2At(seriesTruth.byTime, anchorTime, h, EP.POLY2_POINTS);
                 if (!Number.isFinite(poly2Pred[h])) poly2Pred[h] = persistPred[h];
             }
             if (!anyH) continue;
 
-            // Heavy models: build sensor windows once per timestamp
+            // Heavy models: windows at wall `now`, but truncated at cutoff
             const modelKeys = candKeys.filter(k => k !== 'persist' && k !== 'poly2');
             let down = null, ups = null, sensorMap = null, rainSensors = null;
             if (modelKeys.length) {
-                down = windowSensor(node, series, now);
+                down = windowSensor(node, seriesTruth, now, cutoff);
                 rainSensors = rainGauges
-                    .map(n => windowSensor(n, rainData[n], now))
+                    .map(n => windowSensor(n, rainData[n], now, cutoff))
                     .filter(s => s.timeSeries.length);
-                sensorMap = Object.fromEntries(names.map(n => [n, windowSensor(n, data[n], now)]));
+                sensorMap = Object.fromEntries(
+                    names.map(n => [n, windowSensor(n, data[n], now, cutoff)])
+                );
                 sensorMap[node] = down;
                 ups = (config.sensors[node].dependencies || [])
-                    .map(up => sensorMap[up] || windowSensor(up, data[up], now));
+                    .map(up => sensorMap[up] || windowSensor(up, data[up], now, cutoff));
             }
 
             const predByModel = { persist: persistPred, poly2: poly2Pred };
@@ -361,7 +454,7 @@ function run(options = {}) {
                     node,
                     coeffs: cfg.coeffs,
                     smooth: cfg.smooth,
-                    seriesByTime: series.byTime
+                    seriesByTime: seriesTruth.byTime
                 });
                 if (!result?.ok) continue;
                 const byTime = new Map((result.forecast || []).map(p => [+p.time, p.med]));
@@ -376,7 +469,7 @@ function run(options = {}) {
 
             for (const [key, map] of Object.entries(predByModel)) {
                 for (const h of horizons) {
-                    const actual = series.byTime.get(now + h * STEP);
+                    const actual = seriesTruth.byTime.get(now + h * STEP);
                     if (!Number.isFinite(actual)) continue;
                     const pred = map[h];
                     if (!Number.isFinite(pred)) continue;
@@ -403,16 +496,19 @@ function run(options = {}) {
                 for (const h of horizons) {
                     const issueAt = ev.peakTime - h * STEP;
                     if (issueAt < from) continue;
-                    const down = windowSensor(node, series, issueAt);
+                    const peakCutoff = publishLagMin > 0 ? issueAt - publishLagMin * 60000 : null;
+                    const down = windowSensor(node, seriesTruth, issueAt, peakCutoff);
                     const anchor = P.latestFinite(down.timeSeries);
-                    if (!anchor || issueAt - +anchor.time > STEP) continue;
+                    if (!anchor || issueAt - +anchor.time > STEP + (publishLagMin > 0 ? publishLagMin * 60000 : 0)) continue;
                     const rainSensors = rainGauges
-                        .map(n => windowSensor(n, rainData[n], issueAt))
+                        .map(n => windowSensor(n, rainData[n], issueAt, peakCutoff))
                         .filter(s => s.timeSeries.length);
-                    const sensorMap = Object.fromEntries(names.map(n => [n, windowSensor(n, data[n], issueAt)]));
+                    const sensorMap = Object.fromEntries(
+                        names.map(n => [n, windowSensor(n, data[n], issueAt, peakCutoff)])
+                    );
                     sensorMap[node] = down;
                     const ups = (config.sensors[node].dependencies || [])
-                        .map(up => sensorMap[up] || windowSensor(up, data[up], issueAt));
+                        .map(up => sensorMap[up] || windowSensor(up, data[up], issueAt, peakCutoff));
 
                     let forecastByTime;
                     if (key === 'persist') {
@@ -425,7 +521,7 @@ function run(options = {}) {
                         for (let k = -12; k <= 12; k++) {
                             const steps = Math.round((ev.peakTime + k * STEP - issueAt) / STEP);
                             if (steps < 1) continue;
-                            let med = EP.poly2At(series.byTime, +anchor.time, steps, EP.POLY2_POINTS);
+                            let med = EP.poly2At(seriesTruth.byTime, +anchor.time, steps, EP.POLY2_POINTS);
                             if (!Number.isFinite(med)) med = anchor.value;
                             forecastByTime.set(ev.peakTime + k * STEP, med);
                         }
@@ -434,12 +530,12 @@ function run(options = {}) {
                             node,
                             coeffs: cfg.coeffs,
                             smooth: cfg.smooth,
-                            seriesByTime: series.byTime
+                            seriesByTime: seriesTruth.byTime
                         });
                         if (!result?.ok) continue;
                         forecastByTime = new Map((result.forecast || []).map(p => [+p.time, p.med]));
                     }
-                    const pe = EP.peakErrorsForIssue(series.byTime, forecastByTime, ev.peakTime, h, 6);
+                    const pe = EP.peakErrorsForIssue(seriesTruth.byTime, forecastByTime, ev.peakTime, h, 6);
                     if (pe) {
                         stats[key][h].peakLevelErrs.push(pe.levelErr);
                         stats[key][h].peakTimeErrs.push(pe.timeErrMin);

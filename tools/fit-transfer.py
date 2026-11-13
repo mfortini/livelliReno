@@ -40,6 +40,7 @@ SKILL_KEEP = 0.10  # min event skill@120 to mark reliable
 HOLDOUT_MONTHS = 3
 RAIN6_STEPS = 12  # 6 h
 RAIN24_STEPS = 48  # 24 h
+SPLIT_MODE = "alt"  # "alt" | "block"; overridden by --split
 
 
 def load_wide(data_dir: Path, stations: list[str]) -> pd.DataFrame:
@@ -219,16 +220,28 @@ def residual_spreads(
     return max(low, floor * 0.5), max(high, floor * 0.5)
 
 
-def month_blocks(index: pd.DatetimeIndex) -> np.ndarray:
-    """0 = train, 1 = validate (alternating), 2 = final holdout (last HOLDOUT_MONTHS)."""
+def month_blocks(index: pd.DatetimeIndex, mode: str | None = None) -> np.ndarray:
+    """0 = train, 1 = validate, 2 = final holdout (last HOLDOUT_MONTHS).
+
+    mode:
+      - ``alt``: alternating months on the non-holdout span (legacy)
+      - ``block``: first half of non-holdout months → train, second half → validate
+    Defaults to module ``SPLIT_MODE`` (set by CLI ``--split``).
+    """
+    mode = mode or SPLIT_MODE
     naive = index.tz_convert("UTC").tz_localize(None) if index.tz is not None else index
     months = naive.to_period("M")
     uniq = months.unique().sort_values()
     holdout = set(uniq[-HOLDOUT_MONTHS:]) if len(uniq) > HOLDOUT_MONTHS else set()
     remaining = [m for m in uniq if m not in holdout]
     mapping: dict = {}
-    for i, m in enumerate(remaining):
-        mapping[m] = i % 2
+    if mode == "block":
+        mid = max(1, len(remaining) // 2) if remaining else 0
+        for i, m in enumerate(remaining):
+            mapping[m] = 0 if i < mid else 1
+    else:
+        for i, m in enumerate(remaining):
+            mapping[m] = i % 2
     for m in holdout:
         mapping[m] = 2
     return np.array([mapping[m] for m in months], dtype=int)
@@ -639,7 +652,17 @@ def main() -> None:
         help="Optional: override reliable from an existing backtest-summary.json",
     )
     parser.add_argument("--no-rain", action="store_true", help="Ignore rainfall CSVs even if present")
+    parser.add_argument(
+        "--split",
+        choices=("alt", "block"),
+        default="alt",
+        help="Train/validate month split: alternating (alt) or contiguous halves (block)",
+    )
     args = parser.parse_args()
+
+    global SPLIT_MODE
+    SPLIT_MODE = args.split
+    print(f"Split mesi: {SPLIT_MODE}")
 
     config = json.loads(args.config.read_text(encoding="utf-8"))
     stations = list(config["sensors"].keys())

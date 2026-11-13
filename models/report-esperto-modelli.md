@@ -134,6 +134,8 @@ Sweep lookback: massimo skill vs persistenza a +2 h con **6 punti / 2.5 h** (≈
 
 ## 4. Protocollo dati e valutazione (da conoscere per leggere i numeri)
 
+**Diagnosi divario fit/backtest (Fase 1):** [`models/fase1-diagnosi.md`](fase1-diagnosi.md) — il gap 0.82→0.67 non è un bug JS; usare la scala protocollo per i gate.
+
 **Fonte unica per confronti tra modelli (Fase 0):** [`models/eval-table.md`](eval-table.md) / [`models/eval-table.json`](eval-table.json), prodotta da:
 
 ```bash

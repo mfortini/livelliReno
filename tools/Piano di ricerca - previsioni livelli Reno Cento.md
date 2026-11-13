@@ -106,6 +106,15 @@ E1 va per primo: costa poco e, se trova un difetto, cambia tutti gli altri numer
 
 **Prodotto della fase:** una nota in `models/` che attribuisce il divario alle cause, con la quota spiegata da ciascuna. Se una quota importante resta non spiegata, la fase non è chiusa.
 
+**Esiti (2026-11-13):** vedi [`models/fase1-diagnosi.md`](../models/fase1-diagnosi.md).
+
+- [x] E1 — Parità Python/JS (quota runtime ≈ 0; test in CI)
+- [x] E4 — Campionamento/evento sul test congelato (every-120 ≈ protocol ≈ 0.67)
+- [x] E3 — Split alt vs block (lieve; preferire block nei fit futuri)
+- [x] E2 — Validate interno (recipe invariata; ~0.05 di ottimismo sul fit)
+- [x] E5 — Lag 90′ / drop Forcelli (stressor; raw bloccato)
+- [x] Nota decomposizione + go Fase 2 su scala protocollo
+
 ## Fase 2 — Esperimenti sul modello
 
 Sette pacchetti di lavoro indipendenti, in ordine di priorità. Ognuno si confronta con il modello in produzione sulla tabella unica e passa o no secondo le regole di promozione.

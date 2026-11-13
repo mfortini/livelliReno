@@ -1,0 +1,1524 @@
+{
+  "from": 1767225600000,
+  "to": 1794397500000,
+  "everyMin": 30,
+  "eventThreshold": 0.1,
+  "horizons": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "summary": {
+    "Casalecchio chiusa": {
+      "skill120": 0.12802328634061377,
+      "skill120Ma3": 0.3094194114279335,
+      "skill120All": 0.10317330280795656,
+      "coverage120": 0.7386799693016116,
+      "sources": {
+        "offline": 15095
+      },
+      "calls": 15095,
+      "failed": 0
+    },
+    "Casalecchio tiro a volo": {
+      "skill120": null,
+      "skill120Ma3": null,
+      "skill120All": null,
+      "coverage120": null,
+      "sources": {},
+      "calls": 15095,
+      "failed": 15095
+    },
+    "Bonconvento": {
+      "skill120": null,
+      "skill120Ma3": null,
+      "skill120All": null,
+      "coverage120": null,
+      "sources": {},
+      "calls": 15095,
+      "failed": 15095
+    },
+    "Forcelli": {
+      "skill120": null,
+      "skill120Ma3": null,
+      "skill120All": null,
+      "coverage120": null,
+      "sources": {},
+      "calls": 15095,
+      "failed": 15095
+    },
+    "Sostegno Reno": {
+      "skill120": null,
+      "skill120Ma3": null,
+      "skill120All": null,
+      "coverage120": null,
+      "sources": {},
+      "calls": 11481,
+      "failed": 11481
+    },
+    "Cento": {
+      "skill120": 0.6660509016665668,
+      "skill120Ma3": 0.786106652461152,
+      "skill120All": 0.6514695873388797,
+      "coverage120": 0.8694817658349329,
+      "sources": {
+        "offline": 15090
+      },
+      "calls": 15090,
+      "failed": 0
+    },
+    "Dosso": {
+      "skill120": null,
+      "skill120Ma3": null,
+      "skill120All": null,
+      "coverage120": null,
+      "sources": {},
+      "calls": 15075,
+      "failed": 15075
+    },
+    "Opera Reno Panfilia": {
+      "skill120": null,
+      "skill120Ma3": null,
+      "skill120All": null,
+      "coverage120": null,
+      "sources": {},
+      "calls": 15095,
+      "failed": 15095
+    },
+    "Gallo": {
+      "skill120": -1.6734532006358642,
+      "skill120Ma3": -1.862280403265392,
+      "skill120All": -2.2895098965277736,
+      "coverage120": 0.8324145534729879,
+      "sources": {
+        "offline": 15090
+      },
+      "calls": 15090,
+      "failed": 0
+    },
+    "Secondo Salto": {
+      "skill120": null,
+      "skill120Ma3": null,
+      "skill120All": null,
+      "coverage120": null,
+      "sources": {},
+      "calls": 15045,
+      "failed": 15045
+    }
+  },
+  "report": {
+    "Casalecchio chiusa": {
+      "all": {
+        "1": {
+          "n": 15091,
+          "seModel": 15.281575022635806,
+          "sePersist": 25.998499999999865,
+          "seMa3": 180.142240472227,
+          "aeModel": 224.25327813176887,
+          "aePersist": 280.249999999995,
+          "aeMa3": 780.8924999999674,
+          "covered": 12422,
+          "asked": 15092
+        },
+        "2": {
+          "n": 15091,
+          "seModel": 56.04393226103323,
+          "sePersist": 86.97560000000333,
+          "seMa3": 270.9808486944312,
+          "aeModel": 418.9970800201945,
+          "aePersist": 516.3599999999831,
+          "aeMa3": 963.8564999999656,
+          "covered": 13464,
+          "asked": 15092
+        },
+        "3": {
+          "n": 15091,
+          "seModel": 125.56967187876145,
+          "sePersist": 171.34510000000657,
+          "seMa3": 366.9076075833198,
+          "aeModel": 631.6095106728017,
+          "aePersist": 735.869999999965,
+          "aeMa3": 1129.9298333333725,
+          "covered": 13664,
+          "asked": 15092
+        },
+        "4": {
+          "n": 15091,
+          "seModel": 216.078954006603,
+          "sePersist": 268.6552999999896,
+          "seMa3": 463.0684203610981,
+          "aeModel": 839.793330448617,
+          "aePersist": 935.6299999999658,
+          "aeMa3": 1277.9331666667092,
+          "covered": 13748,
+          "asked": 15092
+        }
+      },
+      "event": {
+        "1": {
+          "n": 493,
+          "seModel": 9.411460833260245,
+          "sePersist": 17.988200000000024,
+          "seMa3": 78.69223555555551,
+          "aeModel": 46.18439557641187,
+          "aePersist": 80.19999999999993,
+          "aeMa3": 170.1406666666667,
+          "covered": 426,
+          "asked": 494
+        },
+        "2": {
+          "n": 1436,
+          "seModel": 43.65245727223976,
+          "sePersist": 76.7216999999997,
+          "seMa3": 198.30206333333308,
+          "aeModel": 182.1361923556281,
+          "aePersist": 282.5700000000003,
+          "aeMa3": 447.31733333333284,
+          "covered": 1104,
+          "asked": 1437
+        },
+        "3": {
+          "n": 2087,
+          "seModel": 106.55157669326513,
+          "sePersist": 159.74559999999963,
+          "seMa3": 305.4649464444445,
+          "aeModel": 351.47989102482734,
+          "aePersist": 484.26000000000147,
+          "aeMa3": 656.3906666666671,
+          "covered": 1580,
+          "asked": 2088
+        },
+        "4": {
+          "n": 2606,
+          "seModel": 195.06427166594617,
+          "sePersist": 256.5475999999983,
+          "seMa3": 409.0241936666661,
+          "aeModel": 536.1207475732198,
+          "aePersist": 675.8000000000014,
+          "aeMa3": 832.9656666666674,
+          "covered": 1925,
+          "asked": 2607
+        }
+      },
+      "horizons": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "sources": {
+        "offline": 15095
+      },
+      "calls": 15095,
+      "failed": 0
+    },
+    "Casalecchio tiro a volo": {
+      "all": {
+        "1": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "2": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "3": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "4": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        }
+      },
+      "event": {
+        "1": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "2": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "3": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "4": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        }
+      },
+      "horizons": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "sources": {},
+      "calls": 15095,
+      "failed": 15095
+    },
+    "Bonconvento": {
+      "all": {
+        "1": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "2": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "3": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "4": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        }
+      },
+      "event": {
+        "1": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "2": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "3": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "4": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        }
+      },
+      "horizons": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "sources": {},
+      "calls": 15095,
+      "failed": 15095
+    },
+    "Forcelli": {
+      "all": {
+        "1": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "2": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "3": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "4": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        }
+      },
+      "event": {
+        "1": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "2": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "3": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "4": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        }
+      },
+      "horizons": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "sources": {},
+      "calls": 15095,
+      "failed": 15095
+    },
+    "Sostegno Reno": {
+      "all": {
+        "1": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "2": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "3": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "4": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        }
+      },
+      "event": {
+        "1": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "2": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "3": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "4": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        }
+      },
+      "horizons": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "sources": {},
+      "calls": 11481,
+      "failed": 11481
+    },
+    "Cento": {
+      "all": {
+        "1": {
+          "n": 15085,
+          "seModel": 0.95229612648169,
+          "sePersist": 10.127799999999258,
+          "seMa3": 113.04682647222327,
+          "aeModel": 68.09865228000544,
+          "aePersist": 123.40000000001152,
+          "aeMa3": 408.88383333328835,
+          "covered": 12693,
+          "asked": 15085
+        },
+        "2": {
+          "n": 15083,
+          "seModel": 3.4436621606351316,
+          "sePersist": 39.250400000005236,
+          "seMa3": 183.86515647224257,
+          "aeModel": 101.0557448572915,
+          "aePersist": 239.9999999999803,
+          "aeMa3": 522.3971666666065,
+          "covered": 12948,
+          "asked": 15083
+        },
+        "3": {
+          "n": 15082,
+          "seModel": 8.623706929582049,
+          "sePersist": 86.67460000001358,
+          "seMa3": 269.9631821389111,
+          "aeModel": 132.67307702553515,
+          "aePersist": 355.1999999999558,
+          "aeMa3": 634.9608333332532,
+          "covered": 13059,
+          "asked": 15082
+        },
+        "4": {
+          "n": 15081,
+          "seModel": 18.370988402041466,
+          "sePersist": 151.23460000001936,
+          "seMa3": 370.15807991660677,
+          "aeModel": 172.06107925323047,
+          "aePersist": 469.0999999999407,
+          "aeMa3": 746.4474999999185,
+          "covered": 13231,
+          "asked": 15081
+        },
+        "5": {
+          "n": 15081,
+          "seModel": 30.832093935627825,
+          "sePersist": 231.69750000002963,
+          "seMa3": 483.2922898054892,
+          "aeModel": 201.1021022638102,
+          "aePersist": 582.0299999999141,
+          "aeMa3": 857.2031666665748,
+          "covered": 13187,
+          "asked": 15081
+        },
+        "6": {
+          "n": 15081,
+          "seModel": 48.158124510959084,
+          "sePersist": 326.83389999996064,
+          "seMa3": 608.252920361123,
+          "aeModel": 231.69026826469428,
+          "aePersist": 694.2899999999096,
+          "aeMa3": 967.0848333332294,
+          "covered": 13227,
+          "asked": 15081
+        },
+        "7": {
+          "n": 15081,
+          "seModel": 72.25738873439299,
+          "sePersist": 435.431699999937,
+          "seMa3": 743.9788064722419,
+          "aeModel": 288.067583787697,
+          "aePersist": 805.9699999999042,
+          "aeMa3": 1075.8331666665713,
+          "covered": 13220,
+          "asked": 15081
+        },
+        "8": {
+          "n": 15081,
+          "seModel": 98.86832805164342,
+          "sePersist": 556.3508999999295,
+          "seMa3": 889.4707981389146,
+          "aeModel": 324.8581558596547,
+          "aePersist": 916.7299999998863,
+          "aeMa3": 1183.598166666727,
+          "covered": 12903,
+          "asked": 15081
+        },
+        "9": {
+          "n": 15081,
+          "seModel": 129.62893368038755,
+          "sePersist": 688.4731999999692,
+          "seMa3": 1043.7937003611403,
+          "aeModel": 353.85423596717635,
+          "aePersist": 1026.2799999998776,
+          "aeMa3": 1290.341500000112,
+          "covered": 12952,
+          "asked": 15081
+        },
+        "10": {
+          "n": 15081,
+          "seModel": 167.45470181507432,
+          "sePersist": 830.7955999999743,
+          "seMa3": 1206.0620048054996,
+          "aeModel": 403.55230011667396,
+          "aePersist": 1135.0599999998524,
+          "aeMa3": 1395.8581666668083,
+          "covered": 12639,
+          "asked": 15081
+        },
+        "11": {
+          "n": 15081,
+          "seModel": 208.73079036625833,
+          "sePersist": 982.3526000000141,
+          "seMa3": 1375.4546109166017,
+          "aeModel": 441.4282866046435,
+          "aePersist": 1242.8199999998444,
+          "aeMa3": 1500.0498333334713,
+          "covered": 12984,
+          "asked": 15081
+        },
+        "12": {
+          "n": 15081,
+          "seModel": 254.13000910889585,
+          "sePersist": 1142.2265000000166,
+          "seMa3": 1551.179851472153,
+          "aeModel": 492.0593529115786,
+          "aePersist": 1349.4699999998372,
+          "aeMa3": 1603.02150000013,
+          "covered": 12684,
+          "asked": 15081
+        }
+      },
+      "event": {
+        "1": {
+          "n": 140,
+          "seModel": 0.2805010060204175,
+          "sePersist": 7.466999999999998,
+          "seMa3": 82.36554722222222,
+          "aeModel": 3.6663069673333584,
+          "aePersist": 29.259999999999984,
+          "aeMa3": 97.47166666666669,
+          "covered": 117,
+          "asked": 140
+        },
+        "2": {
+          "n": 376,
+          "seModel": 2.2220037201477427,
+          "sePersist": 33.53110000000002,
+          "seMa3": 155.41579722222224,
+          "aeModel": 14.631631093673473,
+          "aePersist": 88.63000000000001,
+          "aeMa3": 193.2549999999999,
+          "covered": 302,
+          "asked": 376
+        },
+        "3": {
+          "n": 780,
+          "seModel": 6.920280609696262,
+          "sePersist": 80.27439999999973,
+          "seMa3": 248.53235833333318,
+          "aeModel": 30.311843061717816,
+          "aePersist": 181.53999999999968,
+          "aeMa3": 325.2283333333328,
+          "covered": 681,
+          "asked": 780
+        },
+        "4": {
+          "n": 1042,
+          "seModel": 16.01092362267053,
+          "sePersist": 143.56739999999982,
+          "seMa3": 349.96275833333283,
+          "aeModel": 52.52506604471014,
+          "aePersist": 271.1399999999998,
+          "aeMa3": 432.17500000000064,
+          "covered": 906,
+          "asked": 1042
+        },
+        "5": {
+          "n": 1265,
+          "seModel": 27.94738695248843,
+          "sePersist": 222.7035999999991,
+          "seMa3": 463.0241944444444,
+          "aeModel": 68.44463675863419,
+          "aePersist": 362.6599999999998,
+          "aeMa3": 534.1433333333337,
+          "covered": 1133,
+          "asked": 1265
+        },
+        "6": {
+          "n": 1500,
+          "seModel": 44.64006916924532,
+          "sePersist": 316.8889999999979,
+          "seMa3": 588.108816666666,
+          "aeModel": 89.59774282733744,
+          "aePersist": 459.5200000000013,
+          "aeMa3": 639.2433333333328,
+          "covered": 1343,
+          "asked": 1500
+        },
+        "7": {
+          "n": 1712,
+          "seModel": 67.49720895052499,
+          "sePersist": 424.5205999999997,
+          "seMa3": 723.5892388888893,
+          "aeModel": 129.53204816122664,
+          "aePersist": 557.1400000000027,
+          "aeMa3": 742.423333333331,
+          "covered": 1525,
+          "asked": 1712
+        },
+        "8": {
+          "n": 1926,
+          "seModel": 93.52878212438713,
+          "sePersist": 544.6709999999998,
+          "seMa3": 869.1155888888911,
+          "aeModel": 152.09482967556067,
+          "aePersist": 657.2800000000019,
+          "aeMa3": 847.4833333333278,
+          "covered": 1738,
+          "asked": 1926
+        },
+        "9": {
+          "n": 2160,
+          "seModel": 124.32289282347246,
+          "sePersist": 676.5468000000049,
+          "seMa3": 1024.0962694444459,
+          "aeModel": 182.72517954358074,
+          "aePersist": 761.8600000000016,
+          "aeMa3": 956.6383333333282,
+          "covered": 1943,
+          "asked": 2160
+        },
+        "10": {
+          "n": 2344,
+          "seModel": 161.3228656256326,
+          "sePersist": 818.3259000000053,
+          "seMa3": 1186.2729777777824,
+          "aeModel": 218.90841144577098,
+          "aePersist": 863.0299999999986,
+          "aeMa3": 1060.0499999999956,
+          "covered": 2092,
+          "asked": 2344
+        },
+        "11": {
+          "n": 2508,
+          "seModel": 202.11512596072566,
+          "sePersist": 969.2808000000068,
+          "seMa3": 1355.3506055555602,
+          "aeModel": 252.5200465699642,
+          "aePersist": 963.1999999999965,
+          "aeMa3": 1161.4266666666638,
+          "covered": 2172,
+          "asked": 2508
+        },
+        "12": {
+          "n": 2691,
+          "seModel": 246.7468233798211,
+          "sePersist": 1128.9032000000084,
+          "seMa3": 1531.3638944444476,
+          "aeModel": 288.1701188190108,
+          "aePersist": 1066.0999999999974,
+          "aeMa3": 1265.703333333331,
+          "covered": 2386,
+          "asked": 2691
+        }
+      },
+      "horizons": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "sources": {
+        "offline": 15090
+      },
+      "calls": 15090,
+      "failed": 0
+    },
+    "Dosso": {
+      "all": {
+        "1": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "2": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "3": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "4": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        }
+      },
+      "event": {
+        "1": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "2": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "3": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "4": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        }
+      },
+      "horizons": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "sources": {},
+      "calls": 15075,
+      "failed": 15075
+    },
+    "Opera Reno Panfilia": {
+      "all": {
+        "1": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "2": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "3": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "4": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        }
+      },
+      "event": {
+        "1": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "2": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "3": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "4": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        }
+      },
+      "horizons": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "sources": {},
+      "calls": 15095,
+      "failed": 15095
+    },
+    "Gallo": {
+      "all": {
+        "1": {
+          "n": 15084,
+          "seModel": 620.0900161079462,
+          "sePersist": 290.4799999999413,
+          "seMa3": 218.74173361112693,
+          "aeModel": 278.32919410346545,
+          "aePersist": 182.49999999998778,
+          "aeMa3": 394.69866666659544,
+          "covered": 8106,
+          "asked": 15084
+        },
+        "2": {
+          "n": 15082,
+          "seModel": 1294.7970894620175,
+          "sePersist": 304.6790999999454,
+          "seMa3": 251.74053250001572,
+          "aeModel": 432.5434244422213,
+          "aePersist": 276.78999999997745,
+          "aeMa3": 485.48266666659316,
+          "covered": 9052,
+          "asked": 15082
+        },
+        "3": {
+          "n": 15081,
+          "seModel": 2299.266728917595,
+          "sePersist": 326.40999999995023,
+          "seMa3": 292.3715970555107,
+          "aeModel": 590.3690607860705,
+          "aePersist": 368.0599999999378,
+          "aeMa3": 574.3389999999094,
+          "covered": 9699,
+          "asked": 15081
+        },
+        "4": {
+          "n": 15080,
+          "seModel": 3851.8204346659836,
+          "sePersist": 355.96199999995906,
+          "seMa3": 340.2687953888528,
+          "aeModel": 712.4817400291566,
+          "aePersist": 457.15999999992624,
+          "aeMa3": 662.0829999998859,
+          "covered": 10556,
+          "asked": 15081
+        },
+        "5": {
+          "n": 15080,
+          "seModel": 5649.210896004409,
+          "sePersist": 392.46059999995975,
+          "seMa3": 395.4527203888582,
+          "aeModel": 848.7810096744026,
+          "aePersist": 545.9999999999097,
+          "aeMa3": 748.7646666665352,
+          "covered": 11129,
+          "asked": 15081
+        },
+        "6": {
+          "n": 15080,
+          "seModel": 7706.65767067069,
+          "sePersist": 436.8405999999681,
+          "seMa3": 457.60030538885394,
+          "aeModel": 990.4109506987847,
+          "aePersist": 633.2599999998768,
+          "aeMa3": 834.6173333331967,
+          "covered": 12330,
+          "asked": 15081
+        },
+        "7": {
+          "n": 15080,
+          "seModel": 9929.03334562698,
+          "sePersist": 489.22939999997726,
+          "seMa3": 526.5356548332934,
+          "aeModel": 1140.1237531960728,
+          "aePersist": 719.9599999998622,
+          "aeMa3": 919.764666666514,
+          "covered": 13086,
+          "asked": 15081
+        },
+        "8": {
+          "n": 15080,
+          "seModel": 12390.349956641909,
+          "sePersist": 549.2028000000194,
+          "seMa3": 601.7149353889146,
+          "aeModel": 1288.8780361941685,
+          "aePersist": 805.4799999998517,
+          "aeMa3": 1003.9546666665144,
+          "covered": 13603,
+          "asked": 15081
+        },
+        "9": {
+          "n": 15080,
+          "seModel": 15099.892312637447,
+          "sePersist": 614.4877000000109,
+          "seMa3": 682.8900148333573,
+          "aeModel": 1462.3773571600855,
+          "aePersist": 890.1899999998393,
+          "aeMa3": 1087.2879999999316,
+          "covered": 13875,
+          "asked": 15081
+        },
+        "10": {
+          "n": 15080,
+          "seModel": 17866.093079237577,
+          "sePersist": 687.6723000000034,
+          "seMa3": 769.8018576111525,
+          "aeModel": 1587.7007759696176,
+          "aePersist": 974.1099999998365,
+          "aeMa3": 1170.2446666667815,
+          "covered": 13971,
+          "asked": 15081
+        },
+        "11": {
+          "n": 15080,
+          "seModel": 21151.889550978565,
+          "sePersist": 765.8810999999971,
+          "seMa3": 862.0198059444847,
+          "aeModel": 1740.059006469063,
+          "aePersist": 1058.189999999826,
+          "aeMa3": 1252.3123333334768,
+          "covered": 14044,
+          "asked": 15081
+        },
+        "12": {
+          "n": 15080,
+          "seModel": 24557.805947934492,
+          "sePersist": 850.8744000000055,
+          "seMa3": 959.3669220555995,
+          "aeModel": 1891.0007931814134,
+          "aePersist": 1141.839999999803,
+          "aeMa3": 1333.4406666668608,
+          "covered": 14102,
+          "asked": 15081
+        }
+      },
+      "event": {
+        "1": {
+          "n": 116,
+          "seModel": 545.2725948451166,
+          "sePersist": 287.09930000000014,
+          "seMa3": 175.12787222222232,
+          "aeModel": 36.26355764186527,
+          "aePersist": 40.21000000000001,
+          "aeMa3": 68.86333333333333,
+          "covered": 38,
+          "asked": 116
+        },
+        "2": {
+          "n": 253,
+          "seModel": 982.7531665667875,
+          "sePersist": 297.8391,
+          "seMa3": 206.35124444444446,
+          "aeModel": 53.27280798919689,
+          "aePersist": 74.63,
+          "aeMa3": 124.99666666666673,
+          "covered": 153,
+          "asked": 253
+        },
+        "3": {
+          "n": 576,
+          "seModel": 1584.0226011083353,
+          "sePersist": 317.90590000000026,
+          "seMa3": 250.67208611111093,
+          "aeModel": 81.94004370540134,
+          "aePersist": 138.55000000000007,
+          "aeMa3": 219.72833333333335,
+          "covered": 443,
+          "asked": 576
+        },
+        "4": {
+          "n": 907,
+          "seModel": 2480.9252203575575,
+          "sePersist": 347.11109999999996,
+          "seMa3": 302.8233222222223,
+          "aeModel": 114.04095121077137,
+          "aePersist": 215.4899999999999,
+          "aeMa3": 320.14333333333303,
+          "covered": 755,
+          "asked": 907
+        },
+        "5": {
+          "n": 1099,
+          "seModel": 3483.1687886616596,
+          "sePersist": 382.3921999999997,
+          "seMa3": 358.3933999999996,
+          "aeModel": 146.3929672224132,
+          "aePersist": 284.4800000000002,
+          "aeMa3": 399.41333333333324,
+          "covered": 933,
+          "asked": 1099
+        },
+        "6": {
+          "n": 1273,
+          "seModel": 4607.7121888651145,
+          "sePersist": 425.6060000000004,
+          "seMa3": 420.2730750000004,
+          "aeModel": 183.67519209237707,
+          "aePersist": 355.00000000000017,
+          "aeMa3": 476.5683333333332,
+          "covered": 1079,
+          "asked": 1273
+        },
+        "7": {
+          "n": 1446,
+          "seModel": 5810.013906602498,
+          "sePersist": 477.0582999999995,
+          "seMa3": 488.9854222222218,
+          "aeModel": 225.65760153258003,
+          "aePersist": 427.85000000000156,
+          "aeMa3": 554.9266666666662,
+          "covered": 1221,
+          "asked": 1446
+        },
+        "8": {
+          "n": 1611,
+          "seModel": 7131.0902583360485,
+          "sePersist": 536.2123999999991,
+          "seMa3": 563.996205555556,
+          "aeModel": 271.6481304532035,
+          "aePersist": 502.1400000000028,
+          "aeMa3": 633.3500000000001,
+          "covered": 1361,
+          "asked": 1611
+        },
+        "9": {
+          "n": 1786,
+          "seModel": 8571.463107296873,
+          "sePersist": 600.9962000000004,
+          "seMa3": 645.1272277777773,
+          "aeModel": 330.6927815839862,
+          "aePersist": 579.1400000000009,
+          "aeMa3": 713.6199999999995,
+          "covered": 1494,
+          "asked": 1786
+        },
+        "10": {
+          "n": 1962,
+          "seModel": 10047.034230636902,
+          "sePersist": 673.8510999999995,
+          "seMa3": 732.4199527777782,
+          "aeModel": 386.95387535617084,
+          "aePersist": 657.7300000000042,
+          "aeMa3": 796.0749999999979,
+          "covered": 1619,
+          "asked": 1962
+        },
+        "11": {
+          "n": 2132,
+          "seModel": 11784.969011908868,
+          "sePersist": 751.8084999999987,
+          "seMa3": 824.9516416666686,
+          "aeModel": 451.7306162769391,
+          "aePersist": 737.0100000000026,
+          "aeMa3": 878.2583333333298,
+          "covered": 1766,
+          "asked": 2132
+        },
+        "12": {
+          "n": 2267,
+          "seModel": 13581.5620593075,
+          "sePersist": 836.3718000000027,
+          "seMa3": 922.2996777777784,
+          "aeModel": 510.46308840885416,
+          "aePersist": 813.9200000000018,
+          "aeMa3": 957.0133333333283,
+          "covered": 1884,
+          "asked": 2267
+        }
+      },
+      "horizons": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "sources": {
+        "offline": 15090
+      },
+      "calls": 15090,
+      "failed": 0
+    },
+    "Secondo Salto": {
+      "all": {
+        "1": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "2": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "3": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "4": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        }
+      },
+      "event": {
+        "1": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "2": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "3": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        },
+        "4": {
+          "n": 0,
+          "seModel": 0,
+          "sePersist": 0,
+          "seMa3": 0,
+          "aeModel": 0,
+          "aePersist": 0,
+          "aeMa3": 0,
+          "covered": 0,
+          "asked": 0
+        }
+      },
+      "horizons": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "sources": {},
+      "calls": 15045,
+      "failed": 15045
+    }
+  }
+}

@@ -24,7 +24,9 @@ node tools/backtest.js --protocol --data ./storico \
   --json models/eval-table.json --md models/eval-table.md
 ```
 
-Opzionale: `--stations Cento,Gallo` per un sottoinsieme. Due run consecutive con lo stesso `--seed` devono dare gli stessi numeri. I pesi attuali possono aver visto mesi del test via split a mesi alterni → numeri assoluti ottimistici; ranking omogeneo sì (retrain pulito = Fase 1).
+Opzionale: `--stations Cento,Gallo` per un sottoinsieme; `--only-candidates persist,prod`; `--extra-mlp label=path`; `--publish-lag-min 90`; `--drop-upstream Forcelli`. Due run consecutive con lo stesso `--seed` devono dare gli stessi numeri.
+
+Diagnosi Fase 1: `models/fase1-diagnosi.md`. Parità MLP: `uv run python tools/dump-mlp-parity.py` + test `E1 Layer A/B`. Fit split: `--split {alt,block}`; selezione: `--selection-split {outer,inner}`.
 
 Dipendenze: DuckDB, pandas, NumPy, LightGBM, PyTorch CPU (vedi `pyproject.toml`).
 Cento in produzione browser: `kind: window_delta_mlp` (pesi JSON) dopo `fit-ml-cento.py --export-coeffs`.

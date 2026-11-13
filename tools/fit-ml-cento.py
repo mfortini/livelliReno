@@ -445,10 +445,47 @@ def metrics_block(
     return out
 
 
-def split_masks(index: pd.DatetimeIndex | np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+def split_masks(
+    index: pd.DatetimeIndex | np.ndarray,
+    mode: str | None = None,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     idx = pd.DatetimeIndex(index)
-    blocks = ft.month_blocks(idx)
+    blocks = ft.month_blocks(idx, mode=mode)
     return blocks == 0, blocks == 1, blocks == 2
+
+
+def inner_split_masks(
+    index: pd.DatetimeIndex | np.ndarray,
+    outer_train: np.ndarray,
+    *,
+    mode: str = "alt",
+) -> tuple[np.ndarray, np.ndarray]:
+    """Split outer-train months into train_inner / val_inner (E2 selection).
+
+    Holdout and outer-validate rows stay False in both masks.
+    """
+    idx = pd.DatetimeIndex(index)
+    naive = idx.tz_convert("UTC").tz_localize(None) if idx.tz is not None else idx
+    months = naive.to_period("M")
+    train_months = sorted({m for m, keep in zip(months, outer_train) if keep})
+    mapping: dict = {}
+    if mode == "block":
+        mid = max(1, len(train_months) // 2) if train_months else 0
+        for i, m in enumerate(train_months):
+            mapping[m] = 0 if i < mid else 1
+    else:
+        for i, m in enumerate(train_months):
+            mapping[m] = i % 2
+    train_inner = np.zeros(len(idx), dtype=bool)
+    val_inner = np.zeros(len(idx), dtype=bool)
+    for i, m in enumerate(months):
+        if not outer_train[i] or m not in mapping:
+            continue
+        if mapping[m] == 0:
+            train_inner[i] = True
+        else:
+            val_inner[i] = True
+    return train_inner, val_inner
 
 
 def event_mask(delta: np.ndarray, base: np.ndarray) -> np.ndarray:
@@ -594,6 +631,8 @@ def train_dnn(
     y: np.ndarray,
     train_m: np.ndarray,
     val_m: np.ndarray,
+    quantile: float | None = None,
+    event_weight: float = 1.0,
 ) -> tuple[MLP, np.ndarray, dict]:
     torch.manual_seed(DNN_SEED)
     np.random.seed(DNN_SEED)
@@ -601,6 +640,16 @@ def train_dnn(
     model = MLP(X_std.shape[1]).to(device)
     opt = torch.optim.Adam(model.parameters(), lr=DNN_LR)
     loss_fn = nn.MSELoss()
+    if quantile is not None:
+        # Pinball loss: under-predictions weighted by q, over-predictions by 1-q.
+        # q=0.75 on rising limbs behaves like an earlier crossing-time estimate.
+        q = float(quantile)
+
+        def pinball(pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+            err = target - pred
+            return torch.mean(torch.maximum(q * err, (q - 1.0) * err))
+
+        loss_fn = pinball
 
     n_tr, n_va = int(train_m.sum()), int(val_m.sum())
     n_batch = max(1, (n_tr + DNN_BATCH - 1) // DNN_BATCH)
@@ -615,7 +664,26 @@ def train_dnn(
     y_tr = torch.tensor(y[train_m], dtype=torch.float32)
     x_va = torch.tensor(X_std[val_m], dtype=torch.float32)
     y_va = torch.tensor(y[val_m], dtype=torch.float32)
-    loader = DataLoader(TensorDataset(x_tr, y_tr), batch_size=DNN_BATCH, shuffle=True)
+    w_tr = None
+    if event_weight and event_weight != 1.0:
+        # Event emphasis: |Δy| ≥ EVENT_ABS gets weight event_weight (mean renormalized).
+        w_np = 1.0 + (float(event_weight) - 1.0) * (np.abs(y[train_m]) >= EVENT_ABS)
+        w_np = w_np / w_np.mean()
+        w_tr = torch.tensor(w_np, dtype=torch.float32)
+    if w_tr is not None:
+        loader = DataLoader(TensorDataset(x_tr, y_tr, w_tr), batch_size=DNN_BATCH, shuffle=True)
+    else:
+        loader = DataLoader(TensorDataset(x_tr, y_tr), batch_size=DNN_BATCH, shuffle=True)
+
+    def batch_loss(pred: torch.Tensor, target: torch.Tensor, weight: torch.Tensor | None) -> torch.Tensor:
+        if quantile is not None:
+            err = target - pred
+            elem = torch.maximum(float(quantile) * err, (float(quantile) - 1.0) * err)
+        else:
+            elem = (pred - target) ** 2
+        if weight is None:
+            return elem.mean()
+        return (elem * weight).sum() / weight.sum()
 
     best_state = None
     best_val = float("inf")
@@ -627,10 +695,12 @@ def train_dnn(
         model.train()
         train_loss_sum = 0.0
         n_seen = 0
-        for xb, yb in loader:
+        for batch in loader:
+            xb, yb = batch[0], batch[1]
+            wb = batch[2] if len(batch) > 2 else None
             opt.zero_grad()
             pred = model(xb)
-            loss = loss_fn(pred, yb)
+            loss = batch_loss(pred, yb, wb)
             loss.backward()
             opt.step()
             bs = int(xb.shape[0])
@@ -820,6 +890,21 @@ def main() -> None:
         ),
     )
     parser.add_argument(
+        "--quantile",
+        type=float,
+        default=None,
+        help=(
+            "Se impostato (es. 0.75), allena la DNN con pinball loss sul quantile: "
+            "anticipa i fronti di piena (timing) a costo di un bias positivo in calma"
+        ),
+    )
+    parser.add_argument(
+        "--event-weight",
+        type=float,
+        default=1.0,
+        help="Peso extra per i campioni di train con |Δy| ≥ 0.10 m (default 1 = nessun peso)",
+    )
+    parser.add_argument(
         "--align-window",
         type=int,
         default=16,
@@ -848,6 +933,18 @@ def main() -> None:
         ),
     )
     parser.add_argument(
+        "--split",
+        choices=("alt", "block"),
+        default="alt",
+        help="Outer train/validate month split (alt=alternating, block=contiguous halves)",
+    )
+    parser.add_argument(
+        "--selection-split",
+        choices=("outer", "inner"),
+        default="outer",
+        help="Where early-stop / recipe ranking look: outer validate or nested inner validate (E2)",
+    )
+    parser.add_argument(
         "-v", "--verbose",
         action="store_true",
         default=True,
@@ -863,6 +960,8 @@ def main() -> None:
     global _VERBOSE
     _VERBOSE = bool(args.verbose) and not bool(args.quiet)
     poly_points = max(POLY_NAIVE_MIN, int(args.poly_points))
+    ft.SPLIT_MODE = args.split
+    log(f"split={args.split}  selection-split={args.selection_split}")
 
     acceptors = [] if args.no_acceptors else list(ACCEPTORS)
     station_list = [DOWNSTREAM, *UPSTREAMS, *acceptors]
@@ -878,6 +977,10 @@ def main() -> None:
     tag = f"{tag}-p{poly_points}"
     if args.lag_align:
         tag = f"{tag}-lag{args.lag_align}"
+    if args.quantile is not None:
+        tag = f"{tag}-q{int(round(args.quantile * 100))}"
+    if args.event_weight != 1.0:
+        tag = f"{tag}-ew{args.event_weight:g}"
     if args.export_dnn is None:
         args.export_dnn = ROOT / "models" / f"cento-dnn-{tag}.json"
     if args.out is None:
@@ -1002,10 +1105,20 @@ def main() -> None:
             feats, feature_cols = make_feats(h)
         targets = build_targets(wide, h)
         X, y, y0, index = align_xy(feats, feature_cols, targets)
-        train_m, val_m, hold_m = split_masks(index)
+        train_m, val_m, hold_m = split_masks(index, mode=args.split)
         if train_m.sum() < WEAK_POINTS or val_m.sum() < WEAK_POINTS:
             log(f"skip: train={train_m.sum()} val={val_m.sum()}", level="warn")
             continue
+
+        fit_train, fit_val = train_m, val_m
+        if args.selection_split == "inner":
+            fit_train, fit_val = inner_split_masks(index, train_m, mode="alt")
+            if fit_train.sum() < WEAK_POINTS or fit_val.sum() < WEAK_POINTS:
+                log(
+                    f"skip inner: train={fit_train.sum()} val={fit_val.sum()}",
+                    level="warn",
+                )
+                continue
 
         log("Calcolo baseline holdout poly2…")
         t_poly = time.perf_counter()
@@ -1022,6 +1135,7 @@ def main() -> None:
         log(
             f"samples n={len(y)} train={int(train_m.sum())} "
             f"val={int(val_m.sum())} hold={int(hold_m.sum())} "
+            f"fit_train={int(fit_train.sum())} fit_val={int(fit_val.sum())} "
             f"events_val={int(event_mask(y, val_m).sum())} "
             f"events_hold={int(event_mask(y, hold_m).sum())}"
         )
@@ -1029,7 +1143,7 @@ def main() -> None:
         lgbm_metrics = None
         best_iteration = 0
         if not args.skip_lgbm:
-            booster, lgbm_pred = train_lgbm(X, y, train_m, val_m)
+            booster, lgbm_pred = train_lgbm(X, y, fit_train, fit_val)
             lgbm_metrics = eval_splits(
                 y0, y, lgbm_pred, train_m, val_m, hold_m, poly_baseline=poly_base
             )
@@ -1047,7 +1161,9 @@ def main() -> None:
 
         log("Standardize features on train…")
         X_std, stats = standardize_features(X, feature_cols, train_m)
-        model, dnn_pred, dnn_hist = train_dnn(X_std, y, train_m, val_m)
+        model, dnn_pred, dnn_hist = train_dnn(
+            X_std, y, fit_train, fit_val, quantile=args.quantile, event_weight=args.event_weight
+        )
         log("Eval splits (train/val/hold + events)…")
         dnn_metrics = eval_splits(
             y0, y, dnn_pred, train_m, val_m, hold_m, poly_baseline=poly_base
@@ -1118,6 +1234,8 @@ def main() -> None:
         "upstreamLagMinutes": {
             up: upstream_tau[up] * ft.STEP_MINUTES for up in upstream_tau
         },
+        "quantile": args.quantile,
+        "eventWeight": args.event_weight,
     }
     dnn_node = {
         "kind": "window_delta_mlp",
@@ -1135,6 +1253,7 @@ def main() -> None:
         "skill120": skill120,
         "reliable": reliable,
         "trainedAt": trained_at,
+        "quantile": args.quantile,
         "thresholdOn": "event_or_move",
         "holdoutBaseline": "poly2",
         "note": (
