@@ -11,13 +11,18 @@
 //                             [--muskingum models/hybrid-muskingum-cento.json]
 //                             [--seq-gru models/seq-cento-gru.json] [--seq-cnn models/seq-cento-cnn.json]
 //                             [--candidates-json models/cento-candidates-backtest.json]
+//                             [--protocol] [--events models/events.json] [--seed 1]
+//                             [--ridge models/transfer-coeffs-ridge6h.json]
+//                             [--json models/eval-table.json] [--md models/eval-table.md]
 //
 // --compare-candidates runs an experimental side-by-side on one node without writing
 // reliable flags. Default backtest still uses transfer-coeffs as before.
+// --protocol runs the Fase 0 unified eval table (dense 30′, catalog events, bootstrap CI).
 'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
 const P = require('../predict-transfer.js');
+const EP = require('../eval-protocol.js');
 
 const root = path.resolve(__dirname, '..');
 const args = process.argv.slice(2);
@@ -25,6 +30,11 @@ const opt = (name, fallback) => {
     const i = args.indexOf(`--${name}`);
     return i >= 0 && args[i + 1] !== undefined ? args[i + 1] : fallback;
 };
+
+if (args.includes('--protocol')) {
+    require('./protocol-mode.js').run({ root, args });
+    process.exit(0);
+}
 const dataDir = path.resolve(root, opt('data', 'storico'));
 const everyMin = Number(opt('every', 120));
 const eventThreshold = Number(opt('event', 0.10));
@@ -205,56 +215,18 @@ function predictCandidate(name, down, ups, now, horizonHours, sensorMap, rainSen
         return { ok: true, forecast: [{ time: anchor.time, med: anchor.value }, ...points], next: points };
     }
     if (name === 'poly2') {
-        // Stupid predictor: quadratic OLS on the last 3–4 levels, extrapolate per horizon step.
+        // Stupid predictor: quadratic OLS on last 6 levels (2.5 h), extrapolate per horizon step.
         const anchor = P.latestFinite(down.timeSeries);
         if (!anchor) return null;
         const end = +anchor.time;
-        const vals = [];
-        for (let k = 3; k >= 0; k--) {
-            vals.push(P.sampleAt(down.timeSeries, end - k * STEP));
+        const byTime = new Map();
+        for (const p of down.timeSeries) {
+            if (Number.isFinite(p.value)) byTime.set(+p.time, p.value);
         }
-        let window = vals.every(Number.isFinite) ? vals : vals.slice(1);
-        if (!window.every(Number.isFinite) || window.length < 3) {
-            // Fall back to persistence if history is too thin.
-            return predictCandidate('persist', down, ups, now, horizonHours, sensorMap, rainSensors, payload);
-        }
-        const n = window.length;
-        const x = window.map((_, i) => i);
-        // Solve least-squares for a + b x + c x² via normal equations (3×3).
-        let sx = 0, sx2 = 0, sx3 = 0, sx4 = 0, sy = 0, sxy = 0, sx2y = 0;
-        for (let i = 0; i < n; i++) {
-            const xi = x[i], yi = window[i], xi2 = xi * xi;
-            sx += xi; sx2 += xi2; sx3 += xi2 * xi; sx4 += xi2 * xi2;
-            sy += yi; sxy += xi * yi; sx2y += xi2 * yi;
-        }
-        const A = [
-            [n, sx, sx2],
-            [sx, sx2, sx3],
-            [sx2, sx3, sx4]
-        ];
-        const b = [sy, sxy, sx2y];
-        // Gaussian elimination
-        const M = A.map((row, i) => row.concat([b[i]]));
-        for (let col = 0; col < 3; col++) {
-            let piv = col;
-            for (let r = col + 1; r < 3; r++) if (Math.abs(M[r][col]) > Math.abs(M[piv][col])) piv = r;
-            [M[col], M[piv]] = [M[piv], M[col]];
-            const div = M[col][col];
-            if (!Number.isFinite(div) || Math.abs(div) < 1e-12) {
-                return predictCandidate('persist', down, ups, now, horizonHours, sensorMap, rainSensors, payload);
-            }
-            for (let c = col; c < 4; c++) M[col][c] /= div;
-            for (let r = 0; r < 3; r++) {
-                if (r === col) continue;
-                const f = M[r][col];
-                for (let c = col; c < 4; c++) M[r][c] -= f * M[col][c];
-            }
-        }
-        const [a0, a1, a2] = [M[0][3], M[1][3], M[2][3]];
-        const at = (xi) => a0 + a1 * xi + a2 * xi * xi;
         const points = [];
         for (let h = 1; h <= Math.round(horizonHours * 2); h++) {
-            const med = at((n - 1) + h);
+            let med = EP.poly2At(byTime, end, h, EP.POLY2_POINTS);
+            if (!Number.isFinite(med)) med = anchor.value;
             points.push({ time: new Date(+now + h * STEP), med, min: med, max: med });
         }
         return { ok: true, forecast: [{ time: anchor.time, med: anchor.value }, ...points], next: points };
@@ -300,6 +272,10 @@ if (compareNode) {
     const mlpLagaugmentPath = path.resolve(root, opt('mlp-lagaugment', 'models/cento-dnn-lagaugment.json'));
     const mlpLagshift = fs.existsSync(mlpLagshiftPath) ? JSON.parse(fs.readFileSync(mlpLagshiftPath, 'utf8')) : null;
     const mlpLagaugment = fs.existsSync(mlpLagaugmentPath) ? JSON.parse(fs.readFileSync(mlpLagaugmentPath, 'utf8')) : null;
+    const mlpQ75Path = path.resolve(root, opt('mlp-q75', 'models/cento-dnn-q75.json'));
+    const mlpQ75 = fs.existsSync(mlpQ75Path) ? JSON.parse(fs.readFileSync(mlpQ75Path, 'utf8')) : null;
+    const mlpEw4Path = path.resolve(root, opt('mlp-ew4', 'models/cento-dnn-ew4.json'));
+    const mlpEw4 = fs.existsSync(mlpEw4Path) ? JSON.parse(fs.readFileSync(mlpEw4Path, 'utf8')) : null;
     const prodNode = useCoeffs && fs.existsSync(coeffsPath)
         ? (JSON.parse(fs.readFileSync(coeffsPath, 'utf8')).nodes || {})[compareNode]
         : null;
@@ -321,6 +297,12 @@ if (compareNode) {
         mlp_lagaugment: mlpLagaugment ? { coeffs: { nodes: { [compareNode]: force(mlpLagaugment) } }, smooth: 0 } : null,
         mlp_phase30: prodNode ? { coeffs: { nodes: { [compareNode]: force(prodNode) } }, smooth: 0, phaseShiftMin: 30 } : null,
         mlp_phase60: prodNode ? { coeffs: { nodes: { [compareNode]: force(prodNode) } }, smooth: 0, phaseShiftMin: 60 } : null,
+        mlp_q75: mlpQ75 ? {
+            coeffs: { nodes: { [compareNode]: force(mlpQ75) } },
+            smooth: 0,
+            note: 'pinball q75: timing-oriented upper quantile, biased high in calm'
+        } : null,
+        mlp_ew4: mlpEw4 ? { coeffs: { nodes: { [compareNode]: force(mlpEw4) } }, smooth: 0 } : null,
         seq_gru: seqGru ? {
             coeffs: { nodes: { [compareNode]: force(seqGru) } },
             note: 'forced reliable for experimental compare only; does not promote runtime'

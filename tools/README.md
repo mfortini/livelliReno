@@ -13,6 +13,19 @@ uv run python tools/fit-ml-cento.py --data ./storico --skip-lgbm \
 node tools/backtest.js --every 120 --json models/backtest-summary.json
 ```
 
+### Fase 0 — protocollo di valutazione unico
+
+Un solo comando produce la tabella skill per stazione/orizzonte/modello (runtime JS, campionamento 30′, eventi da catalogo, baseline persist / poly2(6) / ridge, bootstrap CI 90%). **Non** aggiorna `reliable`.
+
+```bash
+node tools/build-event-catalog.js --data ./storico --out models/events.json
+node tools/backtest.js --protocol --data ./storico \
+  --from 2026-01-01 --events models/events.json --seed 1 \
+  --json models/eval-table.json --md models/eval-table.md
+```
+
+Opzionale: `--stations Cento,Gallo` per un sottoinsieme. Due run consecutive con lo stesso `--seed` devono dare gli stessi numeri. I pesi attuali possono aver visto mesi del test via split a mesi alterni → numeri assoluti ottimistici; ranking omogeneo sì (retrain pulito = Fase 1).
+
 Dipendenze: DuckDB, pandas, NumPy, LightGBM, PyTorch CPU (vedi `pyproject.toml`).
 Cento in produzione browser: `kind: window_delta_mlp` (pesi JSON) dopo `fit-ml-cento.py --export-coeffs`.
 
@@ -126,6 +139,20 @@ Previsione: \(\hat y(t+h)=y(t)+\widehat{\Delta y}-\mathrm{biasEMA}_{48h}\). La p
 - **Affidabilità**: dopo il backtest, `reliable=true` solo se skill@120′ eventi \(\ge 0.10\) (anche vs media mobile 3 h nel report)
 
 Output `models/transfer-coeffs.json`. La dashboard soft-load il file.
+
+### Lag-aligned upstream features (esperimento, non adottato)
+
+`--lag-align {shift,augment}` stima τᵢ sui mesi di train e ri-indicizza le
+finestre upstream sull'onda in arrivo x(t+h−τᵢ). Esito negativo/marginale:
+vedi `models/ab-lagalign.md`. Il runtime legge `featureRecipe.upstreamLag*`.
+
+### Loss varianti (timing / eventi)
+
+`--quantile 0.75` allena la DNN con pinball loss sul quantile: la curva
+anticipa i fronti di piena (proxy di crossing-time) ma è sbilanciata in alto
+in calma — candidato separato `mlp_q75`, non sostituisce la mediana.
+`--event-weight N` pesa i campioni |Δy| ≥ 0.10 m ×N nella loss di train:
+attacca la sottostima sui fronti senza cambiare la semantica del punto.
 
 ## Backtest
 
