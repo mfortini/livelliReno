@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "kind": "skill_gates",
+  "disclaimer": "Sperimentale. CI da protocollo Fase 0 frozen test.",
+  "testFrom": "2026-01-01T00:00:00.000Z",
+  "skillEnter": 0.1,
+  "skillExit": 0.05,
+  "stations": {
+    "Casalecchio chiusa": {
+      "skill120": 0.0518962261110979,
+      "skill120CI": {
+        "lo": -0.0035280030303044274,
+        "hi": 0.16715987786566933,
+        "nEvents": 8
+      }
+    },
+    "Casalecchio tiro a volo": {
+      "skill120": null,
+      "skill120CI": {
+        "lo": null,
+        "hi": null,
+        "nEvents": 0
+      }
+    },
+    "Bonconvento": {
+      "skill120": 0.27547586485878894,
+      "skill120CI": {
+        "lo": 0.1707466277216081,
+        "hi": 0.39293276655810017,
+        "nEvents": 10
+      }
+    },
+    "Forcelli": {
+      "skill120": -0.6396947260315264,
+      "skill120CI": {
+        "lo": -0.8181465513170632,
+        "hi": 0.30295380345828204,
+        "nEvents": 9
+      }
+    },
+    "Sostegno Reno": {
+      "skill120": 0.1785047288585594,
+      "skill120CI": {
+        "lo": 0.014651415173999704,
+        "hi": 0.2617663690338511,
+        "nEvents": 5
+      }
+    },
+    "Cento": {
+      "skill120": 0.6671154607894649,
+      "skill120CI": {
+        "lo": 0.5835581220836314,
+        "hi": 0.7560543557178458,
+        "nEvents": 9
+      }
+    },
+    "Dosso": {
+      "skill120": null,
+      "skill120CI": {
+        "lo": null,
+        "hi": null,
+        "nEvents": 0
+      }
+    },
+    "Opera Reno Panfilia": {
+      "skill120": null,
+      "skill120CI": {
+        "lo": null,
+        "hi": null,
+        "nEvents": 0
+      }
+    },
+    "Gallo": {
+      "skill120": 0.5697291112572713,
+      "skill120CI": {
+        "lo": 0.44625559624802746,
+        "hi": 0.6915283510182441,
+        "nEvents": 8
+      }
+    },
+    "Secondo Salto": {
+      "skill120": null,
+      "skill120CI": {
+        "lo": null,
+        "hi": null,
+        "nEvents": 0
+      }
+    }
+  }
+}

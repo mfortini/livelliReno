@@ -183,6 +183,27 @@ function buildCandidatesForNode(node, ctx) {
             note: 'forced reliable for protocol compare'
         };
     }
+    // M3: GRU≤2h + ridge long blend (prefer reliable-120 backup when present)
+    if (node === 'Gallo' && seqGru && ridgeNode) {
+        const gruBackup = loadJson(path.join(ctx.root, 'models/seq-gallo-gru.reliable-120.json')) || seqGru;
+        out.blend_gru_ridge = {
+            coeffs: {
+                nodes: {
+                    [node]: force({
+                        kind: 'blend_gru_ridge',
+                        downstream: node,
+                        blendStartMin: 90,
+                        blendEndMin: 150,
+                        gru: { ...gruBackup, reliable: true },
+                        ridge: { ...ridgeNode, reliable: true },
+                        skill120: gruBackup.skill120 ?? seqGru.skill120 ?? ridgeNode.skill120
+                    })
+                }
+            },
+            smooth: 0.15,
+            note: 'M3 GRU≤90′ → blend 90–150′ → ridge≥150′'
+        };
+    }
     if (node === 'Cento') {
         const seqCnn = loadJson(path.join(ctx.root, 'models/seq-cento-cnn.json'));
         if (seqCnn) {
@@ -235,6 +256,10 @@ function finalizeModel(accByH, seed) {
             skillEventPersistCI: ciPersist,
             peakLevelErrMed: EP.median(acc.peakLevelErrs || []),
             peakTimeErrMed: EP.median(acc.peakTimeErrs || []),
+            bandCoverageAll: acc.band?.n ? acc.band.hit / acc.band.n : null,
+            bandCoverageEvent: acc.bandEvent?.n ? acc.bandEvent.hit / acc.bandEvent.n : null,
+            bandNAll: acc.band?.n || 0,
+            bandNEvent: acc.bandEvent?.n || 0,
             pod: null,
             far: null,
             note: 'POD/FAR N/A: soglie ARPAE non in config statica'
@@ -320,6 +345,8 @@ function run(options = {}) {
 
     const horizons = PROTOCOL_HORIZONS;
     const horizonHours = Math.max(...horizons) * 0.5;
+    const everyMin = Math.max(30, Number(opt('every', 30)) || 30);
+    const everyMs = everyMin * 60000;
     const ctx = { root, prodCoeffs, ridgeCoeffs, extraMlp };
 
     const table = {
@@ -327,7 +354,7 @@ function run(options = {}) {
         version: 1,
         disclaimer: 'Sperimentale: non operativo, non allertistico.',
         protocol: {
-            everyMin: 30,
+            everyMin,
             horizonsMinutes: horizons.map(h => h * 30),
             baselines: ['persist', 'poly2_6pt', 'ridge'],
             eventSource: path.relative(root, eventsPath),
@@ -356,8 +383,9 @@ function run(options = {}) {
     for (const node of nodes) {
         let candidates = buildCandidatesForNode(node, ctx);
         if (onlyCand) {
+            // Always keep persist/poly2 baselines for skill denominators / shared preds.
             candidates = Object.fromEntries(
-                Object.entries(candidates).filter(([k]) => onlyCand.has(k))
+                Object.entries(candidates).filter(([k]) => onlyCand.has(k) || k === 'persist' || k === 'poly2')
             );
         }
         const candKeys = Object.keys(candidates);
@@ -382,7 +410,7 @@ function run(options = {}) {
         const seriesTruth = data[node]; // full series for scoring actuals
         const first = Math.ceil(from / STEP) * STEP;
         const nows = [];
-        for (let now = first; now <= to; now += STEP) nows.push(now);
+        for (let now = first; now <= to; now += everyMs) nows.push(now);
 
         console.log(`[protocol] ${node}: ${nows.length} timestamps, candidates=${candKeys.join(',')}, events=${stationEvents.length}`);
 
@@ -448,6 +476,7 @@ function run(options = {}) {
             }
 
             const predByModel = { persist: persistPred, poly2: poly2Pred };
+            const bandByModel = {};
             for (const key of modelKeys) {
                 const cfg = candidates[key];
                 const result = predictModel(key, down, ups, now, horizonHours, sensorMap, rainSensors, {
@@ -457,13 +486,17 @@ function run(options = {}) {
                     seriesByTime: seriesTruth.byTime
                 });
                 if (!result?.ok) continue;
-                const byTime = new Map((result.forecast || []).map(p => [+p.time, p.med]));
+                const byTime = new Map((result.forecast || []).map(p => [+p.time, p]));
                 const map = {};
+                const band = {};
                 for (const h of horizons) {
-                    const v = byTime.get(now + h * STEP);
-                    if (Number.isFinite(v)) map[h] = v;
+                    const p = byTime.get(now + h * STEP);
+                    if (!p) continue;
+                    if (Number.isFinite(p.med)) map[h] = p.med;
+                    if (Number.isFinite(p.min) && Number.isFinite(p.max)) band[h] = { min: p.min, max: p.max };
                 }
                 predByModel[key] = map;
+                if (Object.keys(band).length) bandByModel[key] = band;
             }
             const ridgeMap = predByModel.ridge || null;
 
@@ -480,6 +513,17 @@ function run(options = {}) {
 
                     const acc = stats[key][h];
                     accumulate(acc.all, pred, actual, persist, poly2, ridge);
+                    const band = bandByModel[key]?.[h];
+                    if (band) {
+                        acc.band = acc.band || { n: 0, hit: 0 };
+                        acc.band.n++;
+                        if (actual >= band.min && actual <= band.max) acc.band.hit++;
+                        if (activeEvent) {
+                            acc.bandEvent = acc.bandEvent || { n: 0, hit: 0 };
+                            acc.bandEvent.n++;
+                            if (actual >= band.min && actual <= band.max) acc.bandEvent.hit++;
+                        }
+                    }
                     if (activeEvent) {
                         accumulate(acc.event, pred, actual, persist, poly2, ridge);
                         const pev = ensureEvent(acc, activeEvent.key);

@@ -1,0 +1,117 @@
+{
+  "kind": "m5_tau_regime",
+  "stations": [
+    {
+      "downstream": "Gallo",
+      "upstreams": [
+        {
+          "upstream": "Opera Reno Panfilia",
+          "lagAllMin": 390,
+          "lagCalmMin": 30,
+          "lagHighMin": 330,
+          "rAll": 0.4379730477300632,
+          "rCalm": 0.06691482746969468,
+          "rHigh": 0.9720609528962924,
+          "z85": 0.39864190897088153,
+          "ciCalm": [
+            0.0,
+            240.0
+          ],
+          "ciHigh": [
+            330.0,
+            540.0
+          ],
+          "nonOverlap": true,
+          "skillAll": -7.83414842311117,
+          "skillDual": -8.894365697507858,
+          "nTest": 1493
+        }
+      ],
+      "anyNonOverlap": true,
+      "improved": false,
+      "success": false
+    },
+    {
+      "downstream": "Casalecchio chiusa",
+      "upstreams": [
+        {
+          "upstream": "Sasso Marconi",
+          "lagAllMin": 90,
+          "lagCalmMin": 0,
+          "lagHighMin": 120,
+          "rAll": 0.696534533788627,
+          "rCalm": 0.6554014237517161,
+          "rHigh": 0.9107702022083114,
+          "z85": 0.809553389750401,
+          "ciCalm": [
+            0.0,
+            180.0
+          ],
+          "ciHigh": [
+            90.0,
+            150.0
+          ],
+          "nonOverlap": false,
+          "skillAll": -0.08723278335125895,
+          "skillDual": -0.14788427458685316,
+          "nTest": 1406
+        },
+        {
+          "upstream": "Vergato DX",
+          "lagAllMin": 180,
+          "lagCalmMin": 720,
+          "lagHighMin": 210,
+          "rAll": 0.14782602943948006,
+          "rCalm": -0.22228863755001413,
+          "rHigh": 0.7780024294475562,
+          "z85": 0.2949560527617626,
+          "ciCalm": [
+            88.50000000000003,
+            720.0
+          ],
+          "ciHigh": [
+            120.0,
+            270.0
+          ],
+          "nonOverlap": false,
+          "skillAll": -0.23333899261418334,
+          "skillDual": -0.40400601230192734,
+          "nTest": 1381
+        }
+      ],
+      "anyNonOverlap": false,
+      "improved": false,
+      "success": false
+    },
+    {
+      "downstream": "Bonconvento",
+      "upstreams": [
+        {
+          "upstream": "Casalecchio tiro a volo",
+          "lagAllMin": 270,
+          "lagCalmMin": 300,
+          "lagHighMin": 330,
+          "rAll": 0.9695721046377255,
+          "rCalm": 0.927185664748714,
+          "rHigh": 0.9311641911636782,
+          "z85": 0.8561127515815167,
+          "ciCalm": [
+            240.0,
+            331.4999999999995
+          ],
+          "ciHigh": [
+            270.0,
+            391.4999999999995
+          ],
+          "nonOverlap": false,
+          "skillAll": 0.02082545525241397,
+          "skillDual": -0.018078801663576893,
+          "nTest": 2009
+        }
+      ],
+      "anyNonOverlap": false,
+      "improved": false,
+      "success": false
+    }
+  ]
+}

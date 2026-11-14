@@ -138,18 +138,27 @@ Sette pacchetti di lavoro indipendenti, in ordine di priorità. Ognuno si confro
 
 **Rimandato:** Muskingum ed EnKF. Hanno senso solo con una scala di deflusso che converta i livelli in portate; da riaprire se il dato diventa disponibile.
 
+**Esiti (2026-11-14):**
+
+- [x] M2 — MLP resta; GRU/CNN/ibridi non superiori (`models/ab-m2-cento-arch.md`)
+- [x] M1 — banda q10–90+conformal utile (~88% cov); mediana non promuove su picco (`models/ab-m1-quantiles.md`)
+- [x] M3 — blend Gallo sotto GRU@2h ma = ridge@6h; runtime pronto, soft-adopt no (`models/ab-m3-gallo-blend.md`)
+- [x] M4 — FAIL (med\|err\| 139′ ≫ 30′) (`models/ab-m4-peak-time.md`)
+- [x] M5 — FAIL (τ duale non migliora skill) (`models/ab-m5-tau-regime.md`)
+- [x] M6/M7 — chiusura motivata: manca pioggia prevista / manovre Napoleonico (`models/ab-m6-m7-close.md`)
+
 ## Fase 3 — Integrazione in runtime e interfaccia
 
-Entra in pagina solo ciò che ha superato le regole di promozione. Le modifiche toccano il formato dei modelli, il gate e la pagina Predizioni.
+Entra in pagina solo ciò che ha superato le regole di promozione (o, selettivamente, la banda Cento dalla Fase 2). Le modifiche toccano il formato dei modelli, il gate e la pagina Predizioni. Dettaglio: [`models/fase3-integrazione.md`](../models/fase3-integrazione.md).
 
-- [ ] **Formato dei modelli.** Estendere `transfer-coeffs.json` e i file `seq-*.json` con i tre quantili per orizzonte e con l'intervallo di confidenza dello skill.
-- [ ] **Test di parità in CI.** Ogni export di pesi verifica che Python e JS diano la stessa uscita sugli stessi input.
-- [ ] **Gate con isteresi.** `reliable` si decide sul limite inferiore dell'intervallo, con due soglie distinte per entrare e uscire, così non cambia a ogni run.
-- [ ] **Banda al posto della curva.** La pagina mostra mediana e banda 10–90. La banda si allarga con l'orizzonte e sfuma, invece di troncarsi a `maxReliableHorizonMinutes`.
-- [ ] **Raccordo tra modelli.** Supporto runtime alla combinazione pesata GRU + ridge (M3).
-- [ ] **Tempo di picco.** Se M4 passa, indicazione in pagina dell'intervallo di arrivo stimato del picco.
-- [ ] **Dati mancanti.** Comportamento esplicito quando una stazione di monte non risponde: banda più larga o curva sospesa, secondo l'esito di E5.
-- [ ] **Testi in pagina.** Aggiornare il disclaimer e spiegare cosa significa la banda.
+- [x] **Formato dei modelli.** Soft-merge `cento-dnn-bands.json` (q10/q90+conformal) sulla mediana prod; CI skill in `skill-gates.json`.
+- [x] **Test di parità in CI.** E1 già in `tests/predict-transfer.test.js` (obbligatorio a ogni export).
+- [x] **Gate con isteresi.** `reliableFromSkill`: enter 0.10 / exit 0.05 sul limite inferiore CI.
+- [x] **Banda al posto della curva.** Mediana + banda; oltre l’orizzonte affidabile coda sfumata/allargata (no hard truncate).
+- [x] **Raccordo tra modelli.** Runtime `blend_gru_ridge` pronto; soft-adopt Gallo **OFF** (M3 non promuove).
+- [x] **Tempo di picco.** Saltato (M4 FAIL).
+- [x] **Dati mancanti.** Monte obsoleto → avviso + banda ×1.5.
+- [x] **Testi in pagina.** Disclaimer e spiegazione banda aggiornati in Predizioni.
 
 ## Regole di promozione
 

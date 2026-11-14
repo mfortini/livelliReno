@@ -6,7 +6,9 @@
     const WEAK_R = 0.35;
     const FORK_K = 1.0; // ±1 RMSE ≈ forchetta empirica min/max attorno alla mediana
     const MIN_STEP_ABS = 0.05; // m per mezz’ora, pavimento del rate-limit
-    const SKILL_KEEP = 0.10; // allineato a tools/fit-transfer.py
+    const SKILL_KEEP = 0.10; // allineato a tools/fit-transfer.py (soglia enter)
+    const SKILL_ENTER = 0.10; // isteresi: entra reliable se skillLo ≥ enter
+    const SKILL_EXIT = 0.05;  // isteresi: esce reliable solo se skillLo < exit
     const BIAS_WINDOW_HOURS = 48;
     const BIAS_EMA_ALPHA = 0.08;
     const RAIN6_STEPS = 12;
@@ -171,6 +173,20 @@
         return null;
     }
 
+    // Isteresi sul limite inferiore CI (o skill puntuale): enter 0.10 / exit 0.05.
+    function reliableFromSkill(skillLo, previousReliable) {
+        if (!finite(skillLo)) return false;
+        if (previousReliable === true) return skillLo >= SKILL_EXIT;
+        return skillLo >= SKILL_ENTER;
+    }
+
+    function skillLoOf(node) {
+        const lo = Number(node?.skill120CI?.lo);
+        if (finite(lo)) return lo;
+        const s = Number(node?.skill120);
+        return finite(s) ? s : null;
+    }
+
     // Longest horizon with event/validate skill ≥ SKILL_KEEP, clamped to [min, cap].
     function maxReliableHorizonMinutes(model, options = {}) {
         const cap = finite(Number(options.capMinutes)) ? Number(options.capMinutes) : 720;
@@ -186,6 +202,95 @@
             if (minutes > best) best = minutes;
         }
         return Math.min(cap, Math.max(min, best));
+    }
+
+    // Last knot available (for fade band beyond reliable cut).
+    function maxHorizonMinutesAvailable(model, options = {}) {
+        const cap = finite(Number(options.capMinutes)) ? Number(options.capMinutes) : 720;
+        const horizons = model?.horizons;
+        if (!horizons) return maxReliableHorizonMinutes(model, options);
+        let best = 0;
+        for (const key of Object.keys(horizons)) {
+            const minutes = Number(key);
+            if (!Number.isFinite(minutes) || minutes > cap || minutes < 0) continue;
+            if (minutes > best) best = minutes;
+        }
+        return Math.max(best, maxReliableHorizonMinutes(model, options));
+    }
+
+    // Attach pinball Q10/Q90 + conformal onto prod MLP (median layers unchanged).
+    function mergeQuantileBands(node, bands) {
+        if (!node || node.kind !== 'window_delta_mlp' || !bands?.horizons) return node;
+        const out = { ...node, horizons: { ...node.horizons } };
+        for (const [key, src] of Object.entries(bands.horizons)) {
+            const block = out.horizons[key];
+            if (!block || !Array.isArray(src.layersQ10) || !Array.isArray(src.layersQ90)) continue;
+            out.horizons[key] = {
+                ...block,
+                layersQ10: src.layersQ10,
+                layersQ50: block.layersQ50 || block.layers,
+                layersQ90: src.layersQ90,
+                conformalQhat: finite(Number(src.conformalQhat)) ? Number(src.conformalQhat) : block.conformalQhat
+            };
+        }
+        out.quantiles = Array.isArray(bands.quantiles) ? bands.quantiles.slice() : [0.1, 0.5, 0.9];
+        out.bandSource = typeof bands.source === 'string' ? bands.source : 'cento-dnn-bands';
+        return out;
+    }
+
+    function applySkillGates(data, gates) {
+        if (!data?.nodes || !gates?.stations) return data;
+        const enter = finite(Number(gates.skillEnter)) ? Number(gates.skillEnter) : SKILL_ENTER;
+        const exit = finite(Number(gates.skillExit)) ? Number(gates.skillExit) : SKILL_EXIT;
+        for (const [name, gate] of Object.entries(gates.stations)) {
+            const node = data.nodes[name];
+            if (!node) continue;
+            const prev = node.reliable === true;
+            const lo = finite(Number(gate.skill120CI?.lo)) ? Number(gate.skill120CI.lo)
+                : (finite(Number(gate.skill120)) ? Number(gate.skill120) : skillLoOf(node));
+            let next = prev;
+            if (finite(lo)) {
+                next = prev ? lo >= exit : lo >= enter;
+            }
+            data.nodes[name] = {
+                ...node,
+                skill120: finite(Number(gate.skill120)) ? Number(gate.skill120) : node.skill120,
+                skill120CI: gate.skill120CI || node.skill120CI || null,
+                reliable: next,
+                reliableNote: `isteresi enter=${enter}/exit=${exit} on skillLo=${finite(lo) ? lo.toFixed(3) : 'n/d'}`
+            };
+        }
+        return data;
+    }
+
+    // Upstream freshness: names without a finite reading in the last staleMinutes.
+    function missingUpstreams(upstreams, now = new Date(), staleMinutes = 90) {
+        const nowMs = +now;
+        const staleMs = Math.max(0, Number(staleMinutes) || 0) * MINUTE;
+        const missing = [];
+        for (const up of upstreams || []) {
+            const last = latestFinite(up?.timeSeries);
+            if (!last || (staleMs > 0 && nowMs - +last.time > staleMs)) {
+                missing.push(up?.id || up?.name || '?');
+            }
+        }
+        return missing;
+    }
+
+    function widenForecastBand(forecast, factor = 1.5) {
+        if (!Array.isArray(forecast) || !(factor > 1)) return forecast;
+        return forecast.map(p => {
+            if (p?.regime === 'anchor') return p;
+            const med = p.med ?? p.value;
+            if (!finite(med)) return p;
+            const halfLo = finite(p.min) ? med - p.min : null;
+            const halfHi = finite(p.max) ? p.max - med : null;
+            return {
+                ...p,
+                min: finite(halfLo) ? med - halfLo * factor : p.min,
+                max: finite(halfHi) ? med + halfHi * factor : p.max
+            };
+        });
     }
 
     // Cross-correlate predicted[i] vs observed[i+d]; positive lagMin ⇒ predicted lags observed.
@@ -940,6 +1045,10 @@
                 layers: block.layers,
                 mean: block.mean,
                 std: block.std,
+                layersQ10: Array.isArray(block.layersQ10) ? block.layersQ10 : null,
+                layersQ50: Array.isArray(block.layersQ50) ? block.layersQ50 : null,
+                layersQ90: Array.isArray(block.layersQ90) ? block.layersQ90 : null,
+                conformalQhat: finite(Number(block.conformalQhat)) ? Number(block.conformalQhat) : null,
                 spreadLow: finite(Number(block.spreadLow)) ? Number(block.spreadLow) : null,
                 spreadHigh: finite(Number(block.spreadHigh)) ? Number(block.spreadHigh) : null,
                 spreadLowHigh: finite(Number(block.spreadLowHigh)) ? Number(block.spreadLowHigh) : null,
@@ -1221,6 +1330,85 @@
         return points;
     }
 
+    // M3: GRU short + ridge long with linear weight in [blendStartMin, blendEndMin].
+    function forecastBlendGruRidge(gruModel, ridgeModel, upstreams, sensorMap, rainSensors, horizonHours, now = new Date(), stepMs = DEFAULT_STEP_MS, options = {}) {
+        const blendStart = finite(Number(options.blendStartMin)) ? Number(options.blendStartMin) : 90;
+        const blendEnd = finite(Number(options.blendEndMin)) ? Number(options.blendEndMin) : 150;
+        const span = Math.max(1, blendEnd - blendStart);
+        const gruHorizon = Math.min(horizonHours, blendEnd / 60);
+        const gruPts = forecastWindowSeq(gruModel, sensorMap, rainSensors, gruHorizon, now, stepMs, options);
+        const ridgePts = forecastDirectHorizon(upstreams, ridgeModel, horizonHours, now, stepMs, options);
+        const nowMs = +now;
+        const gruByT = new Map();
+        for (const p of gruPts) {
+            if (p.regime === 'anchor') continue;
+            gruByT.set(+p.time, p);
+        }
+        const ridgeByT = new Map();
+        for (const p of ridgePts) {
+            if (p.regime === 'anchor') continue;
+            ridgeByT.set(+p.time, p);
+        }
+        const times = [...new Set([...gruByT.keys(), ...ridgeByT.keys()])].sort((a, b) => a - b);
+        const points = [];
+        if (options.anchor?.time) {
+            points.push({
+                time: options.anchor.time instanceof Date ? options.anchor.time : new Date(options.anchor.time),
+                value: options.anchor.value,
+                regime: 'anchor',
+                spreadLow: 0,
+                spreadHigh: 0
+            });
+        }
+        for (const t of times) {
+            if (t > nowMs + horizonHours * HOUR + 1) continue;
+            const minutes = (t - nowMs) / MINUTE;
+            const g = gruByT.get(t);
+            const r = ridgeByT.get(t);
+            let value = null;
+            let spreadLow = null;
+            let spreadHigh = null;
+            let regime = 'blend';
+            if (minutes <= blendStart && g && finite(g.value)) {
+                value = g.value;
+                spreadLow = g.spreadLow;
+                spreadHigh = g.spreadHigh;
+                regime = 'gru';
+            } else if (minutes >= blendEnd && r && finite(r.value)) {
+                value = r.value;
+                spreadLow = r.spreadLow;
+                spreadHigh = r.spreadHigh;
+                regime = 'ridge';
+            } else if (g && r && finite(g.value) && finite(r.value)) {
+                const w = Math.min(1, Math.max(0, (minutes - blendStart) / span));
+                value = (1 - w) * g.value + w * r.value;
+                const loG = finite(g.spreadLow) ? g.value - g.spreadLow : g.value;
+                const hiG = finite(g.spreadHigh) ? g.value + g.spreadHigh : g.value;
+                const loR = finite(r.spreadLow) ? r.value - r.spreadLow : r.value;
+                const hiR = finite(r.spreadHigh) ? r.value + r.spreadHigh : r.value;
+                const lo = (1 - w) * loG + w * loR;
+                const hi = (1 - w) * hiG + w * hiR;
+                spreadLow = Math.max(0, value - Math.min(lo, hi));
+                spreadHigh = Math.max(0, Math.max(lo, hi) - value);
+                regime = 'blend';
+            } else if (g && finite(g.value)) {
+                value = g.value;
+                spreadLow = g.spreadLow;
+                spreadHigh = g.spreadHigh;
+                regime = 'gru';
+            } else if (r && finite(r.value)) {
+                value = r.value;
+                spreadLow = r.spreadLow;
+                spreadHigh = r.spreadHigh;
+                regime = 'ridge';
+            }
+            if (!finite(value)) continue;
+            points.push({ time: new Date(t), value, regime, spreadLow, spreadHigh });
+        }
+        points.bias = null;
+        return points;
+    }
+
     function forecastWindowMlp(model, sensorMap, rainSensors, horizonHours, now = new Date(), stepMs = DEFAULT_STEP_MS, options = {}) {
         const anchor = options.anchor;
         if (!finite(anchor?.value) || !model?.horizons) return Object.assign([], { bias: null });
@@ -1262,7 +1450,8 @@
             );
             const x = standardizeWindowFeatures(raw, model.featureNames, block.mean, block.std);
             if (!x) continue;
-            const delta = mlpForward(x, block.layers);
+            const layersMed = block.layersQ50 || block.layers;
+            const delta = mlpForward(x, layersMed);
             if (!finite(delta)) continue;
             let value = smooth * previous + (1 - smooth) * (y0 + delta);
             if (finite(maxStep) && finite(previous)) {
@@ -1276,12 +1465,24 @@
                 if (finite(yRecent)) recentMove = Math.abs(y0 - yRecent) >= 0.05;
             }
             const useHigh = Math.abs(delta) >= 0.05 || recentMove;
-            const spreadLow = useHigh
+            let spreadLow = useHigh
                 ? (finite(block.spreadLowHigh) ? block.spreadLowHigh : block.spreadLow)
                 : block.spreadLow;
-            const spreadHigh = useHigh
+            let spreadHigh = useHigh
                 ? (finite(block.spreadHighHigh) ? block.spreadHighHigh : block.spreadHigh)
                 : block.spreadHigh;
+            // M1: pinball q10/q90 band (+ optional conformal inflate on Δ)
+            if (block.layersQ10 && block.layersQ90) {
+                const d10 = mlpForward(x, block.layersQ10);
+                const d90 = mlpForward(x, block.layersQ90);
+                const qhat = finite(block.conformalQhat) ? block.conformalQhat : 0;
+                if (finite(d10) && finite(d90)) {
+                    const lo = y0 + Math.min(d10, d90) - qhat;
+                    const hi = y0 + Math.max(d10, d90) + qhat;
+                    spreadLow = Math.max(0, value - lo);
+                    spreadHigh = Math.max(0, hi - value);
+                }
+            }
             points.push({
                 time: new Date(target),
                 value,
@@ -1585,11 +1786,50 @@
         return points;
     }
 
+    function parseBlendGruRidgeNode(node) {
+        if (!node || node.kind !== 'blend_gru_ridge') return null;
+        const gru = parseWindowSeqNode(node.gru || node.seq);
+        const ridgeRaw = node.ridge || node.direct;
+        if (!gru || !ridgeRaw) return null;
+        const ups = Array.isArray(ridgeRaw.upstreams) ? ridgeRaw.upstreams : (Array.isArray(node.upstreams) ? node.upstreams : []);
+        const ridge = parseOfflineNode(
+            { nodes: { [node.downstream || gru.downstream || '_']: { ...ridgeRaw, kind: ridgeRaw.kind || 'direct_horizon_delta_ridge' } } },
+            node.downstream || gru.downstream || '_',
+            ups
+        );
+        if (!ridge || ridge.kind !== 'direct_horizon_delta_ridge') return null;
+        const skill120 = finite(Number(node.skill120)) ? Number(node.skill120)
+            : (finite(gru.skill120) ? gru.skill120 : ridge.skill120);
+        return {
+            kind: 'blend_gru_ridge',
+            source: 'offline',
+            downstream: node.downstream || gru.downstream,
+            gru,
+            ridge,
+            blendStartMin: finite(Number(node.blendStartMin)) ? Number(node.blendStartMin) : 90,
+            blendEndMin: finite(Number(node.blendEndMin)) ? Number(node.blendEndMin) : 150,
+            upstreams: ridge.upstreams.slice(),
+            lagMinutes: ridge.lagMinutes.slice(),
+            horizons: { ...(ridge.horizons || {}), ...(gru.horizons || {}) },
+            reliable: node.reliable !== false && (skill120 == null || skill120 >= SKILL_KEEP),
+            skill120,
+            r: skill120,
+            rmse: ridge.rmse ?? gru.rmse ?? null,
+            spreadLow: gru.spreadLow ?? ridge.spreadLow,
+            spreadHigh: gru.spreadHigh ?? ridge.spreadHigh,
+            a: ridge.a || [],
+            b: ridge.b || 0,
+            c: ridge.c || [],
+            trainedAt: typeof node.trainedAt === 'string' ? node.trainedAt : null
+        };
+    }
+
     function parseOfflineNode(coeffs, downstreamId, upstreamIds) {
         const node = coeffs?.nodes?.[downstreamId];
         if (!node) return null;
         if (node.kind === 'rc_gru') return parseRcGruNode(node);
         if (node.kind === 'muskingum_gru') return parseMuskingumGruNode(node);
+        if (node.kind === 'blend_gru_ridge') return parseBlendGruRidgeNode(node);
         if (node.kind === 'window_delta_mlp') return parseWindowMlpNode(node);
         if (node.kind === 'window_delta_gru' || node.kind === 'window_delta_cnn') return parseWindowSeqNode(node);
         if (!Array.isArray(node.upstreams) || !Array.isArray(node.lagMinutes)) return null;
@@ -2010,6 +2250,83 @@
                 skill120: offlineNode.skill120,
                 mae: null,
                 rmse: null,
+                forkSpread: offlineNode.spreadLow,
+                spreadLow: offlineNode.spreadLow,
+                spreadHigh: offlineNode.spreadHigh,
+                bias: null,
+                maxStep,
+                predicted: [],
+                observed: [],
+                times: [],
+                forecast,
+                next: nextHalfHourForks(forecast, Math.max(6, Math.round(horizonHours * 2)), now),
+                reason: null
+            };
+        }
+
+        // M3: GRU≤2h + ridge long with weighted junction.
+        if (offlineNode?.kind === 'blend_gru_ridge') {
+            if (offlineNode.reliable === false) {
+                return {
+                    ok: false,
+                    maxHorizonMinutes,
+                    reason: 'Nessuna stima affidabile: blend GRU+ridge sotto soglia.',
+                    source: 'offline',
+                    kind: offlineNode.kind,
+                    skill120: offlineNode.skill120,
+                    reliable: false
+                };
+            }
+            if (!finite(anchor?.value)) {
+                return { ok: false, reason: 'Manca l’ultima misura a valle per ancorare la previsione.' };
+            }
+            const sensorMap = { ...(options.sensorMap || {}) };
+            if (downstream?.id) sensorMap[downstream.id] = downstream;
+            for (const up of list) {
+                if (up?.id) sensorMap[up.id] = up;
+            }
+            const rainSensors = options.rainSensors || [];
+            const ridgeUps = (offlineNode.upstreams || []).map(id => sensorMap[id]).filter(Boolean);
+            if (ridgeUps.length !== (offlineNode.upstreams || []).length) {
+                return { ok: false, reason: 'Serie a monte incomplete per il tratto ridge del blend.' };
+            }
+            const rawForecast = forecastBlendGruRidge(
+                offlineNode.gru, offlineNode.ridge, ridgeUps, sensorMap, rainSensors, horizonHours, now, stepMs, {
+                    anchor,
+                    maxStep: options.maxStep === null ? null : maxStep,
+                    downstream,
+                    rainSensors,
+                    smooth: options.smooth,
+                    blendStartMin: offlineNode.blendStartMin,
+                    blendEndMin: offlineNode.blendEndMin
+                }
+            );
+            if (!rawForecast.length) {
+                return { ok: false, reason: 'Blend GRU+ridge incompleto sulla finestra richiesta.' };
+            }
+            const forecast = rawForecast.map(point => {
+                const lo = finite(point.spreadLow) ? point.spreadLow : offlineNode.spreadLow;
+                const hi = finite(point.spreadHigh) ? point.spreadHigh : offlineNode.spreadHigh;
+                const fork = forkAround(point.value, lo, hi);
+                return fork
+                    ? { time: point.time, value: fork.med, min: fork.min, med: fork.med, max: fork.max, regime: point.regime }
+                    : { time: point.time, value: point.value, min: point.value, med: point.value, max: point.value, regime: point.regime };
+            });
+            return {
+                ok: true,
+                maxHorizonMinutes,
+                source: 'offline',
+                kind: offlineNode.kind,
+                reliable: true,
+                upstreams: offlineNode.upstreams,
+                lagMinutes: offlineNode.lagMinutes,
+                a: offlineNode.a,
+                b: offlineNode.b,
+                c: offlineNode.c,
+                r: offlineNode.r,
+                skill120: offlineNode.skill120,
+                mae: null,
+                rmse: offlineNode.rmse,
                 forkSpread: offlineNode.spreadLow,
                 spreadLow: offlineNode.spreadLow,
                 spreadHigh: offlineNode.spreadHigh,
@@ -2471,6 +2788,32 @@
         };
     }
 
+    async function softMergeCentoBands(fetcher, data) {
+        try {
+            const res = await fetcher('models/cento-dnn-bands.json', { cache: 'no-store' });
+            if (!res?.ok) return false;
+            const bands = await res.json();
+            if (!bands?.horizons || !data.nodes?.Cento) return false;
+            if (data.nodes.Cento.kind !== 'window_delta_mlp') return false;
+            data.nodes.Cento = mergeQuantileBands(data.nodes.Cento, bands);
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    async function softApplySkillGates(fetcher, data) {
+        try {
+            const res = await fetcher('models/skill-gates.json', { cache: 'no-store' });
+            if (!res?.ok) return false;
+            const gates = await res.json();
+            applySkillGates(data, gates);
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
     async function loadCoeffs(fetcher, url = 'models/transfer-coeffs.json') {
         try {
             const response = await fetcher(url, { cache: 'no-store' });
@@ -2511,6 +2854,8 @@
             } catch {
                 /* keep transfer-coeffs node */
             }
+            // Fase 3: CI + isteresi reliable. Bande quantili Cento: softMergeCentoBands (opz., pesante).
+            await softApplySkillGates(fetcher, data);
             return data;
         } catch {
             return null;
@@ -2520,14 +2865,16 @@
     const api = {
         edgeKey, buildGraph, rankNodes, alignSeries, estimateLag, fitAffine, fitMultiAffine, applyAffine, applyMulti,
         pickRegime, latestFinite, maxStepFromSeries, predictEdge, predictNode, forecastForward, forecastForwardMulti,
-        forecastDirectHorizon, forecastWindowMlp, forecastWindowSeq, forecastMuskingumGru, forecastRcGru, parseOfflineNode,
-        parseWindowMlpNode, parseWindowSeqNode, parseMuskingumGruNode, parseRcGruNode, gruForward, conv1dForward, muskingumStep, muskingumCoeffs,
+        forecastDirectHorizon, forecastWindowMlp, forecastWindowSeq, forecastBlendGruRidge, forecastMuskingumGru, forecastRcGru, parseOfflineNode,
+        parseWindowMlpNode, parseWindowSeqNode, parseBlendGruRidgeNode, parseMuskingumGruNode, parseRcGruNode, gruForward, conv1dForward, muskingumStep, muskingumCoeffs,
         muskingumWarmup, decodeMuskingumTheta, decodeKX, decodeRcTheta, rcStep, softplus, mlpForward, seqDeltaForward,
         sampleAt, sampleNormLevel, buildMuskingumSeq, buildRcSeq, buildSeqChannelMatrix, standardizeSeqMatrix,
         buildWindowFeatureVector, localPolyDerivatives, standardizeWindowFeatures, nextHalfHourForks, forkAround, withFork, loadCoeffs,
+        softMergeCentoBands, softApplySkillGates,
         seqGruUrl, pearson, residuals, estimateRecentBias, driverIsHigh, basinRainAt, hindcastSeries,
-        truncateSensor, seriesUntil, maxReliableHorizonMinutes, estimatePredictedLag,
-        DEFAULT_STEP_MS, FORK_K, SKILL_KEEP
+        truncateSensor, seriesUntil, maxReliableHorizonMinutes, maxHorizonMinutesAvailable, estimatePredictedLag,
+        reliableFromSkill, skillLoOf, mergeQuantileBands, applySkillGates, missingUpstreams, widenForecastBand,
+        DEFAULT_STEP_MS, FORK_K, SKILL_KEEP, SKILL_ENTER, SKILL_EXIT
     };
     if (typeof module !== 'undefined' && module.exports) module.exports = api;
     else root.RenoPredict = api;

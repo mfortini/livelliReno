@@ -143,7 +143,7 @@
     </div>
     <div class="page-intro">
         <h2>Prove di trasferimento monte→valle</h2>
-        <p>Si mostrano solo le stazioni con stima affidabile (validate, holdout e backtest sopra soglia rispetto alla persistenza). Le altre restano nascoste. Per ciascuna: modello multi-ingresso a orizzonte (30/60/90/120′) con lag dai monti e forchetta min/med/max. Indizi statistici, non una previsione operativa.</p>
+        <p>Si mostrano solo le stazioni con stima affidabile (limite inferiore dello skill in evento ≥ 0.10 per entrare; isteresi a 0.05 per uscire). Per ciascuna: mediana e banda sperimentale 10–90 (o forchetta residua) che oltre l’orizzonte affidabile si allarga e sfuma, invece di tagliarsi di netto. Indizi statistici, non una previsione operativa.</p>
     </div>
     <p id="status-line" class="status-line" role="status">Caricamento osservazioni ARPAE…</p>
     <div class="pred-layout">
@@ -164,14 +164,14 @@
             </div>
             <details class="reading-help">
                 <summary>Come leggere grafici e soglie</summary>
-                <p>Stesso intervallo e soglie delle Osservazioni; a destra di «ora» la banda rossa è la forchetta sperimentale fino a 4–6 h dove il modello resta affidabile. «Predizione storica» confronta, allo stesso istante, il valore predetto H ore prima e l’osservato (più i residui e una stima del ritardo tipico). Non è allerta territoriale.</p>
+                <p>Stesso intervallo e soglie delle Osservazioni. A destra di «ora»: linea mediana e banda (min–max / quantili 10–90 dove disponibili). Fino all’orizzonte affidabile la banda è piena; oltre si sfuma e si allarga. Se una stazione di monte manca o è obsoleta, la banda si allarga e compare un avviso. «Predizione storica» confronta ŷ(t−H) con l’osservato. Non è allerta territoriale.</p>
             </details>
             <div id="edge-grid" class="edge-grid" aria-live="polite"></div>
         </div>
     </div>
     <footer class="source-notes">
         <h2>Limiti e disclaimer</h2>
-        <p>I numeri mostrati non certificano il livello futuro di nessuna stazione. Non sostituiscono modelli idraulici, radar, pioggia prevista né bollettini ufficiali. Non basare su di essi evacuazioni, aperture di paratoie o comunicazioni al pubblico.</p>
+        <p>I numeri mostrati non certificano il livello futuro di nessuna stazione. La banda 10–90 (o forchetta residua) è un intervallo empirico di incertezza del modello, non una probabilità di superamento soglia né un’allerta. Non sostituiscono modelli idraulici, radar, pioggia prevista né bollettini ufficiali. Non basare su di essi evacuazioni, aperture di paratoie o comunicazioni al pubblico.</p>
     </footer>
 </main>
 
@@ -198,10 +198,35 @@
     const HINDCAST_ORANGE = '#c45c26';
     const cardState = new Map(); // downstream -> { prediction, down, ups, rainSensors, bandHours, hindcast, showHindcast }
 
-    function bandHoursFor(nodeModel, prediction) {
+    function reliableHoursFor(nodeModel, prediction) {
         const fromModel = P.maxReliableHorizonMinutes(nodeModel || prediction) / 60;
         const fromPred = prediction?.maxHorizonMinutes != null ? prediction.maxHorizonMinutes / 60 : fromModel;
         return Math.min(12, Math.max(2, fromPred || fromModel || 2));
+    }
+
+    // Request knots out to available horizon; UI fades after reliable cut (Fase 3).
+    function bandHoursFor(nodeModel, prediction) {
+        const reliable = reliableHoursFor(nodeModel, prediction);
+        const available = P.maxHorizonMinutesAvailable(nodeModel || prediction) / 60;
+        return Math.min(12, Math.max(reliable, available || reliable));
+    }
+
+    function applyUpstreamDegrade(prediction, ups, now) {
+        if (!prediction?.ok) return prediction;
+        const staleMinutes = config?.staleMinutes ?? 90;
+        const missing = P.missingUpstreams(ups, now, staleMinutes);
+        if (!missing.length) return prediction;
+        const forecast = P.widenForecastBand(prediction.forecast || [], 1.5);
+        const next = P.nextHalfHourForks(forecast, Math.max(6, Math.round((prediction.maxHorizonMinutes || 120) / 30)), now);
+        const note = `Monte mancante o obsoleto (>${staleMinutes}′): ${missing.join(', ')}. Banda allargata.`;
+        return {
+            ...prediction,
+            forecast,
+            next,
+            missingUpstreams: missing,
+            degraded: true,
+            reason: prediction.reason ? `${prediction.reason} ${note}` : note
+        };
     }
 
     function formatHorizonHours(hours) {
@@ -281,6 +306,8 @@
         const el = document.getElementById(elementId);
         if (!el || !window.Plotly || !prediction?.ok) return;
         const hours = bandHours || bandHoursFor(null, prediction);
+        const reliableH = reliableHoursFor(null, prediction);
+        const reliableEnd = +renderTime + reliableH * 3600000;
         const filtered = D.filter(down, selectedRange, renderTime);
         const points = D.withGaps(filtered);
         const times = points.map(d => +d.time);
@@ -294,8 +321,19 @@
             ? [{ time: lastObs.time, min: lastObs.value, med: lastObs.value, max: lastObs.value }]
             : [];
         const band = bridge.concat(forecast);
+        const solid = band.filter(p => +p.time <= reliableEnd + 1);
+        const fadeTail = band.filter(p => +p.time >= reliableEnd - 1);
+        // Widen fade segment slightly so uncertainty grows past the reliable cut.
+        const fade = fadeTail.map((p, i) => {
+            if (!i || p.regime === 'anchor') return p;
+            const t = (+p.time - reliableEnd) / Math.max(1, hours * 3600000 - reliableH * 3600000);
+            const grow = 1 + Math.max(0, Math.min(1, t)) * 0.75;
+            const med = p.med ?? p.value;
+            if (!Number.isFinite(med) || !Number.isFinite(p.min) || !Number.isFinite(p.max)) return p;
+            return { ...p, min: med - (med - p.min) * grow, max: med + (p.max - med) * grow };
+        });
         const avg = D.weightedAverage(down, filtered, false);
-        const yValues = values.concat(band.map(p => p.med), band.map(p => p.min), band.map(p => p.max));
+        const yValues = values.concat(band.map(p => p.med), band.map(p => p.min), band.map(p => p.max), fade.map(p => p.min), fade.map(p => p.max));
         const start = +renderTime - selectedRange * 3600000;
         const end = +renderTime + hours * 3600000;
         const ticks = D.romeTickVals(start, end, 4);
@@ -306,13 +344,23 @@
                 hovertemplate: '%{customdata}<br><b>%{y:.2f} m</b><extra></extra>',
                 line: { color: '#087e91', width: 2.5 }
             },
-            { x: band.map(p => +p.time), y: band.map(p => p.max), type: 'scatter', mode: 'lines', line: { width: 0 }, hoverinfo: 'skip', showlegend: false },
-            { x: band.map(p => +p.time), y: band.map(p => p.min), type: 'scatter', mode: 'lines', fill: 'tonexty', fillcolor: 'rgba(198,40,40,.16)', line: { width: 0 }, hoverinfo: 'skip', showlegend: false },
+            { x: solid.map(p => +p.time), y: solid.map(p => p.max), type: 'scatter', mode: 'lines', line: { width: 0 }, hoverinfo: 'skip', showlegend: false },
+            { x: solid.map(p => +p.time), y: solid.map(p => p.min), type: 'scatter', mode: 'lines', fill: 'tonexty', fillcolor: 'rgba(198,40,40,.18)', line: { width: 0 }, hoverinfo: 'skip', showlegend: false },
             {
-                x: band.map(p => +p.time), y: band.map(p => p.med), type: 'scatter', mode: 'lines',
+                x: solid.map(p => +p.time), y: solid.map(p => p.med), type: 'scatter', mode: 'lines',
                 name: 'Previsione', line: { color: FORECAST_RED, width: 2.25 }
             }
         ];
+        if (fade.length > 1) {
+            traces.push(
+                { x: fade.map(p => +p.time), y: fade.map(p => p.max), type: 'scatter', mode: 'lines', line: { width: 0 }, hoverinfo: 'skip', showlegend: false },
+                { x: fade.map(p => +p.time), y: fade.map(p => p.min), type: 'scatter', mode: 'lines', fill: 'tonexty', fillcolor: 'rgba(198,40,40,.07)', line: { width: 0 }, hoverinfo: 'skip', showlegend: false },
+                {
+                    x: fade.map(p => +p.time), y: fade.map(p => p.med), type: 'scatter', mode: 'lines',
+                    name: 'Oltre affidabilità', line: { color: FORECAST_RED, width: 1.5, dash: 'dot' }, opacity: 0.55
+                }
+            );
+        }
         // Past hindcast lives in the compare panel (same-instant pred vs obs), not here —
         // overlaying ŷ(t) on the full series makes a lagging model look time-shifted.
         const layout = {
@@ -338,12 +386,16 @@
                 {
                     type: 'line', x0: +renderTime, x1: +renderTime, y0: 0, y1: 1, yref: 'paper',
                     line: { color: '#9bb0ba', width: 1, dash: 'dot' }
-                }
+                },
+                ...(hours > reliableH + 0.05 ? [{
+                    type: 'line', x0: reliableEnd, x1: reliableEnd, y0: 0, y1: 1, yref: 'paper',
+                    line: { color: 'rgba(198,40,40,.35)', width: 1, dash: 'dash' }
+                }] : [])
             ],
             autosize: true, height: 245,
             margin: { t: 15, b: 45, r: 18, l: 48 }
         };
-        el.setAttribute('aria-label', `${down.name}: ultime ${selectedRange} ore e previsione sperimentale ${formatHorizonHours(hours)} h. Orari italiani.`);
+        el.setAttribute('aria-label', `${down.name}: ultime ${selectedRange} ore e previsione sperimentale fino a ${formatHorizonHours(hours)} h (affidabile ${formatHorizonHours(reliableH)} h). Orari italiani.`);
         if (el.data) Plotly.react(el, traces, layout, { responsive: true, displayModeBar: false, staticPlot: true });
         else Plotly.newPlot(el, traces, layout, { responsive: true, displayModeBar: false, staticPlot: true });
     }
@@ -540,13 +592,15 @@
             const rainSensors = Object.values(sensorsById).filter(s => s?.kind === 'rain' && s.timeSeries?.length);
             const nodeModel = coeffs?.nodes?.[node.downstream];
             const bandHours = bandHoursFor(nodeModel);
-            const prediction = P.predictNode(down, ups, {
+            let prediction = P.predictNode(down, ups, {
                 hours: 72, now: renderTime, coeffs, horizonHours: bandHours, downstreamId: node.downstream,
                 sensorMap: sensorsById, rainSensors
             });
             // Stazioni sotto soglia di skill: nessuna card (improbabile che il ridge torni affidabile).
             if (!prediction.ok) continue;
+            prediction = applyUpstreamDegrade(prediction, ups, renderTime);
             const hours = bandHoursFor(nodeModel, prediction);
+            const reliableH = reliableHoursFor(nodeModel, prediction);
 
             okCount++;
             const card = document.createElement('article');
@@ -569,7 +623,13 @@
             meta.className = 'edge-meta';
             const upsLabel = (prediction.upstreams || node.upstreams).join(' + ');
             const skillLabel = prediction.skill120 == null ? '' : ` · skill@2h ${prediction.skill120.toFixed(2)}`;
-            meta.innerHTML = `da <strong>${upsLabel}</strong><br>lag ${formatLags(prediction)} · r=${prediction.r == null ? 'n/d' : prediction.r.toFixed(2)} · RMSE ${number(prediction.rmse)} m · fonte <strong>${prediction.source}</strong>${prediction.kind ? ' · ' + prediction.kind : ''}${skillLabel}${prediction.reason ? '<br>' + prediction.reason : ''}`;
+            const ci = nodeModel?.skill120CI;
+            const ciLabel = ci && Number.isFinite(ci.lo) && Number.isFinite(ci.hi)
+                ? ` · CI90 [${ci.lo.toFixed(2)}, ${ci.hi.toFixed(2)}]`
+                : '';
+            const bandLabel = nodeModel?.quantiles ? ' · banda q10–90' : '';
+            const degLabel = prediction.degraded ? ' · <strong>degradata</strong>' : '';
+            meta.innerHTML = `da <strong>${upsLabel}</strong><br>lag ${formatLags(prediction)} · r=${prediction.r == null ? 'n/d' : prediction.r.toFixed(2)} · RMSE ${number(prediction.rmse)} m · fonte <strong>${prediction.source}</strong>${prediction.kind ? ' · ' + prediction.kind : ''}${skillLabel}${ciLabel}${bandLabel}${degLabel}<br>orizzonte pieno ${formatHorizonHours(reliableH)} h · coda sfumata fino a ${formatHorizonHours(hours)} h${prediction.reason ? '<br>' + prediction.reason : ''}`;
             card.appendChild(meta);
             const table = document.createElement('table');
             table.className = 'fork-table';
@@ -737,6 +797,12 @@
                 };
             }
             renderAll();
+            // Banda q10–90 Cento (~48 MB): dopo il primo paint, senza bloccare il caricamento.
+            if (coeffs?.nodes?.Cento?.kind === 'window_delta_mlp') {
+                P.softMergeCentoBands(window.fetch.bind(window), coeffs).then(ok => {
+                    if (ok) renderAll();
+                }).catch(() => { /* banda residua già in pagina */ });
+            }
         } catch (error) {
             document.getElementById('status-line').textContent = error.message || 'Impossibile caricare i dati.';
         }

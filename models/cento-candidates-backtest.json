@@ -2,7 +2,7 @@
   "kind": "experimental_candidates",
   "node": "Cento",
   "from": 1733270400000,
-  "to": 1794404700000,
+  "to": 1794397500000,
   "everyMin": 120,
   "eventThreshold": 0.1,
   "note": "Does not write reliable flags or promote experimental models.",
@@ -25,54 +25,86 @@
     "persist": {
       "all": {
         "1": {
-          "n": 13415,
-          "rmse": 0.04769154837920227,
-          "mae": 0.023329109206111157,
-          "skillPersist": 0
+          "n": 13411,
+          "rmse": 0.047690686833155645,
+          "mae": 0.02332115427633891,
+          "skillPersist": 0,
+          "phaseLagMin": 30,
+          "phaseRmseGain": 1
         },
         "2": {
-          "n": 13415,
-          "rmse": 0.09421247032066261,
-          "mae": 0.045213566902717085,
-          "skillPersist": 0
-        },
-        "3": {
-          "n": 13414,
-          "rmse": 0.14029275127686824,
-          "mae": 0.067108245117037,
-          "skillPersist": 0
+          "n": 13411,
+          "rmse": 0.09420894981232746,
+          "mae": 0.04519573484452685,
+          "skillPersist": 0,
+          "phaseLagMin": 60,
+          "phaseRmseGain": 1
         },
         "4": {
-          "n": 13414,
-          "rmse": 0.18568868907404282,
-          "mae": 0.08899358878782694,
-          "skillPersist": 0
+          "n": 13410,
+          "rmse": 0.18567738814488557,
+          "mae": 0.08895451155853173,
+          "skillPersist": 0,
+          "phaseLagMin": 120,
+          "phaseRmseGain": 1
+        },
+        "8": {
+          "n": 13406,
+          "rmse": 0.35896293136725904,
+          "mae": 0.17509100402805808,
+          "skillPersist": 0,
+          "phaseLagMin": 120,
+          "phaseRmseGain": 0.48327993072079767
+        },
+        "12": {
+          "n": 13402,
+          "rmse": 0.5183812679240072,
+          "mae": 0.2592620504402506,
+          "skillPersist": 0,
+          "phaseLagMin": 120,
+          "phaseRmseGain": 0.3085073038737466
         }
       },
       "highAcceptor": {
         "1": {
-          "n": 3524,
-          "rmse": 0.055824996130429926,
-          "mae": 0.03805051078320157,
-          "skillPersist": 0
+          "n": 3520,
+          "rmse": 0.055830760908627576,
+          "mae": 0.038036931818182476,
+          "skillPersist": 0,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "2": {
-          "n": 3523,
-          "rmse": 0.10891251466258509,
-          "mae": 0.07499858075503836,
-          "skillPersist": 0
-        },
-        "3": {
-          "n": 3522,
-          "rmse": 0.1600526070528629,
-          "mae": 0.11110448608744881,
-          "skillPersist": 0
+          "n": 3519,
+          "rmse": 0.10891649063556552,
+          "mae": 0.07496447854504124,
+          "skillPersist": 0,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "4": {
-          "n": 3521,
-          "rmse": 0.20913170323625024,
-          "mae": 0.1464044305594984,
-          "skillPersist": 0
+          "n": 3517,
+          "rmse": 0.20911861288864,
+          "mae": 0.14632072789308892,
+          "skillPersist": 0,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 3513,
+          "rmse": 0.38624440757818673,
+          "mae": 0.27968118417306814,
+          "skillPersist": 0,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "12": {
+          "n": 3509,
+          "rmse": 0.5381567974781936,
+          "mae": 0.4025220860644002,
+          "skillPersist": 0,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         }
       },
       "lowAcceptor": {
@@ -80,79 +112,127 @@
           "n": 9891,
           "rmse": 0.044435483375252875,
           "mae": 0.018084116873925762,
-          "skillPersist": 0
+          "skillPersist": 0,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "2": {
           "n": 9892,
           "rmse": 0.08838866217160223,
           "mae": 0.034605742013746756,
-          "skillPersist": 0
-        },
-        "3": {
-          "n": 9892,
-          "rmse": 0.1325481243050019,
-          "mae": 0.05144359078042589,
-          "skillPersist": 0
+          "skillPersist": 0,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "4": {
           "n": 9893,
           "rmse": 0.17659581271202407,
           "mae": 0.06856059840290642,
-          "skillPersist": 0
+          "skillPersist": 0,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 9893,
+          "rmse": 0.3487622190173779,
+          "mae": 0.13795107651874147,
+          "skillPersist": 0,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "12": {
+          "n": 9893,
+          "rmse": 0.5111832142987786,
+          "mae": 0.20844839785706065,
+          "skillPersist": 0,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         }
       }
     },
     "local_trend": {
       "all": {
         "1": {
-          "n": 13415,
-          "rmse": 0.015268011915421546,
-          "mae": 0.009338799850914162,
-          "skillPersist": 0.6798591693013736
+          "n": 13411,
+          "rmse": 0.015269312042112038,
+          "mae": 0.009338602639625193,
+          "skillPersist": 0.6798261242172661,
+          "phaseLagMin": 30,
+          "phaseRmseGain": -2.1360505272449157
         },
         "2": {
-          "n": 13415,
-          "rmse": 0.031103209096512378,
-          "mae": 0.017329854640327564,
-          "skillPersist": 0.6698610174359174
-        },
-        "3": {
-          "n": 13414,
-          "rmse": 0.05200289872756829,
-          "mae": 0.026896526017590915,
-          "skillPersist": 0.6293258329153415
+          "n": 13411,
+          "rmse": 0.031106408976965504,
+          "mae": 0.01733054954887736,
+          "skillPersist": 0.669814714643012,
+          "phaseLagMin": 30,
+          "phaseRmseGain": -0.6938847695176105
         },
         "4": {
-          "n": 13414,
-          "rmse": 0.07717088286246089,
-          "mae": 0.0380483077381811,
-          "skillPersist": 0.5844071965434081
+          "n": 13410,
+          "rmse": 0.07718016923724842,
+          "mae": 0.03805219985085469,
+          "skillPersist": 0.5843318887218292,
+          "phaseLagMin": 30,
+          "phaseRmseGain": -0.020762161694144687
+        },
+        "8": {
+          "n": 13406,
+          "rmse": 0.20782246279114786,
+          "mae": 0.09665597493658656,
+          "skillPersist": 0.4210475661106011,
+          "phaseLagMin": 60,
+          "phaseRmseGain": 0.07856304206495368
+        },
+        "12": {
+          "n": 13402,
+          "rmse": 0.3706431629957305,
+          "mae": 0.173331592299663,
+          "skillPersist": 0.28499892660074766,
+          "phaseLagMin": 120,
+          "phaseRmseGain": 0.10636575616957822
         }
       },
       "highAcceptor": {
         "1": {
-          "n": 3524,
-          "rmse": 0.014994323557034079,
-          "mae": 0.009282065834279303,
-          "skillPersist": 0.7314048437728283
+          "n": 3520,
+          "rmse": 0.014999053000409306,
+          "mae": 0.009281250000000078,
+          "skillPersist": 0.7313478670842997,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "2": {
-          "n": 3523,
-          "rmse": 0.028777731321974653,
-          "mae": 0.017150156116945665,
-          "skillPersist": 0.7357720422567682
-        },
-        "3": {
-          "n": 3522,
-          "rmse": 0.04630068627050536,
-          "mae": 0.026771720613288315,
-          "skillPersist": 0.7107158257333918
+          "n": 3519,
+          "rmse": 0.028788160238797173,
+          "mae": 0.017152600170502866,
+          "skillPersist": 0.7356859363462018,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "4": {
-          "n": 3521,
-          "rmse": 0.06752386053079791,
-          "mae": 0.03821925589321256,
-          "skillPersist": 0.6771227915907226
+          "n": 3517,
+          "rmse": 0.06755256801595448,
+          "mae": 0.03823429058857021,
+          "skillPersist": 0.6769653017355867,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 3513,
+          "rmse": 0.18278018667527343,
+          "mae": 0.09945345858240717,
+          "skillPersist": 0.5267758365193325,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "12": {
+          "n": 3509,
+          "rmse": 0.33642780884078777,
+          "mae": 0.18117127386719672,
+          "skillPersist": 0.37485169672242225,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         }
       },
       "lowAcceptor": {
@@ -160,79 +240,127 @@
           "n": 9891,
           "rmse": 0.015364344686821194,
           "mae": 0.00935901324436441,
-          "skillPersist": 0.6542325295064092
+          "skillPersist": 0.6542325295064092,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "2": {
           "n": 9892,
           "rmse": 0.031890494497647144,
           "mae": 0.017393853619085957,
-          "skillPersist": 0.6392015252393648
-        },
-        "3": {
-          "n": 9892,
-          "rmse": 0.05388767878455759,
-          "mae": 0.026940962393853143,
-          "skillPersist": 0.5934481980253563
+          "skillPersist": 0.6392015252393648,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "4": {
           "n": 9893,
           "rmse": 0.08032526366855633,
           "mae": 0.037987465884967105,
-          "skillPersist": 0.545146272524914
+          "skillPersist": 0.545146272524914,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 9893,
+          "rmse": 0.21601761648944393,
+          "mae": 0.09566258970989135,
+          "skillPersist": 0.38061634916171827,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "12": {
+          "n": 9893,
+          "rmse": 0.38204369384782816,
+          "mae": 0.17055089457190914,
+          "skillPersist": 0.25262864045349964,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         }
       }
     },
     "poly2": {
       "all": {
         "1": {
-          "n": 13415,
-          "rmse": 0.017268952396713125,
-          "mae": 0.01161457945086271,
-          "skillPersist": 0.6379032976785481
+          "n": 13411,
+          "rmse": 0.017269260836570474,
+          "mae": 0.01161356970645912,
+          "skillPersist": 0.6378902887897917,
+          "phaseLagMin": -30,
+          "phaseRmseGain": -1.8784890448336204
         },
         "2": {
-          "n": 13415,
-          "rmse": 0.039089360249967085,
-          "mae": 0.024187135047831685,
-          "skillPersist": 0.5850935643984061
-        },
-        "3": {
-          "n": 13414,
-          "rmse": 0.07085255715845837,
-          "mae": 0.04213471621688754,
-          "skillPersist": 0.49496637200712823
+          "n": 13411,
+          "rmse": 0.03909137259994055,
+          "mae": 0.024185401287499964,
+          "skillPersist": 0.5850566992009356,
+          "phaseLagMin": -30,
+          "phaseRmseGain": -0.5446168581600419
         },
         "4": {
-          "n": 13414,
-          "rmse": 0.11250909599051795,
-          "mae": 0.06484431067044369,
-          "skillPersist": 0.3940982805600223
+          "n": 13410,
+          "rmse": 0.11251720679534899,
+          "mae": 0.06484128138205307,
+          "skillPersist": 0.394017721169414,
+          "phaseLagMin": -30,
+          "phaseRmseGain": -0.08213096698672517
+        },
+        "8": {
+          "n": 13406,
+          "rmse": 0.37658155404566684,
+          "mae": 0.2060860373464683,
+          "skillPersist": -0.04908201136897339,
+          "phaseLagMin": 30,
+          "phaseRmseGain": -0.005845126505638287
+        },
+        "12": {
+          "n": 13402,
+          "rmse": 0.7940801632518469,
+          "mae": 0.4277920024374623,
+          "skillPersist": -0.5318457907091199,
+          "phaseLagMin": 30,
+          "phaseRmseGain": 0.0005427495467162924
         }
       },
       "highAcceptor": {
         "1": {
-          "n": 3524,
-          "rmse": 0.014879982401769269,
-          "mae": 0.011318104426788413,
-          "skillPersist": 0.7334530509056629
+          "n": 3520,
+          "rmse": 0.014878413473889114,
+          "mae": 0.011313920454546126,
+          "skillPersist": 0.7335086745774597,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "2": {
-          "n": 3523,
-          "rmse": 0.03106017481064296,
-          "mae": 0.02287255180244198,
-          "skillPersist": 0.7148153735420717
-        },
-        "3": {
-          "n": 3522,
-          "rmse": 0.05426802816868796,
-          "mae": 0.039318001135719864,
-          "skillPersist": 0.660936306081137
+          "n": 3519,
+          "rmse": 0.031059520361046866,
+          "mae": 0.022864450127878116,
+          "skillPersist": 0.7148317928735696,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "4": {
-          "n": 3521,
-          "rmse": 0.08435605773150646,
-          "mae": 0.05987049133768968,
-          "skillPersist": 0.5966366819275996
+          "n": 3517,
+          "rmse": 0.08435994360654875,
+          "mae": 0.059853284048906844,
+          "skillPersist": 0.5965928501473363,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 3513,
+          "rmse": 0.2743530230735054,
+          "mae": 0.18562994591517767,
+          "skillPersist": 0.2896906267362107,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "12": {
+          "n": 3509,
+          "rmse": 0.5764098336953841,
+          "mae": 0.3832200056996369,
+          "skillPersist": -0.07108158142096244,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         }
       },
       "lowAcceptor": {
@@ -240,159 +368,127 @@
           "n": 9891,
           "rmse": 0.01804384385254617,
           "mae": 0.011720208607151145,
-          "skillPersist": 0.5939316401676595
+          "skillPersist": 0.5939316401676595,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "2": {
           "n": 9892,
           "rmse": 0.041576138150874346,
           "mae": 0.024655319113087607,
-          "skillPersist": 0.52962136625446
-        },
-        "3": {
-          "n": 9892,
-          "rmse": 0.07588743190251288,
-          "mae": 0.04313759435233741,
-          "skillPersist": 0.42747260815331545
+          "skillPersist": 0.52962136625446,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "4": {
           "n": 9893,
           "rmse": 0.12095811414243401,
           "mae": 0.0666145338454791,
-          "skillPersist": 0.31505672595034184
+          "skillPersist": 0.31505672595034184,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 9893,
+          "rmse": 0.4067473942297804,
+          "mae": 0.21334998652245557,
+          "skillPersist": -0.1662599101926039,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "12": {
+          "n": 9893,
+          "rmse": 0.8581224966195239,
+          "mae": 0.4436014774756663,
+          "skillPersist": -0.6786985030341093,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         }
       }
     },
     "mlp_prod": {
       "all": {
         "1": {
-          "n": 13415,
-          "rmse": 0.013149136479126479,
-          "mae": 0.007511362357797373,
-          "skillPersist": 0.7242879099966344
+          "n": 13411,
+          "rmse": 0.014084033673469462,
+          "mae": 0.007670081742864352,
+          "skillPersist": 0.7046795798361637,
+          "phaseLagMin": 30,
+          "phaseRmseGain": -2.1585185892309777
         },
         "2": {
-          "n": 13415,
-          "rmse": 0.025371855051496122,
-          "mae": 0.012067488916750696,
-          "skillPersist": 0.7306953637332703
-        },
-        "3": {
-          "n": 13414,
-          "rmse": 0.0396844728111381,
-          "mae": 0.016560170723428618,
-          "skillPersist": 0.717130981822285
+          "n": 13411,
+          "rmse": 0.025828937396269545,
+          "mae": 0.011721410737424746,
+          "skillPersist": 0.7258335068194363,
+          "phaseLagMin": 30,
+          "phaseRmseGain": -0.6409492329725652
         },
         "4": {
-          "n": 13414,
-          "rmse": 0.056225310278393045,
-          "mae": 0.021639384926997848,
-          "skillPersist": 0.6972065958418535
+          "n": 13410,
+          "rmse": 0.05757247054486446,
+          "mae": 0.021374008522702295,
+          "skillPersist": 0.6899327854615221,
+          "phaseLagMin": 30,
+          "phaseRmseGain": 0.19800544769301687
+        },
+        "8": {
+          "n": 13406,
+          "rmse": 0.13323817737671045,
+          "mae": 0.042602082088788504,
+          "skillPersist": 0.6288246898663947,
+          "phaseLagMin": 60,
+          "phaseRmseGain": 0.255721179187671
+        },
+        "12": {
+          "n": 13402,
+          "rmse": 0.21677935848353064,
+          "mae": 0.06763497669931223,
+          "skillPersist": 0.5818148303242514,
+          "phaseLagMin": 120,
+          "phaseRmseGain": 0.32191147022146804
         }
       },
       "highAcceptor": {
         "1": {
-          "n": 3524,
-          "rmse": 0.015348535142072708,
-          "mae": 0.008523545990980553,
-          "skillPersist": 0.7250598082226055
+          "n": 3520,
+          "rmse": 0.018525705436727435,
+          "mae": 0.00877495061167362,
+          "skillPersist": 0.6681810325485884,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "2": {
-          "n": 3523,
-          "rmse": 0.027189424574475773,
-          "mae": 0.014175751162517142,
-          "skillPersist": 0.7503553686304132
-        },
-        "3": {
-          "n": 3522,
-          "rmse": 0.03640744781894092,
-          "mae": 0.019045557069007995,
-          "skillPersist": 0.7725282424989423
+          "n": 3519,
+          "rmse": 0.029729060260805375,
+          "mae": 0.013575348300677947,
+          "skillPersist": 0.7270472075686061,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "4": {
-          "n": 3521,
-          "rmse": 0.04665306925661842,
-          "mae": 0.02409479561313917,
-          "skillPersist": 0.776920148716449
-        }
-      },
-      "lowAcceptor": {
-        "1": {
-          "n": 9891,
-          "rmse": 0.012270645699592282,
-          "mae": 0.007150738040403999,
-          "skillPersist": 0.7238547942425202
+          "n": 3517,
+          "rmse": 0.051415767025666734,
+          "mae": 0.023888779106123872,
+          "skillPersist": 0.7541310822817733,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
-        "2": {
-          "n": 9892,
-          "rmse": 0.02469224612655866,
-          "mae": 0.011316638947903475,
-          "skillPersist": 0.7206401192200433
+        "8": {
+          "n": 3513,
+          "rmse": 0.09827845267771051,
+          "mae": 0.04505793722623072,
+          "skillPersist": 0.7455537200035286,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
-        "3": {
-          "n": 9892,
-          "rmse": 0.04078773222538388,
-          "mae": 0.01567526062343574,
-          "skillPersist": 0.6922798233528478
-        },
-        "4": {
-          "n": 9893,
-          "rmse": 0.05926023638686435,
-          "mae": 0.020765484085402505,
-          "skillPersist": 0.6644301159988408
-        }
-      }
-    },
-    "mlp_novalle": {
-      "all": {
-        "1": {
-          "n": 13415,
-          "rmse": 0.014093816981958638,
-          "mae": 0.007677533777079247,
-          "skillPersist": 0.7044797776348819
-        },
-        "2": {
-          "n": 13415,
-          "rmse": 0.02582945728117152,
-          "mae": 0.011725079209561196,
-          "skillPersist": 0.725838233587782
-        },
-        "3": {
-          "n": 13414,
-          "rmse": 0.03911899043283546,
-          "mae": 0.015551427192699661,
-          "skillPersist": 0.7211617130835648
-        },
-        "4": {
-          "n": 13414,
-          "rmse": 0.05757739819991455,
-          "mae": 0.02138333863857222,
-          "skillPersist": 0.6899251188264044
-        }
-      },
-      "highAcceptor": {
-        "1": {
-          "n": 3524,
-          "rmse": 0.018549576101770226,
-          "mae": 0.00880206456272855,
-          "skillPersist": 0.6677191690541122
-        },
-        "2": {
-          "n": 3523,
-          "rmse": 0.029726642389611577,
-          "mae": 0.01358721228122222,
-          "skillPersist": 0.7270594432448301
-        },
-        "3": {
-          "n": 3522,
-          "rmse": 0.03715120764328252,
-          "mae": 0.01716192491837119,
-          "skillPersist": 0.7678812714933656
-        },
-        "4": {
-          "n": 3521,
-          "rmse": 0.05144419398393449,
-          "mae": 0.023921467289010973,
-          "skillPersist": 0.7540105436533484
+        "12": {
+          "n": 3509,
+          "rmse": 0.15071101717021532,
+          "mae": 0.06542459079334903,
+          "skillPersist": 0.7199496171442075,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         }
       },
       "lowAcceptor": {
@@ -400,79 +496,235 @@
           "n": 9891,
           "rmse": 0.012116676642253608,
           "mae": 0.007276882024109072,
-          "skillPersist": 0.7273197966604846
+          "skillPersist": 0.7273197966604846,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "2": {
           "n": 9892,
           "rmse": 0.024290960339565456,
           "mae": 0.011061887255309053,
-          "skillPersist": 0.725180133483571
-        },
-        "3": {
-          "n": 9892,
-          "rmse": 0.03979612823899093,
-          "mae": 0.014978017064331781,
-          "skillPersist": 0.699760909875892
+          "skillPersist": 0.725180133483571,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "4": {
           "n": 9893,
           "rmse": 0.059608182445489544,
           "mae": 0.020479997793712772,
-          "skillPersist": 0.6624598197993914
+          "skillPersist": 0.6624598197993914,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 9893,
+          "rmse": 0.14361929443568633,
+          "mae": 0.041730008996922315,
+          "skillPersist": 0.5882028310281793,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "12": {
+          "n": 9893,
+          "rmse": 0.2358073494913223,
+          "mae": 0.06841899005663829,
+          "skillPersist": 0.5387028703303693,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        }
+      }
+    },
+    "mlp_novalle": {
+      "all": {
+        "1": {
+          "n": 13411,
+          "rmse": 0.014084033673469462,
+          "mae": 0.007670081742864352,
+          "skillPersist": 0.7046795798361637,
+          "phaseLagMin": 30,
+          "phaseRmseGain": -2.1585185892309777
+        },
+        "2": {
+          "n": 13411,
+          "rmse": 0.025828937396269545,
+          "mae": 0.011721410737424746,
+          "skillPersist": 0.7258335068194363,
+          "phaseLagMin": 30,
+          "phaseRmseGain": -0.6409492329725652
+        },
+        "4": {
+          "n": 13410,
+          "rmse": 0.05757247054486446,
+          "mae": 0.021374008522702295,
+          "skillPersist": 0.6899327854615221,
+          "phaseLagMin": 30,
+          "phaseRmseGain": 0.19800544769301687
+        },
+        "8": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
+        },
+        "12": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
+        }
+      },
+      "highAcceptor": {
+        "1": {
+          "n": 3520,
+          "rmse": 0.018525705436727435,
+          "mae": 0.00877495061167362,
+          "skillPersist": 0.6681810325485884,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "2": {
+          "n": 3519,
+          "rmse": 0.029729060260805375,
+          "mae": 0.013575348300677947,
+          "skillPersist": 0.7270472075686061,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "4": {
+          "n": 3517,
+          "rmse": 0.051415767025666734,
+          "mae": 0.023888779106123872,
+          "skillPersist": 0.7541310822817733,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
+        },
+        "12": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
+        }
+      },
+      "lowAcceptor": {
+        "1": {
+          "n": 9891,
+          "rmse": 0.012116676642253608,
+          "mae": 0.007276882024109072,
+          "skillPersist": 0.7273197966604846,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "2": {
+          "n": 9892,
+          "rmse": 0.024290960339565456,
+          "mae": 0.011061887255309053,
+          "skillPersist": 0.725180133483571,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "4": {
+          "n": 9893,
+          "rmse": 0.059608182445489544,
+          "mae": 0.020479997793712772,
+          "skillPersist": 0.6624598197993914,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
+        },
+        "12": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
         }
       }
     },
     "mlp_valle": {
       "all": {
         "1": {
-          "n": 13415,
-          "rmse": 0.03856499329737151,
-          "mae": 0.020889425450520593,
-          "skillPersist": 0.1913662984741914
+          "n": 13411,
+          "rmse": 0.03857054572383576,
+          "mae": 0.02089390591599599,
+          "skillPersist": 0.19123526447053296,
+          "phaseLagMin": 30,
+          "phaseRmseGain": -0.3378024791717811
         },
         "2": {
-          "n": 13415,
-          "rmse": 0.061897426744497025,
-          "mae": 0.03163159712735235,
-          "skillPersist": 0.34300176469397037
-        },
-        "3": {
-          "n": 13414,
-          "rmse": 0.07923268387318438,
-          "mae": 0.04040852130961486,
-          "skillPersist": 0.43523323085439813
+          "n": 13411,
+          "rmse": 0.06190400297186019,
+          "mae": 0.03163377936748352,
+          "skillPersist": 0.34290740852988566,
+          "phaseLagMin": 30,
+          "phaseRmseGain": -0.006260437387891171
         },
         "4": {
-          "n": 13414,
-          "rmse": 0.10512582599121058,
-          "mae": 0.05323611021667825,
-          "skillPersist": 0.4338598300444032
+          "n": 13410,
+          "rmse": 0.10513820195154634,
+          "mae": 0.05323797680082824,
+          "skillPersist": 0.43375871988512593,
+          "phaseLagMin": 30,
+          "phaseRmseGain": 0.12693936821723506
+        },
+        "8": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
+        },
+        "12": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
         }
       },
       "highAcceptor": {
         "1": {
-          "n": 3524,
-          "rmse": 0.035066577808071556,
-          "mae": 0.016214638032844578,
-          "skillPersist": 0.37184809245410877
+          "n": 3520,
+          "rmse": 0.03508566540939579,
+          "mae": 0.016226396093304757,
+          "skillPersist": 0.3715710687372349,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "2": {
-          "n": 3523,
-          "rmse": 0.055465656377422304,
-          "mae": 0.025897625090891278,
-          "skillPersist": 0.4907320196466226
-        },
-        "3": {
-          "n": 3522,
-          "rmse": 0.06610055342601955,
-          "mae": 0.03278380553095124,
-          "skillPersist": 0.5870073306323117
+          "n": 3519,
+          "rmse": 0.05548588775169233,
+          "mae": 0.02589942393552136,
+          "skillPersist": 0.4905648591144195,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "4": {
-          "n": 3521,
-          "rmse": 0.08797675911694046,
-          "mae": 0.044153432060303595,
-          "skillPersist": 0.5793236618096321
+          "n": 3517,
+          "rmse": 0.08801173704718528,
+          "mae": 0.04415021914612276,
+          "skillPersist": 0.5791300648400277,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
+        },
+        "12": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
         }
       },
       "lowAcceptor": {
@@ -480,79 +732,115 @@
           "n": 9891,
           "rmse": 0.03973707508592589,
           "mae": 0.02255497502689203,
-          "skillPersist": 0.10573550533139098
+          "skillPersist": 0.10573550533139098,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "2": {
           "n": 9892,
           "rmse": 0.06403225271728363,
           "mae": 0.03367373051639945,
-          "skillPersist": 0.2755603360873573
-        },
-        "3": {
-          "n": 9892,
-          "rmse": 0.0834106893658757,
-          "mae": 0.04312326544350652,
-          "skillPersist": 0.3707139214287013
+          "skillPersist": 0.2755603360873573,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "4": {
           "n": 9893,
           "rmse": 0.11058951002323578,
           "mae": 0.056468710013361845,
-          "skillPersist": 0.373770485693368
+          "skillPersist": 0.373770485693368,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
+        },
+        "12": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
         }
       }
     },
     "mlp_valle_ema065": {
       "all": {
         "1": {
-          "n": 13415,
-          "rmse": 0.039423357271255934,
-          "mae": 0.022680322716567725,
-          "skillPersist": 0.17336805763161167
+          "n": 13411,
+          "rmse": 0.03942566164036734,
+          "mae": 0.022677992686393873,
+          "skillPersist": 0.17330480522755376,
+          "phaseLagMin": 30,
+          "phaseRmseGain": 0.4051266561865332
         },
         "2": {
-          "n": 13415,
-          "rmse": 0.06840957543278003,
-          "mae": 0.03872055175115928,
-          "skillPersist": 0.27387982503865527
-        },
-        "3": {
-          "n": 13414,
-          "rmse": 0.09109013921170378,
-          "mae": 0.050942236276465824,
-          "skillPersist": 0.35071385810990996
+          "n": 13411,
+          "rmse": 0.06841054363659071,
+          "mae": 0.03871298788696369,
+          "skillPersist": 0.27384241334957504,
+          "phaseLagMin": 30,
+          "phaseRmseGain": 0.4501007567677566
         },
         "4": {
-          "n": 13414,
-          "rmse": 0.11459667396232671,
-          "mae": 0.06371472318280068,
-          "skillPersist": 0.38285592658456635
+          "n": 13410,
+          "rmse": 0.11460251109397622,
+          "mae": 0.06370684302558788,
+          "skillPersist": 0.38278692823624305,
+          "phaseLagMin": 60,
+          "phaseRmseGain": 0.4307287458143343
+        },
+        "8": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
+        },
+        "12": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
         }
       },
       "highAcceptor": {
         "1": {
-          "n": 3524,
-          "rmse": 0.041268138565401166,
-          "mae": 0.02803998472091877,
-          "skillPersist": 0.2607587742777091
+          "n": 3520,
+          "rmse": 0.04127857402854579,
+          "mae": 0.028037197963349407,
+          "skillPersist": 0.2606481918435223,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "2": {
-          "n": 3523,
-          "rmse": 0.07005355869446618,
-          "mae": 0.047693863781981455,
-          "skillPersist": 0.3567905496306403
-        },
-        "3": {
-          "n": 3522,
-          "rmse": 0.08974111670085137,
-          "mae": 0.06158928145897296,
-          "skillPersist": 0.4393023746797746
+          "n": 3519,
+          "rmse": 0.07005900853299059,
+          "mae": 0.047675237543105695,
+          "skillPersist": 0.35676399299893014,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "4": {
-          "n": 3521,
-          "rmse": 0.1070099462772757,
-          "mae": 0.0737011697506881,
-          "skillPersist": 0.4883131317665904
+          "n": 3517,
+          "rmse": 0.10702484571251272,
+          "mae": 0.07368248134524256,
+          "skillPersist": 0.48820985260883654,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
+        },
+        "12": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
         }
       },
       "lowAcceptor": {
@@ -560,159 +848,987 @@
           "n": 9891,
           "rmse": 0.03874487570011306,
           "mae": 0.020770763632214962,
-          "skillPersist": 0.12806449357337335
+          "skillPersist": 0.12806449357337335,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "2": {
           "n": 9892,
           "rmse": 0.06781445293885531,
           "mae": 0.035524739146571206,
-          "skillPersist": 0.23276977756268225
-        },
-        "3": {
-          "n": 9892,
-          "rmse": 0.09156565450267752,
-          "mae": 0.04715140599615959,
-          "skillPersist": 0.3091893605979745
+          "skillPersist": 0.23276977756268225,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "4": {
           "n": 9893,
           "rmse": 0.11717839035290206,
           "mae": 0.06016046478135213,
-          "skillPersist": 0.3364599728987594
+          "skillPersist": 0.3364599728987594,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
+        },
+        "12": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
+        }
+      }
+    },
+    "mlp_lagshift": {
+      "all": {
+        "1": {
+          "n": 13411,
+          "rmse": 0.014439974232230894,
+          "mae": 0.008169639667430515,
+          "skillPersist": 0.6972160564021926,
+          "phaseLagMin": 30,
+          "phaseRmseGain": -2.0532159090763984
+        },
+        "2": {
+          "n": 13411,
+          "rmse": 0.03138770438321109,
+          "mae": 0.014900857235402859,
+          "skillPersist": 0.6668288475167363,
+          "phaseLagMin": 30,
+          "phaseRmseGain": -0.4063142005834537
+        },
+        "4": {
+          "n": 13410,
+          "rmse": 0.0685690634707242,
+          "mae": 0.025600910132651956,
+          "skillPersist": 0.6307085953987074,
+          "phaseLagMin": 30,
+          "phaseRmseGain": 0.20860381725002808
+        },
+        "8": {
+          "n": 13406,
+          "rmse": 0.16354929481246266,
+          "mae": 0.05604837278752973,
+          "skillPersist": 0.5443838889171162,
+          "phaseLagMin": 60,
+          "phaseRmseGain": 0.3242427538171929
+        },
+        "12": {
+          "n": 13402,
+          "rmse": 0.2535610749424777,
+          "mae": 0.08076911770756615,
+          "skillPersist": 0.5108598812647511,
+          "phaseLagMin": 120,
+          "phaseRmseGain": 0.3773720881556263
+        }
+      },
+      "highAcceptor": {
+        "1": {
+          "n": 3520,
+          "rmse": 0.01758023640590002,
+          "mae": 0.009464430021531873,
+          "skillPersist": 0.6851155864654652,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "2": {
+          "n": 3519,
+          "rmse": 0.036938065553316905,
+          "mae": 0.01890669855232009,
+          "skillPersist": 0.6608588347111584,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "4": {
+          "n": 3517,
+          "rmse": 0.059534597268121936,
+          "mae": 0.02810494000391429,
+          "skillPersist": 0.7153070382126849,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 3513,
+          "rmse": 0.12493937041737677,
+          "mae": 0.05893188525121232,
+          "skillPersist": 0.6765276908453736,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "12": {
+          "n": 3509,
+          "rmse": 0.17559618168291485,
+          "mae": 0.07183174426760874,
+          "skillPersist": 0.6737081413711399,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        }
+      },
+      "lowAcceptor": {
+        "1": {
+          "n": 9891,
+          "rmse": 0.013142623540563562,
+          "mae": 0.007708850864838586,
+          "skillPersist": 0.7042313362594591,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "2": {
+          "n": 9892,
+          "rmse": 0.029159543582466866,
+          "mae": 0.013475811178565838,
+          "skillPersist": 0.6700985978738421,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "4": {
+          "n": 9893,
+          "rmse": 0.07150635113037233,
+          "mae": 0.024710717768633945,
+          "skillPersist": 0.5950846736837515,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 9893,
+          "rmse": 0.17522459135716256,
+          "mae": 0.055024438764997206,
+          "skillPersist": 0.4975814987906372,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "12": {
+          "n": 9893,
+          "rmse": 0.275972892806181,
+          "mae": 0.08393916151640213,
+          "skillPersist": 0.4601291961733329,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        }
+      }
+    },
+    "mlp_lagaugment": {
+      "all": {
+        "1": {
+          "n": 13411,
+          "rmse": 0.012901885855700151,
+          "mae": 0.007388507803635495,
+          "skillPersist": 0.729467392641314,
+          "phaseLagMin": 30,
+          "phaseRmseGain": -2.446734784377813
+        },
+        "2": {
+          "n": 13411,
+          "rmse": 0.024863765229674754,
+          "mae": 0.011989485369907547,
+          "skillPersist": 0.7360785224842696,
+          "phaseLagMin": 30,
+          "phaseRmseGain": -0.5929505569697948
+        },
+        "4": {
+          "n": 13410,
+          "rmse": 0.0562170636307798,
+          "mae": 0.021499024846412564,
+          "skillPersist": 0.6972325807011397,
+          "phaseLagMin": 30,
+          "phaseRmseGain": 0.20905071077074544
+        },
+        "8": {
+          "n": 13406,
+          "rmse": 0.13261479099046802,
+          "mae": 0.0416603553420464,
+          "skillPersist": 0.6305613215120858,
+          "phaseLagMin": 60,
+          "phaseRmseGain": 0.23820576715981634
+        },
+        "12": {
+          "n": 13402,
+          "rmse": 0.21984244035093659,
+          "mae": 0.07228778545165054,
+          "skillPersist": 0.575905894070299,
+          "phaseLagMin": 120,
+          "phaseRmseGain": 0.31580136662923586
+        }
+      },
+      "highAcceptor": {
+        "1": {
+          "n": 3520,
+          "rmse": 0.014719058693208428,
+          "mae": 0.00829235657514143,
+          "skillPersist": 0.736362921556853,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "2": {
+          "n": 3519,
+          "rmse": 0.024242933634745632,
+          "mae": 0.014311444626136241,
+          "skillPersist": 0.7774172350460458,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "4": {
+          "n": 3517,
+          "rmse": 0.04651280029897698,
+          "mae": 0.024155792752158192,
+          "skillPersist": 0.77757694709009,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 3513,
+          "rmse": 0.09409276834245982,
+          "mae": 0.04294430839578809,
+          "skillPersist": 0.7563906001061962,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "12": {
+          "n": 3509,
+          "rmse": 0.15960023559913444,
+          "mae": 0.07394258205689833,
+          "skillPersist": 0.7034317203703042,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        }
+      },
+      "lowAcceptor": {
+        "1": {
+          "n": 9891,
+          "rmse": 0.01219001086994763,
+          "mae": 0.007066846932570837,
+          "skillPersist": 0.7256694437865275,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "2": {
+          "n": 9892,
+          "rmse": 0.025080915546991663,
+          "mae": 0.011163466908254687,
+          "skillPersist": 0.7162428423421738,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "4": {
+          "n": 9893,
+          "rmse": 0.059285464897066396,
+          "mae": 0.02055453351673407,
+          "skillPersist": 0.6642872558153823,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 9893,
+          "rmse": 0.14383271635087763,
+          "mae": 0.04120442417073404,
+          "skillPersist": 0.5875908899876829,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "12": {
+          "n": 9893,
+          "rmse": 0.23756785706647557,
+          "mae": 0.07170083697415985,
+          "skillPersist": 0.5352588848357198,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        }
+      }
+    },
+    "mlp_phase30": {
+      "all": {
+        "1": {
+          "n": 13411,
+          "rmse": 0.04239114472255307,
+          "mae": 0.0221742868000264,
+          "skillPersist": 0.11112320795762187,
+          "phaseLagMin": -30,
+          "phaseRmseGain": 0.39065891951371523
+        },
+        "2": {
+          "n": 13411,
+          "rmse": 0.04165139655688245,
+          "mae": 0.021798225361859096,
+          "skillPersist": 0.5578828058283665,
+          "phaseLagMin": -30,
+          "phaseRmseGain": 0.06097284964595151
+        },
+        "4": {
+          "n": 13410,
+          "rmse": 0.05613307686127547,
+          "mae": 0.02545924022883048,
+          "skillPersist": 0.6976849070201571,
+          "phaseLagMin": 30,
+          "phaseRmseGain": -0.29847949123363615
+        },
+        "8": {
+          "n": 13406,
+          "rmse": 0.12405799285624605,
+          "mae": 0.03843956769058643,
+          "skillPersist": 0.6543988751603966,
+          "phaseLagMin": 30,
+          "phaseRmseGain": 0.13904287004455762
+        },
+        "12": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
+        }
+      },
+      "highAcceptor": {
+        "1": {
+          "n": 3520,
+          "rmse": 0.0539537817877281,
+          "mae": 0.03636217348895849,
+          "skillPersist": 0.03361908543520187,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "2": {
+          "n": 3519,
+          "rmse": 0.051949642061673795,
+          "mae": 0.03393404812779009,
+          "skillPersist": 0.5230323548020175,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "4": {
+          "n": 3517,
+          "rmse": 0.058111415084480894,
+          "mae": 0.0354479137773088,
+          "skillPersist": 0.722112659979117,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 3513,
+          "rmse": 0.09227274075671986,
+          "mae": 0.040321086320156296,
+          "skillPersist": 0.7611027138611935,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "12": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
+        }
+      },
+      "lowAcceptor": {
+        "1": {
+          "n": 9891,
+          "rmse": 0.03742404773405436,
+          "mae": 0.017125114709738144,
+          "skillPersist": 0.15778911600865675,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "2": {
+          "n": 9892,
+          "rmse": 0.03730857394415526,
+          "mae": 0.01748100333261213,
+          "skillPersist": 0.5779031718828089,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "4": {
+          "n": 9893,
+          "rmse": 0.05541275461639287,
+          "mae": 0.021908227910019482,
+          "skillPersist": 0.6862170525710323,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 9893,
+          "rmse": 0.13353686856702973,
+          "mae": 0.037771441243029814,
+          "skillPersist": 0.6171119998511767,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "12": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
+        }
+      }
+    },
+    "mlp_phase60": {
+      "all": {
+        "1": {
+          "n": 13411,
+          "rmse": 0.080721465233729,
+          "mae": 0.040163064695371946,
+          "skillPersist": -0.6926043761149947,
+          "phaseLagMin": -60,
+          "phaseRmseGain": 0.5154582229443994
+        },
+        "2": {
+          "n": 13411,
+          "rmse": 0.07396136577383272,
+          "mae": 0.038952123728516544,
+          "skillPersist": 0.21492208626494302,
+          "phaseLagMin": -30,
+          "phaseRmseGain": 0.3756692383443503
+        },
+        "4": {
+          "n": 13410,
+          "rmse": 0.07592649628866464,
+          "mae": 0.039986898341454934,
+          "skillPersist": 0.5910837768279109,
+          "phaseLagMin": -30,
+          "phaseRmseGain": 0.07518082436883267
+        },
+        "8": {
+          "n": 13406,
+          "rmse": 0.12772281146936626,
+          "mae": 0.04934662804395404,
+          "skillPersist": 0.6441894125867509,
+          "phaseLagMin": 30,
+          "phaseRmseGain": 0.02350589807937753
+        },
+        "12": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
+        }
+      },
+      "highAcceptor": {
+        "1": {
+          "n": 3520,
+          "rmse": 0.09868533708103187,
+          "mae": 0.06819519039910399,
+          "skillPersist": -0.7675800127915138,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "2": {
+          "n": 3519,
+          "rmse": 0.09404026495325413,
+          "mae": 0.065762222309159,
+          "skillPersist": 0.1365837771259747,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "4": {
+          "n": 3517,
+          "rmse": 0.09028001238409729,
+          "mae": 0.06442449130129126,
+          "skillPersist": 0.5682832286565842,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 3513,
+          "rmse": 0.11269402634654511,
+          "mae": 0.0645766496620595,
+          "skillPersist": 0.7082313060449097,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "12": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
+        }
+      },
+      "lowAcceptor": {
+        "1": {
+          "n": 9891,
+          "rmse": 0.07327355131472775,
+          "mae": 0.03018701753359433,
+          "skillPersist": -0.6489873801065804,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "2": {
+          "n": 9892,
+          "rmse": 0.06534725266071355,
+          "mae": 0.0294146452706434,
+          "skillPersist": 0.2606828629915783,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "4": {
+          "n": 9893,
+          "rmse": 0.07011936795645818,
+          "mae": 0.03129923894190547,
+          "skillPersist": 0.6029386717633998,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 9893,
+          "rmse": 0.1326504908767884,
+          "mae": 0.043938453987105566,
+          "skillPersist": 0.6196534955806702,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "12": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
+        }
+      }
+    },
+    "mlp_q75": {
+      "all": {
+        "1": {
+          "n": 13411,
+          "rmse": 0.015407721122102007,
+          "mae": 0.008829969083087065,
+          "skillPersist": 0.6769238997122136,
+          "phaseLagMin": 30,
+          "phaseRmseGain": -2.1021526688482486
+        },
+        "2": {
+          "n": 13411,
+          "rmse": 0.02573193515250769,
+          "mae": 0.012690626861420936,
+          "skillPersist": 0.7268631568044439,
+          "phaseLagMin": 30,
+          "phaseRmseGain": -0.7509027480503285
+        },
+        "4": {
+          "n": 13410,
+          "rmse": 0.061527568839589854,
+          "mae": 0.02664447053172317,
+          "skillPersist": 0.6686318702868688,
+          "phaseLagMin": 30,
+          "phaseRmseGain": -0.019213750747323566
+        },
+        "8": {
+          "n": 13406,
+          "rmse": 0.13455178588262698,
+          "mae": 0.04410385761463307,
+          "skillPersist": 0.6251652353903765,
+          "phaseLagMin": 60,
+          "phaseRmseGain": 0.17229397040491312
+        },
+        "12": {
+          "n": 13402,
+          "rmse": 0.21732296839413823,
+          "mae": 0.07229763683353276,
+          "skillPersist": 0.5807661622024564,
+          "phaseLagMin": 120,
+          "phaseRmseGain": 0.3041358086885234
+        }
+      },
+      "highAcceptor": {
+        "1": {
+          "n": 3520,
+          "rmse": 0.020772221997315203,
+          "mae": 0.011034514975914726,
+          "skillPersist": 0.627943061150269,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "2": {
+          "n": 3519,
+          "rmse": 0.0292803838745143,
+          "mae": 0.016002883579637896,
+          "skillPersist": 0.731166660772367,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "4": {
+          "n": 3517,
+          "rmse": 0.06485425539787844,
+          "mae": 0.037577631935755806,
+          "skillPersist": 0.6898685654900807,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 3513,
+          "rmse": 0.10856763918659762,
+          "mae": 0.05056988606141347,
+          "skillPersist": 0.7189146637298031,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "12": {
+          "n": 3509,
+          "rmse": 0.16573814678490692,
+          "mae": 0.08361205601054868,
+          "skillPersist": 0.6920262875772321,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        }
+      },
+      "lowAcceptor": {
+        "1": {
+          "n": 9891,
+          "rmse": 0.012974060545019005,
+          "mae": 0.008045417314534595,
+          "skillPersist": 0.7080247685064105,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "2": {
+          "n": 9892,
+          "rmse": 0.024345197879961412,
+          "mae": 0.011512317986430456,
+          "skillPersist": 0.7245665079453696,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "4": {
+          "n": 9893,
+          "rmse": 0.060300715258063194,
+          "mae": 0.02275768910465519,
+          "skillPersist": 0.6585382499618155,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 9893,
+          "rmse": 0.14264443942717758,
+          "mae": 0.041807773723645705,
+          "skillPersist": 0.5909980162728865,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "12": {
+          "n": 9893,
+          "rmse": 0.2328907467496589,
+          "mae": 0.06828446621873983,
+          "skillPersist": 0.5444084621027131,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        }
+      }
+    },
+    "mlp_ew4": {
+      "all": {
+        "1": {
+          "n": 13411,
+          "rmse": 0.013833839230664053,
+          "mae": 0.007973558732682181,
+          "skillPersist": 0.7099257706423625,
+          "phaseLagMin": 30,
+          "phaseRmseGain": -2.1700171446123235
+        },
+        "2": {
+          "n": 13411,
+          "rmse": 0.027106602712115423,
+          "mae": 0.012799087432614693,
+          "skillPersist": 0.7122714692594051,
+          "phaseLagMin": 30,
+          "phaseRmseGain": -0.6664381168913682
+        },
+        "4": {
+          "n": 13410,
+          "rmse": 0.05594942606175851,
+          "mae": 0.02156599277700938,
+          "skillPersist": 0.6986739924513548,
+          "phaseLagMin": 30,
+          "phaseRmseGain": 0.12743634514699598
+        },
+        "8": {
+          "n": 13406,
+          "rmse": 0.13280202596669893,
+          "mae": 0.043370916597692606,
+          "skillPersist": 0.6300397217593823,
+          "phaseLagMin": 60,
+          "phaseRmseGain": 0.2838921994775794
+        },
+        "12": {
+          "n": 13402,
+          "rmse": 0.2155397522387327,
+          "mae": 0.06914477662783694,
+          "skillPersist": 0.5842061324825301,
+          "phaseLagMin": 120,
+          "phaseRmseGain": 0.32322763576854263
+        }
+      },
+      "highAcceptor": {
+        "1": {
+          "n": 3520,
+          "rmse": 0.017124569169378483,
+          "mae": 0.009379579266849679,
+          "skillPersist": 0.6932771667324311,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "2": {
+          "n": 3519,
+          "rmse": 0.031081336509508735,
+          "mae": 0.014901494165873882,
+          "skillPersist": 0.7146314912632756,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "4": {
+          "n": 3517,
+          "rmse": 0.04744530381077642,
+          "mae": 0.02447241142401117,
+          "skillPersist": 0.7731177385150215,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 3513,
+          "rmse": 0.09825371270591886,
+          "mae": 0.04628259493369898,
+          "skillPersist": 0.7456177726378355,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "12": {
+          "n": 3509,
+          "rmse": 0.14716819016251984,
+          "mae": 0.06868733097918486,
+          "skillPersist": 0.7265328787963824,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        }
+      },
+      "lowAcceptor": {
+        "1": {
+          "n": 9891,
+          "rmse": 0.012454704148377484,
+          "mae": 0.0074731854357183,
+          "skillPersist": 0.7197126439877148,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "2": {
+          "n": 9892,
+          "rmse": 0.02554391003012164,
+          "mae": 0.012051173027606757,
+          "skillPersist": 0.7110046763630227,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "4": {
+          "n": 9893,
+          "rmse": 0.05867645391759614,
+          "mae": 0.020532749637263672,
+          "skillPersist": 0.6677358708766203,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 9893,
+          "rmse": 0.14307687071695216,
+          "mae": 0.04233698088613991,
+          "skillPersist": 0.5897581133642718,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "12": {
+          "n": 9893,
+          "rmse": 0.2350605020184845,
+          "mae": 0.06930703042154139,
+          "skillPersist": 0.5401638875389689,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         }
       }
     },
     "seq_gru": {
       "all": {
         "1": {
-          "n": 13415,
-          "rmse": 0.011547430410914883,
-          "mae": 0.007013695560448351,
-          "skillPersist": 0.7578726041960385
+          "n": 13411,
+          "rmse": 0.012052928673682786,
+          "mae": 0.007316984017062622,
+          "skillPersist": 0.7472687127394584,
+          "phaseLagMin": 30,
+          "phaseRmseGain": -2.622251173471232
         },
         "2": {
-          "n": 13415,
-          "rmse": 0.02236037161241332,
-          "mae": 0.010501225952168843,
-          "skillPersist": 0.7626601708212585
-        },
-        "3": {
-          "n": 13414,
-          "rmse": 0.03677878955604999,
-          "mae": 0.014897315194135459,
-          "skillPersist": 0.7378425526528671
+          "n": 13411,
+          "rmse": 0.023864493254470466,
+          "mae": 0.011529964609956783,
+          "skillPersist": 0.7466854974818142,
+          "phaseLagMin": 30,
+          "phaseRmseGain": -0.8416980755954753
         },
         "4": {
-          "n": 13414,
-          "rmse": 0.052469773963205485,
-          "mae": 0.018374034951422282,
-          "skillPersist": 0.7174315020217343
+          "n": 13410,
+          "rmse": 0.06023455688992867,
+          "mae": 0.02348985653308369,
+          "skillPersist": 0.6755956258770338,
+          "phaseLagMin": 30,
+          "phaseRmseGain": 0.114661111695192
+        },
+        "8": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
+        },
+        "12": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
         }
       },
       "highAcceptor": {
         "1": {
-          "n": 3524,
-          "rmse": 0.009556538255601174,
-          "mae": 0.006809845887004533,
-          "skillPersist": 0.8288125585665387
+          "n": 3520,
+          "rmse": 0.009888690184227316,
+          "mae": 0.007070566830253919,
+          "skillPersist": 0.8228809705744274,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "2": {
-          "n": 3523,
-          "rmse": 0.01599612077606415,
-          "mae": 0.010038266516010374,
-          "skillPersist": 0.8531287168823463
-        },
-        "3": {
-          "n": 3522,
-          "rmse": 0.024435877906141348,
-          "mae": 0.013423420214604128,
-          "skillPersist": 0.8473259614067358
+          "n": 3519,
+          "rmse": 0.017075044466713,
+          "mae": 0.010848297099079616,
+          "skillPersist": 0.8432281065330494,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "4": {
-          "n": 3521,
-          "rmse": 0.033395316810283654,
-          "mae": 0.016167989216157228,
-          "skillPersist": 0.8403144224739666
+          "n": 3517,
+          "rmse": 0.03928478323662193,
+          "mae": 0.021796964487074216,
+          "skillPersist": 0.8121411447122505,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
+        },
+        "12": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
         }
       },
       "lowAcceptor": {
         "1": {
           "n": 9891,
-          "rmse": 0.012178368465076554,
-          "mae": 0.007086323833546691,
-          "skillPersist": 0.7259314507230282
+          "rmse": 0.01273470386726944,
+          "mae": 0.007404678739291523,
+          "skillPersist": 0.7134113798262025,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "2": {
           "n": 9892,
-          "rmse": 0.024226539834224056,
-          "mae": 0.010666107279866567,
-          "skillPersist": 0.7259089657088663
-        },
-        "3": {
-          "n": 9892,
-          "rmse": 0.040270280789133805,
-          "mae": 0.01542208855825898,
-          "skillPersist": 0.6961836993146032
+          "rmse": 0.02585333602781616,
+          "mae": 0.011772462382983212,
+          "skillPersist": 0.7075039332802302,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "4": {
           "n": 9893,
-          "rmse": 0.05775806726775723,
-          "mae": 0.019159184757736654,
-          "skillPersist": 0.6729363715891515
+          "rmse": 0.06610139655811509,
+          "mae": 0.02409168624356722,
+          "skillPersist": 0.6256910311576467,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
+        },
+        "12": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
         }
       }
     },
     "seq_cnn": {
       "all": {
         "1": {
-          "n": 13415,
-          "rmse": 0.012950326596279023,
-          "mae": 0.0070942409906836895,
-          "skillPersist": 0.7284565706839892
+          "n": 13411,
+          "rmse": 0.012951818229212658,
+          "mae": 0.007094775074850321,
+          "skillPersist": 0.7284203879360307,
+          "phaseLagMin": 30,
+          "phaseRmseGain": -2.3652993810212632
         },
         "2": {
-          "n": 13415,
-          "rmse": 0.024986579109045493,
-          "mae": 0.010932961646872736,
-          "skillPersist": 0.7347848005258657
-        },
-        "3": {
-          "n": 13414,
-          "rmse": 0.04042849920950127,
-          "mae": 0.015887412223892727,
-          "skillPersist": 0.7118275973523716
+          "n": 13411,
+          "rmse": 0.024989872398541706,
+          "mae": 0.010934290355118384,
+          "skillPersist": 0.7347399323702924,
+          "phaseLagMin": 30,
+          "phaseRmseGain": -0.7074437829127764
         },
         "4": {
-          "n": 13414,
-          "rmse": 0.05941934737890319,
-          "mae": 0.021392335606209675,
-          "skillPersist": 0.6800055637464817
+          "n": 13410,
+          "rmse": 0.059425949279433565,
+          "mae": 0.021389818623290528,
+          "skillPersist": 0.6799505320859909,
+          "phaseLagMin": 30,
+          "phaseRmseGain": 0.16296131836458705
+        },
+        "8": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
+        },
+        "12": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
         }
       },
       "highAcceptor": {
         "1": {
-          "n": 3524,
-          "rmse": 0.015356949963087962,
-          "mae": 0.0074628841123711275,
-          "skillPersist": 0.7249090725020764
+          "n": 3520,
+          "rmse": 0.01536426144429535,
+          "mae": 0.007465337855338583,
+          "skillPersist": 0.7248065189467784,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "2": {
-          "n": 3523,
-          "rmse": 0.028195239772963364,
-          "mae": 0.01130076778756443,
-          "skillPersist": 0.7411202940239399
-        },
-        "3": {
-          "n": 3522,
-          "rmse": 0.04123229650930787,
-          "mae": 0.01602654771587784,
-          "skillPersist": 0.7423828498108158
+          "n": 3519,
+          "rmse": 0.028209798967876062,
+          "mae": 0.011306249609344801,
+          "skillPersist": 0.7409960713638303,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "4": {
-          "n": 3521,
-          "rmse": 0.058188966118546105,
-          "mae": 0.021503106629580743,
-          "skillPersist": 0.7217592301019436
+          "n": 3517,
+          "rmse": 0.05821325303549684,
+          "mae": 0.021493635586972763,
+          "skillPersist": 0.7216256734330166,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
+        },
+        "12": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
         }
       },
       "lowAcceptor": {
@@ -720,79 +1836,123 @@
           "n": 9891,
           "rmse": 0.011976608988302809,
           "mae": 0.006962899532709109,
-          "skillPersist": 0.7304719544252138
+          "skillPersist": 0.7304719544252138,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "2": {
           "n": 9892,
           "rmse": 0.023739323046795702,
           "mae": 0.010801968820987556,
-          "skillPersist": 0.7314211748028613
-        },
-        "3": {
-          "n": 9892,
-          "rmse": 0.04013842533987976,
-          "mae": 0.015837873687421653,
-          "skillPersist": 0.697178473476406
+          "skillPersist": 0.7314211748028613,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "4": {
           "n": 9893,
           "rmse": 0.05985114746539499,
           "mae": 0.0213529112886831,
-          "skillPersist": 0.6610839943130778
+          "skillPersist": 0.6610839943130778,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
+        },
+        "12": {
+          "n": 0,
+          "rmse": null,
+          "mae": null,
+          "skillPersist": null
         }
       }
     },
     "muskingum_gru": {
       "all": {
         "1": {
-          "n": 13415,
-          "rmse": 0.046415059762274335,
-          "mae": 0.024637047112725522,
-          "skillPersist": 0.02676551003918748
+          "n": 13411,
+          "rmse": 0.04641795071044696,
+          "mae": 0.024633926520416394,
+          "skillPersist": 0.026687309561326145,
+          "phaseLagMin": 30,
+          "phaseRmseGain": 0.3393468465902315
         },
         "2": {
-          "n": 13415,
-          "rmse": 0.0899138096001344,
-          "mae": 0.04670246759130333,
-          "skillPersist": 0.04562730077979327
-        },
-        "3": {
-          "n": 13414,
-          "rmse": 0.13167266901126257,
-          "mae": 0.06787210251465955,
-          "skillPersist": 0.061443532806580436
+          "n": 13411,
+          "rmse": 0.08991900394480294,
+          "mae": 0.046695486783778474,
+          "skillPersist": 0.04553650025895062,
+          "phaseLagMin": 30,
+          "phaseRmseGain": 0.3219535340402805
         },
         "4": {
-          "n": 13414,
-          "rmse": 0.17168701775088316,
-          "mae": 0.08838043339037331,
-          "skillPersist": 0.07540400760531263
+          "n": 13410,
+          "rmse": 0.17169778876101216,
+          "mae": 0.08836791089129115,
+          "skillPersist": 0.0752897244168742,
+          "phaseLagMin": 60,
+          "phaseRmseGain": 0.32435182357498227
+        },
+        "8": {
+          "n": 13406,
+          "rmse": 0.31665124982506543,
+          "mae": 0.16371886033355879,
+          "skillPersist": 0.11787200806788611,
+          "phaseLagMin": 120,
+          "phaseRmseGain": 0.31392759446511675
+        },
+        "12": {
+          "n": 13402,
+          "rmse": 0.4488167266703126,
+          "mae": 0.23317668507307954,
+          "skillPersist": 0.1341957079820495,
+          "phaseLagMin": 120,
+          "phaseRmseGain": 0.2334377030429402
         }
       },
       "highAcceptor": {
         "1": {
-          "n": 3524,
-          "rmse": 0.04146048074538297,
-          "mae": 0.024298168016427805,
-          "skillPersist": 0.2573133252259543
+          "n": 3520,
+          "rmse": 0.041466844605998206,
+          "mae": 0.02428589364715425,
+          "skillPersist": 0.25727602613436173,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "2": {
-          "n": 3523,
-          "rmse": 0.07739065524761804,
-          "mae": 0.044492855102184155,
-          "skillPersist": 0.28942366735928293
-        },
-        "3": {
-          "n": 3522,
-          "rmse": 0.10965760807163373,
-          "mae": 0.06254538687243015,
-          "skillPersist": 0.31486521781294374
+          "n": 3519,
+          "rmse": 0.077398267992711,
+          "mae": 0.044463739427369656,
+          "skillPersist": 0.28937971154721154,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "4": {
-          "n": 3521,
-          "rmse": 0.1388359636110234,
-          "mae": 0.07892183485634086,
-          "skillPersist": 0.33613143553761293
+          "n": 3517,
+          "rmse": 0.13884496850435687,
+          "mae": 0.07886333013446771,
+          "skillPersist": 0.3360468177058218,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 3513,
+          "rmse": 0.24046503318104287,
+          "mae": 0.1367691347131273,
+          "skillPersist": 0.3774277932234761,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "12": {
+          "n": 3509,
+          "rmse": 0.34225289571719186,
+          "mae": 0.190974041732452,
+          "skillPersist": 0.36402755233978035,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         }
       },
       "lowAcceptor": {
@@ -800,79 +1960,127 @@
           "n": 9891,
           "rmse": 0.048057036180531705,
           "mae": 0.024757784139856617,
-          "skillPersist": -0.08150137075578101
+          "skillPersist": -0.08150137075578101,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "2": {
           "n": 9892,
           "rmse": 0.09397171809616926,
           "mae": 0.047489413082525384,
-          "skillPersist": -0.06316484249674259
-        },
-        "3": {
-          "n": 9892,
-          "rmse": 0.1386698418925227,
-          "mae": 0.06976865452557045,
-          "skillPersist": -0.04618486771969965
+          "skillPersist": -0.06316484249674259,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "4": {
           "n": 9893,
           "rmse": 0.18195344015329543,
           "mae": 0.09174682633875302,
-          "skillPersist": -0.030338360570349776
+          "skillPersist": -0.030338360570349776,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 9893,
+          "rmse": 0.3396175298421898,
+          "mae": 0.17328869618765355,
+          "skillPersist": 0.02622041229394878,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "12": {
+          "n": 9893,
+          "rmse": 0.48097510678666605,
+          "mae": 0.24814576174165948,
+          "skillPersist": 0.05909448250085991,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         }
       }
     },
     "rc_gru": {
       "all": {
         "1": {
-          "n": 13415,
-          "rmse": 0.7962646673742335,
-          "mae": 0.11430507567329547,
-          "skillPersist": -15.696137878414437
+          "n": 13411,
+          "rmse": 0.7963833432943617,
+          "mae": 0.11433394688358212,
+          "skillPersist": -15.698927949611704,
+          "phaseLagMin": 30,
+          "phaseRmseGain": 0.0033233941605094186
         },
         "2": {
-          "n": 13415,
-          "rmse": 0.45497618443793675,
-          "mae": 0.10558477692458162,
-          "skillPersist": -3.8292564974612677
-        },
-        "3": {
-          "n": 13414,
-          "rmse": 0.7517998421450396,
-          "mae": 0.15563555795914222,
-          "skillPersist": -4.3587932042287765
+          "n": 13411,
+          "rmse": 0.4550435500136699,
+          "mae": 0.10560534190190687,
+          "skillPersist": -3.8301520282325283,
+          "phaseLagMin": 60,
+          "phaseRmseGain": 0.028195625088441756
         },
         "4": {
-          "n": 13414,
-          "rmse": 0.5999670030736046,
-          "mae": 0.16404739521540684,
-          "skillPersist": -2.2310368825662263
+          "n": 13410,
+          "rmse": 0.600055170659403,
+          "mae": 0.1640753530882521,
+          "skillPersist": -2.2317083768497166,
+          "phaseLagMin": 120,
+          "phaseRmseGain": 0.055728999735830675
+        },
+        "8": {
+          "n": 13406,
+          "rmse": 1.4173853072296705,
+          "mae": 0.2702182154365051,
+          "skillPersist": -2.9485561972401197,
+          "phaseLagMin": 120,
+          "phaseRmseGain": 0.02314088822167526
+        },
+        "12": {
+          "n": 13402,
+          "rmse": 0.8284602859763496,
+          "mae": 0.32847142247155703,
+          "skillPersist": -0.5981678683995173,
+          "phaseLagMin": 120,
+          "phaseRmseGain": 0.09792732515879388
         }
       },
       "highAcceptor": {
         "1": {
-          "n": 3524,
-          "rmse": 0.06251374989723056,
-          "mae": 0.03482257961825231,
-          "skillPersist": -0.11981646628641007
+          "n": 3520,
+          "rmse": 0.06254619221481648,
+          "mae": 0.03484225627079047,
+          "skillPersist": -0.12028192338591559,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "2": {
-          "n": 3523,
-          "rmse": 0.11998021785937228,
-          "mae": 0.0663684023626241,
-          "skillPersist": -0.10162012355582228
-        },
-        "3": {
-          "n": 3522,
-          "rmse": 0.17332567437444826,
-          "mae": 0.0959744926327105,
-          "skillPersist": -0.08292940406276217
+          "n": 3519,
+          "rmse": 0.12004144621269439,
+          "mae": 0.06640219929716834,
+          "skillPersist": -0.1021420678559406,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "4": {
-          "n": 3521,
-          "rmse": 0.22258581498054458,
-          "mae": 0.12355957867989667,
-          "skillPersist": -0.06433320025656553
+          "n": 3517,
+          "rmse": 0.2226989360847511,
+          "mae": 0.12362013136932298,
+          "skillPersist": -0.06494076738804178,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 3513,
+          "rmse": 0.38437218953604446,
+          "mae": 0.21776900146405073,
+          "skillPersist": 0.004847236634133778,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "12": {
+          "n": 3509,
+          "rmse": 0.5173606074482338,
+          "mae": 0.2938792403534523,
+          "skillPersist": 0.03864336588780615,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         }
       },
       "lowAcceptor": {
@@ -880,28 +2088,44 @@
           "n": 9891,
           "rmse": 0.9265754910941041,
           "mae": 0.1426233767649923,
-          "skillPersist": -19.852152845267234
+          "skillPersist": -19.852152845267234,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "2": {
           "n": 9892,
           "rmse": 0.5249761875657389,
           "mae": 0.11955154679738503,
-          "skillPersist": -4.9394064200963195
-        },
-        "3": {
-          "n": 9892,
-          "rmse": 0.8693357415571721,
-          "mae": 0.17687759921265034,
-          "skillPersist": -5.558642350583352
+          "skillPersist": -4.9394064200963195,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         },
         "4": {
           "n": 9893,
           "rmse": 0.6858862849103603,
           "mae": 0.17845734184651474,
-          "skillPersist": -2.883932888198428
+          "skillPersist": -2.883932888198428,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "8": {
+          "n": 9893,
+          "rmse": 1.6339847964076624,
+          "mae": 0.28884290852103184,
+          "skillPersist": -3.6850969150596127,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
+        },
+        "12": {
+          "n": 9893,
+          "rmse": 0.9137022630842129,
+          "mae": 0.3407411047774738,
+          "skillPersist": -0.7874261860057248,
+          "phaseLagMin": null,
+          "phaseRmseGain": null
         }
       }
     }
   },
-  "elapsedSec": 973.129
+  "elapsedSec": 2664.054
 }
