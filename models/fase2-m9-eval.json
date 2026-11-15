@@ -1,0 +1,217 @@
+{
+  "kind": "ab_m9_prob_crossing",
+  "station": "Cento",
+  "generatedAt": "2026-11-15T11:38:20.619Z",
+  "slices": [
+    {
+      "4": {
+        "n": 288,
+        "rmse": 0.15864258470977718,
+        "skill": 0.5717621734115216,
+        "phaseLagMin": 30,
+        "risingRmse": 0.1746485711646057,
+        "risingN": 237,
+        "fallingRmse": 0.019417003205284875,
+        "fallingN": 51
+      },
+      "8": {
+        "n": 284,
+        "rmse": 0.3423155604582776,
+        "skill": 0.5101131227017679,
+        "phaseLagMin": 60,
+        "risingRmse": 0.37424351505510617,
+        "risingN": 237,
+        "fallingRmse": 0.04260365675535326,
+        "fallingN": 47
+      },
+      "12": {
+        "n": 280,
+        "rmse": 0.5281977705039885,
+        "skill": 0.4663108108317324,
+        "phaseLagMin": 120,
+        "risingRmse": 0.5737715038418024,
+        "risingN": 237,
+        "fallingRmse": 0.04684255696706683,
+        "fallingN": 43
+      },
+      "label": "nov/prod",
+      "used": 292,
+      "events": 1
+    },
+    {
+      "4": {
+        "n": 288,
+        "rmse": 0.2760931337173339,
+        "skill": 0.254717617369818,
+        "phaseLagMin": -30,
+        "risingRmse": 0.3042197497399101,
+        "risingN": 237,
+        "fallingRmse": 0.019417003205284875,
+        "fallingN": 51
+      },
+      "8": {
+        "n": 278,
+        "rmse": 0.38988499059459436,
+        "skill": 0.42561422607526045,
+        "phaseLagMin": 30,
+        "risingRmse": 0.4272815341329547,
+        "risingN": 231,
+        "fallingRmse": 0.04260365675535326,
+        "fallingN": 47
+      },
+      "12": {
+        "n": 265,
+        "rmse": 0.5585797316384749,
+        "skill": 0.39680717899630547,
+        "phaseLagMin": 120,
+        "risingRmse": 0.6099351878769512,
+        "risingN": 222,
+        "fallingRmse": 0.04684255696706683,
+        "fallingN": 43
+      },
+      "label": "nov/cross+chiusa",
+      "used": 292,
+      "events": 1
+    },
+    {
+      "4": {
+        "n": 288,
+        "rmse": 0.2605326264929009,
+        "skill": 0.29672145767912705,
+        "phaseLagMin": 0,
+        "risingRmse": 0.2859422250236464,
+        "risingN": 237,
+        "fallingRmse": 0.05787533295209157,
+        "fallingN": 51
+      },
+      "8": {
+        "n": 271,
+        "rmse": 0.3359538314940301,
+        "skill": 0.4791164551063254,
+        "phaseLagMin": 60,
+        "risingRmse": 0.3648940489716602,
+        "risingN": 224,
+        "fallingRmse": 0.1272734814100352,
+        "fallingN": 47
+      },
+      "12": {
+        "n": 267,
+        "rmse": 0.5451299619276976,
+        "skill": 0.4139676528308285,
+        "phaseLagMin": 120,
+        "risingRmse": 0.5885252646332672,
+        "risingN": 224,
+        "fallingRmse": 0.2022212245010348,
+        "fallingN": 43
+      },
+      "label": "nov/cross-nochiusa",
+      "used": 292,
+      "events": 1
+    },
+    {
+      "4": {
+        "n": 456,
+        "rmse": 0.08042088784303676,
+        "skill": 0.7236569646176744,
+        "phaseLagMin": 30,
+        "risingRmse": 0.1027790628615709,
+        "risingN": 271,
+        "fallingRmse": 0.0216196312409938,
+        "fallingN": 185
+      },
+      "8": {
+        "n": 455,
+        "rmse": 0.21259718659407664,
+        "skill": 0.6202680790901749,
+        "phaseLagMin": 60,
+        "risingRmse": 0.2735927607475391,
+        "risingN": 271,
+        "fallingRmse": 0.03899058194834321,
+        "fallingN": 184
+      },
+      "12": {
+        "n": 454,
+        "rmse": 0.36240934490252524,
+        "skill": 0.5494893729538906,
+        "phaseLagMin": 120,
+        "risingRmse": 0.4668456306602858,
+        "risingN": 271,
+        "fallingRmse": 0.05559168515818532,
+        "fallingN": 183
+      },
+      "label": "test/prod",
+      "used": 457,
+      "events": 9
+    },
+    {
+      "4": {
+        "n": 456,
+        "rmse": 0.2589913743128068,
+        "skill": 0.11005132578080545,
+        "phaseLagMin": 0,
+        "risingRmse": 0.2975528862489532,
+        "risingN": 271,
+        "fallingRmse": 0.18878239190708485,
+        "fallingN": 185
+      },
+      "8": {
+        "n": 449,
+        "rmse": 0.4809999068236734,
+        "skill": 0.06079017722538338,
+        "phaseLagMin": 30,
+        "risingRmse": 0.5410231465922026,
+        "risingN": 265,
+        "fallingRmse": 0.3781673972943028,
+        "fallingN": 184
+      },
+      "12": {
+        "n": 442,
+        "rmse": 0.6308249581336235,
+        "skill": 0.09944477557746567,
+        "phaseLagMin": 120,
+        "risingRmse": 0.687853894994938,
+        "risingN": 259,
+        "fallingRmse": 0.5399124825196188,
+        "fallingN": 183
+      },
+      "label": "test/cross+chiusa",
+      "used": 457,
+      "events": 9
+    },
+    {
+      "4": {
+        "n": 456,
+        "rmse": 0.25333749566687924,
+        "skill": 0.1294792384612573,
+        "phaseLagMin": 0,
+        "risingRmse": 0.2868017522672514,
+        "risingN": 271,
+        "fallingRmse": 0.19416984647805977,
+        "fallingN": 185
+      },
+      "8": {
+        "n": 447,
+        "rmse": 0.46506903879677314,
+        "skill": 0.08541946537822909,
+        "phaseLagMin": 60,
+        "risingRmse": 0.5116232463709938,
+        "risingN": 263,
+        "fallingRmse": 0.3889704372290095,
+        "fallingN": 184
+      },
+      "12": {
+        "n": 443,
+        "rmse": 0.6198345109359045,
+        "skill": 0.13760705663593553,
+        "phaseLagMin": 120,
+        "risingRmse": 0.6582577440437211,
+        "risingN": 260,
+        "fallingRmse": 0.5607345821451548,
+        "fallingN": 183
+      },
+      "label": "test/cross-nochiusa",
+      "used": 457,
+      "events": 9
+    }
+  ]
+}

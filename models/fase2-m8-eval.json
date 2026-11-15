@@ -1,0 +1,99 @@
+{
+  "event": {
+    "station": "Cento",
+    "start": "2026-11-09T08:30:00.000Z",
+    "end": "2026-11-16T07:00:00.000Z",
+    "peakTime": "2026-11-14T07:00:00.000Z",
+    "peakLevel": 7.17,
+    "riseM": 5.76
+  },
+  "prod": {
+    "1": {
+      "n": 280,
+      "rmse": 0.028371557893031266,
+      "skill": 0.70569326004369,
+      "phaseLagMin": 0,
+      "risingRmse": 0.030506922280198162,
+      "risingN": 237,
+      "fallingRmse": 0.010582287171289896,
+      "fallingN": 43
+    },
+    "4": {
+      "n": 280,
+      "rmse": 0.16083048212586606,
+      "skill": 0.5678394127545855,
+      "phaseLagMin": 30,
+      "risingRmse": 0.1746485711646057,
+      "risingN": 237,
+      "fallingRmse": 0.017784933853268688,
+      "fallingN": 43
+    },
+    "8": {
+      "n": 280,
+      "rmse": 0.3447134650039526,
+      "skill": 0.5075173732424537,
+      "phaseLagMin": 60,
+      "risingRmse": 0.37424351505510617,
+      "risingN": 237,
+      "fallingRmse": 0.04255475228258891,
+      "fallingN": 43
+    },
+    "12": {
+      "n": 280,
+      "rmse": 0.5281977705039885,
+      "skill": 0.4663108108317324,
+      "phaseLagMin": 120,
+      "risingRmse": 0.5737715038418024,
+      "risingN": 237,
+      "fallingRmse": 0.04684255696706683,
+      "fallingN": 43
+    },
+    "used": 280,
+    "online": false
+  },
+  "online": {
+    "1": {
+      "n": 280,
+      "rmse": 0.08046389581465815,
+      "skill": 0.16532370373595717,
+      "phaseLagMin": 0,
+      "risingRmse": 0.08254038296938425,
+      "risingN": 237,
+      "fallingRmse": 0.06788875575537796,
+      "fallingN": 43
+    },
+    "4": {
+      "n": 280,
+      "rmse": 0.1721162664353584,
+      "skill": 0.5375138730294833,
+      "phaseLagMin": 30,
+      "risingRmse": 0.18402448159011967,
+      "risingN": 237,
+      "fallingRmse": 0.07905182869364868,
+      "fallingN": 43
+    },
+    "8": {
+      "n": 280,
+      "rmse": 0.3360303589499819,
+      "skill": 0.5199226875455223,
+      "phaseLagMin": 60,
+      "risingRmse": 0.3635992920338718,
+      "risingN": 237,
+      "fallingRmse": 0.08128890387245444,
+      "fallingN": 43
+    },
+    "12": {
+      "n": 201,
+      "rmse": 0.2526249710106065,
+      "skill": 0.717468918514979,
+      "phaseLagMin": 30,
+      "risingRmse": 0.27438595114418046,
+      "risingN": 169,
+      "fallingRmse": 0.05703115658483812,
+      "fallingN": 32
+    },
+    "used": 280,
+    "online": true
+  },
+  "generatedAt": "2026-11-15T11:05:26.237Z"
+}

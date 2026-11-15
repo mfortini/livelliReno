@@ -62,15 +62,65 @@
         ]
     },
     "sensors": {
+        "Pracchia": {
+            "arpaeId": "3001",
+            "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223001%22%7D",
+            "dependencies": []
+        },
+        "Porretta Terme": {
+            "arpaeId": "3142",
+            "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223142%22%7D",
+            "dependencies": ["Pracchia"]
+        },
+        "Silla": {
+            "arpaeId": "5342",
+            "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%225342%22%7D",
+            "dependencies": []
+        },
+        "Suviana": {
+            "arpaeId": "5564",
+            "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%225564%22%7D",
+            "dependencies": []
+        },
+        "Vergato DX": {
+            "arpaeId": "53132",
+            "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%2253132%22%7D",
+            "dependencies": ["Porretta Terme", "Silla", "Suviana"]
+        },
+        "Invaso": {
+            "arpaeId": "3004",
+            "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223004%22%7D",
+            "dependencies": []
+        },
+        "Sasso Marconi": {
+            "arpaeId": "3094",
+            "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223094%22%7D",
+            "dependencies": ["Invaso"]
+        },
+        "Casalecchio chiusa": {
+            "arpaeId": "3095",
+            "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223095%22%7D",
+            "dependencies": ["Sasso Marconi", "Vergato DX"]
+        },
+        "Casalecchio tiro a volo": {
+            "arpaeId": "3101",
+            "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223101%22%7D",
+            "dependencies": ["Casalecchio chiusa"]
+        },
         "Bonconvento": {
             "arpaeId": "3141",
             "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223141%22%7D",
             "dependencies": ["Casalecchio tiro a volo"]
         },
-        "Forcelli": {
-            "arpaeId": "3123",
-            "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223123%22%7D",
-            "dependencies": ["Lavino di Sotto", "Paltrone Samoggia"]
+        "Sostegno Reno": {
+            "arpaeId": "5314",
+            "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%225314%22%7D",
+            "dependencies": ["Bonconvento"]
+        },
+        "Bagnetto Reno": {
+            "arpaeId": "5368",
+            "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%225368%22%7D",
+            "dependencies": ["Sostegno Reno"]
         },
         "Lavino di Sotto": {
             "arpaeId": "3125",
@@ -82,25 +132,15 @@
             "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223164%22%7D",
             "dependencies": []
         },
-        "Sostegno Reno": {
-            "arpaeId": "5314",
-            "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%225314%22%7D",
-            "dependencies": ["Bonconvento"]
+        "Forcelli": {
+            "arpaeId": "3123",
+            "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223123%22%7D",
+            "dependencies": ["Lavino di Sotto", "Paltrone Samoggia"]
         },
         "Cento": {
             "arpaeId": "3098",
             "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223098%22%7D",
-            "dependencies": ["Forcelli", "Sostegno Reno"]
-        },
-        "Casalecchio tiro a volo": {
-            "arpaeId": "3101",
-            "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223101%22%7D",
-            "dependencies": ["Casalecchio chiusa"]
-        },
-        "Casalecchio chiusa": {
-            "arpaeId": "3095",
-            "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223095%22%7D",
-            "dependencies": ["Sasso Marconi", "Vergato DX"]
+            "dependencies": ["Forcelli", "Bagnetto Reno"]
         },
         "Dosso": {
             "arpaeId": "3116",
@@ -112,25 +152,25 @@
             "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223117%22%7D",
             "dependencies": ["Dosso"]
         },
-        "Secondo Salto": {
-            "arpaeId": "3118",
-            "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223118%22%7D",
-            "dependencies": ["Opera Reno Panfilia"]
-        },
         "Gallo": {
             "arpaeId": "3120",
             "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223120%22%7D",
             "dependencies": ["Opera Reno Panfilia"]
         },
-        "Sasso Marconi": {
-            "arpaeId": "3094",
-            "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223094%22%7D",
-            "dependencies": []
+        "Secondo Salto": {
+            "arpaeId": "3118",
+            "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223118%22%7D",
+            "dependencies": ["Opera Reno Panfilia"]
         },
-        "Vergato DX": {
-            "arpaeId": "53132",
-            "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%2253132%22%7D",
-            "dependencies": []
+        "Burana": {
+            "arpaeId": "3119",
+            "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223119%22%7D",
+            "dependencies": ["Secondo Salto"]
+        },
+        "Opera Po": {
+            "arpaeId": "3099",
+            "url": "https://apps.arpae.it/REST/meteo_osservati/?where=%7B%22_id%22:%223099%22%7D",
+            "dependencies": ["Burana"]
         }
     }
 }

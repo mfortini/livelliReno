@@ -10,165 +10,4325 @@
     "mergeHours": 72
   },
   "storico": {
-    "from": "2024-12-01T00:00:00.000Z",
-    "to": "2026-11-11T18:00:00.000Z",
+    "from": "2023-01-01T00:00:00.000Z",
+    "to": "2026-11-15T10:00:00.000Z",
     "dataDir": "storico"
   },
   "testFrom": "2026-01-01T00:00:00.000Z",
   "stations": {
     "Bonconvento": {
-      "nEvents": 33,
-      "nTrain": 23,
+      "nEvents": 69,
+      "nTrain": 59,
       "nTest": 10,
-      "maxPeak": 10.87,
-      "maxPeakTrain": 10.87,
-      "maxPeakTest": 10.2,
-      "from": "2024-12-01T00:00:00.000Z",
-      "to": "2026-11-11T18:00:00.000Z"
+      "maxPeak": 12.47,
+      "maxPeakTrain": 12.47,
+      "maxPeakTest": 10.93,
+      "from": "2023-01-01T00:00:00.000Z",
+      "to": "2026-11-15T10:00:00.000Z"
     },
     "Forcelli": {
-      "nEvents": 25,
-      "nTrain": 16,
-      "nTest": 9,
-      "maxPeak": 12.05,
-      "maxPeakTrain": 12.05,
+      "nEvents": 53,
+      "nTrain": 43,
+      "nTest": 10,
+      "maxPeak": 13.99,
+      "maxPeakTrain": 13.99,
       "maxPeakTest": 10.25,
-      "from": "2024-12-01T00:00:00.000Z",
-      "to": "2026-11-11T18:00:00.000Z"
+      "from": "2023-01-01T00:00:00.000Z",
+      "to": "2026-11-15T10:00:00.000Z"
     },
     "Lavino di Sotto": {
-      "nEvents": 45,
-      "nTrain": 34,
-      "nTest": 11,
-      "maxPeak": 11.51,
-      "maxPeakTrain": 11.51,
+      "nEvents": 103,
+      "nTrain": 91,
+      "nTest": 12,
+      "maxPeak": 13.61,
+      "maxPeakTrain": 13.61,
       "maxPeakTest": 10.74,
-      "from": "2024-12-01T00:00:00.000Z",
-      "to": "2026-11-11T18:00:00.000Z"
+      "from": "2023-01-01T00:00:00.000Z",
+      "to": "2026-11-15T10:00:00.000Z"
     },
     "Paltrone Samoggia": {
-      "nEvents": 18,
-      "nTrain": 14,
+      "nEvents": 86,
+      "nTrain": 82,
       "nTest": 4,
-      "maxPeak": 35.18,
-      "maxPeakTrain": 35.18,
+      "maxPeak": 38.61,
+      "maxPeakTrain": 38.61,
       "maxPeakTest": 34.08,
-      "from": "2024-12-01T00:30:00.000Z",
-      "to": "2026-11-11T17:30:00.000Z"
+      "from": "2023-01-01T00:00:00.000Z",
+      "to": "2026-11-15T10:00:00.000Z"
     },
     "Sostegno Reno": {
-      "nEvents": 20,
-      "nTrain": 15,
+      "nEvents": 52,
+      "nTrain": 47,
       "nTest": 5,
-      "maxPeak": 27.6,
-      "maxPeakTrain": 27.6,
-      "maxPeakTest": 24.02,
-      "from": "2024-12-01T00:00:00.000Z",
-      "to": "2026-11-11T17:30:00.000Z"
+      "maxPeak": 29.08,
+      "maxPeakTrain": 29.08,
+      "maxPeakTest": 27.25,
+      "from": "2023-01-01T00:00:00.000Z",
+      "to": "2026-11-15T10:00:00.000Z"
     },
     "Cento": {
-      "nEvents": 30,
-      "nTrain": 21,
+      "nEvents": 65,
+      "nTrain": 56,
       "nTest": 9,
-      "maxPeak": 7.41,
-      "maxPeakTrain": 7.41,
-      "maxPeakTest": 6.92,
-      "from": "2024-12-01T00:00:00.000Z",
-      "to": "2026-11-11T17:30:00.000Z"
+      "maxPeak": 8.69,
+      "maxPeakTrain": 8.69,
+      "maxPeakTest": 7.17,
+      "from": "2023-01-01T00:00:00.000Z",
+      "to": "2026-11-15T10:00:00.000Z"
     },
     "Casalecchio tiro a volo": {
-      "nEvents": 31,
-      "nTrain": 20,
+      "nEvents": 61,
+      "nTrain": 50,
       "nTest": 11,
-      "maxPeak": 2.15,
-      "maxPeakTrain": 2.15,
-      "maxPeakTest": 2,
-      "from": "2024-12-01T00:00:00.000Z",
-      "to": "2026-11-11T18:00:00.000Z"
+      "maxPeak": 3,
+      "maxPeakTrain": 3,
+      "maxPeakTest": 2.66,
+      "from": "2023-01-01T00:00:00.000Z",
+      "to": "2026-11-15T10:00:00.000Z"
     },
     "Casalecchio chiusa": {
-      "nEvents": 22,
-      "nTrain": 14,
+      "nEvents": 48,
+      "nTrain": 40,
       "nTest": 8,
-      "maxPeak": 1.64,
-      "maxPeakTrain": 1.64,
-      "maxPeakTest": 1.55,
-      "from": "2024-12-01T00:00:00.000Z",
-      "to": "2026-11-11T18:00:00.000Z"
+      "maxPeak": 1.98,
+      "maxPeakTrain": 1.98,
+      "maxPeakTest": 1.83,
+      "from": "2023-01-01T00:00:00.000Z",
+      "to": "2026-11-15T10:00:00.000Z"
     },
     "Dosso": {
-      "nEvents": 34,
-      "nTrain": 17,
+      "nEvents": 63,
+      "nTrain": 46,
       "nTest": 17,
       "maxPeak": 14.34,
-      "maxPeakTrain": 9.29,
+      "maxPeakTrain": 11.17,
       "maxPeakTest": 14.34,
-      "from": "2024-12-01T00:00:00.000Z",
-      "to": "2026-11-11T18:00:00.000Z"
+      "from": "2023-01-01T00:00:00.000Z",
+      "to": "2026-11-15T10:00:00.000Z"
     },
     "Opera Reno Panfilia": {
-      "nEvents": 35,
-      "nTrain": 22,
-      "nTest": 13,
-      "maxPeak": 22.02,
-      "maxPeakTrain": 22.02,
+      "nEvents": 72,
+      "nTrain": 64,
+      "nTest": 8,
+      "maxPeak": 24.1,
+      "maxPeakTrain": 24.1,
       "maxPeakTest": 20.81,
-      "from": "2024-12-01T00:00:00.000Z",
-      "to": "2026-11-11T18:00:00.000Z"
+      "from": "2023-01-01T00:00:00.000Z",
+      "to": "2026-11-15T10:00:00.000Z"
     },
     "Secondo Salto": {
-      "nEvents": 24,
-      "nTrain": 22,
-      "nTest": 2,
+      "nEvents": 69,
+      "nTrain": 66,
+      "nTest": 3,
       "maxPeak": 15.18,
       "maxPeakTrain": 15.18,
-      "maxPeakTest": 11.5,
-      "from": "2024-12-01T00:00:00.000Z",
-      "to": "2026-11-11T18:00:00.000Z"
+      "maxPeakTest": 11.92,
+      "from": "2023-01-01T00:00:00.000Z",
+      "to": "2026-11-15T10:00:00.000Z"
     },
     "Gallo": {
-      "nEvents": 31,
-      "nTrain": 23,
+      "nEvents": 62,
+      "nTrain": 54,
       "nTest": 8,
-      "maxPeak": 11.82,
-      "maxPeakTrain": 11.82,
+      "maxPeak": 14.07,
+      "maxPeakTrain": 14.07,
       "maxPeakTest": 11.17,
-      "from": "2024-12-01T00:00:00.000Z",
-      "to": "2026-11-11T18:00:00.000Z"
+      "from": "2023-01-01T00:00:00.000Z",
+      "to": "2026-11-15T10:00:00.000Z"
     },
     "Sasso Marconi": {
-      "nEvents": 20,
-      "nTrain": 14,
+      "nEvents": 41,
+      "nTrain": 35,
       "nTest": 6,
-      "maxPeak": 1.54,
-      "maxPeakTrain": 1.54,
-      "maxPeakTest": 1.39,
-      "from": "2024-12-01T00:00:00.000Z",
-      "to": "2026-11-11T18:00:00.000Z"
+      "maxPeak": 3.59,
+      "maxPeakTrain": 3.59,
+      "maxPeakTest": 2.03,
+      "from": "2023-01-01T00:00:00.000Z",
+      "to": "2026-11-15T10:00:00.000Z"
     },
     "Vergato DX": {
-      "nEvents": 38,
-      "nTrain": 21,
-      "nTest": 17,
-      "maxPeak": 3.19,
-      "maxPeakTrain": 3.19,
-      "maxPeakTest": 2.72,
-      "from": "2024-12-01T00:00:00.000Z",
-      "to": "2026-11-11T18:00:00.000Z"
+      "nEvents": 69,
+      "nTrain": 49,
+      "nTest": 20,
+      "maxPeak": 4.15,
+      "maxPeakTrain": 4.15,
+      "maxPeakTest": 3.91,
+      "from": "2023-01-01T00:00:00.000Z",
+      "to": "2026-11-15T10:00:00.000Z"
     }
   },
   "events": [
     {
-      "station": "Vergato DX",
-      "start": "2024-12-01T00:30:00.000Z",
-      "end": "2024-12-03T17:00:00.000Z",
-      "peakTime": "2024-12-01T08:30:00.000Z",
-      "peakLevel": 1.08,
-      "riseM": 0.66
+      "station": "Paltrone Samoggia",
+      "start": "2023-01-01T01:00:00.000Z",
+      "end": "2023-01-05T09:00:00.000Z",
+      "peakTime": "2023-01-01T15:30:00.000Z",
+      "peakLevel": 32.7,
+      "riseM": 0.73
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-01-06T04:00:00.000Z",
+      "end": "2023-01-09T20:00:00.000Z",
+      "peakTime": "2023-01-06T18:00:00.000Z",
+      "peakLevel": 32.65,
+      "riseM": 0.5
     },
     {
       "station": "Vergato DX",
-      "start": "2024-12-02T23:30:00.000Z",
+      "start": "2023-01-07T03:00:00.000Z",
+      "end": "2023-01-11T03:00:00.000Z",
+      "peakTime": "2023-01-09T03:00:00.000Z",
+      "peakLevel": 1.31,
+      "riseM": 1.56
+    },
+    {
+      "station": "Sasso Marconi",
+      "start": "2023-01-07T04:30:00.000Z",
+      "end": "2023-01-11T04:30:00.000Z",
+      "peakTime": "2023-01-09T04:30:00.000Z",
+      "peakLevel": 0.7,
+      "riseM": 0.87
+    },
+    {
+      "station": "Casalecchio chiusa",
+      "start": "2023-01-07T23:00:00.000Z",
+      "end": "2023-01-12T20:00:00.000Z",
+      "peakTime": "2023-01-09T06:00:00.000Z",
+      "peakLevel": 1.09,
+      "riseM": 1.44
+    },
+    {
+      "station": "Casalecchio tiro a volo",
+      "start": "2023-01-07T06:00:00.000Z",
+      "end": "2023-01-12T15:00:00.000Z",
+      "peakTime": "2023-01-09T06:00:00.000Z",
+      "peakLevel": 1.04,
+      "riseM": 1.67
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2023-01-07T11:30:00.000Z",
+      "end": "2023-01-11T12:00:00.000Z",
+      "peakTime": "2023-01-09T11:30:00.000Z",
+      "peakLevel": 7.31,
+      "riseM": 4.7
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2023-01-07T16:30:00.000Z",
+      "end": "2023-01-11T06:00:00.000Z",
+      "peakTime": "2023-01-09T16:30:00.000Z",
+      "peakLevel": 22.5,
+      "riseM": 2.48
+    },
+    {
+      "station": "Cento",
+      "start": "2023-01-07T21:00:00.000Z",
+      "end": "2023-01-11T22:00:00.000Z",
+      "peakTime": "2023-01-09T21:00:00.000Z",
+      "peakLevel": 2.74,
+      "riseM": 4.23
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2023-01-08T00:00:00.000Z",
+      "end": "2023-01-11T01:30:00.000Z",
+      "peakTime": "2023-01-10T00:00:00.000Z",
+      "peakLevel": 16.95,
+      "riseM": 1.13
+    },
+    {
+      "station": "Dosso",
+      "start": "2023-01-08T01:00:00.000Z",
+      "end": "2023-01-12T02:30:00.000Z",
+      "peakTime": "2023-01-10T01:00:00.000Z",
+      "peakLevel": 5.37,
+      "riseM": 2.98
+    },
+    {
+      "station": "Gallo",
+      "start": "2023-01-08T10:00:00.000Z",
+      "end": "2023-01-12T12:30:00.000Z",
+      "peakTime": "2023-01-10T10:00:00.000Z",
+      "peakLevel": 7.05,
+      "riseM": 3.52
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-01-09T20:00:00.000Z",
+      "end": "2023-01-16T02:00:00.000Z",
+      "peakTime": "2023-01-12T13:00:00.000Z",
+      "peakLevel": 32.71,
+      "riseM": 0.77
+    },
+    {
+      "station": "Casalecchio tiro a volo",
+      "start": "2023-01-15T01:00:00.000Z",
+      "end": "2023-01-20T22:00:00.000Z",
+      "peakTime": "2023-01-17T19:00:00.000Z",
+      "peakLevel": 0.28,
+      "riseM": 0.82
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2023-01-15T08:00:00.000Z",
+      "end": "2023-01-21T02:00:00.000Z",
+      "peakTime": "2023-01-18T02:30:00.000Z",
+      "peakLevel": 6.21,
+      "riseM": 3.3
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2023-01-16T08:00:00.000Z",
+      "end": "2023-01-20T16:00:00.000Z",
+      "peakTime": "2023-01-18T08:00:00.000Z",
+      "peakLevel": 21.75,
+      "riseM": 1.75
+    },
+    {
+      "station": "Cento",
+      "start": "2023-01-16T10:30:00.000Z",
+      "end": "2023-01-21T06:30:00.000Z",
+      "peakTime": "2023-01-18T10:30:00.000Z",
+      "peakLevel": 2.24,
+      "riseM": 3.42
+    },
+    {
+      "station": "Dosso",
+      "start": "2023-01-16T13:00:00.000Z",
+      "end": "2023-01-20T14:30:00.000Z",
+      "peakTime": "2023-01-18T13:00:00.000Z",
+      "peakLevel": 4.97,
+      "riseM": 2.42
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2023-01-16T13:00:00.000Z",
+      "end": "2023-01-19T20:30:00.000Z",
+      "peakTime": "2023-01-18T13:00:00.000Z",
+      "peakLevel": 16.57,
+      "riseM": 0.75
+    },
+    {
+      "station": "Gallo",
+      "start": "2023-01-16T21:30:00.000Z",
+      "end": "2023-01-20T22:00:00.000Z",
+      "peakTime": "2023-01-18T21:30:00.000Z",
+      "peakLevel": 6.74,
+      "riseM": 3
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2023-01-21T19:30:00.000Z",
+      "end": "2023-01-26T14:30:00.000Z",
+      "peakTime": "2023-01-23T19:30:00.000Z",
+      "peakLevel": 8.88,
+      "riseM": 1.58
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-01-22T00:00:00.000Z",
+      "end": "2023-01-26T07:00:00.000Z",
+      "peakTime": "2023-01-23T20:00:00.000Z",
+      "peakLevel": 33.8,
+      "riseM": 1.4
+    },
+    {
+      "station": "Forcelli",
+      "start": "2023-01-21T16:30:00.000Z",
+      "end": "2023-01-27T11:30:00.000Z",
+      "peakTime": "2023-01-23T23:00:00.000Z",
+      "peakLevel": 8.48,
+      "riseM": 1.85
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2023-01-22T04:30:00.000Z",
+      "end": "2023-01-27T02:00:00.000Z",
+      "peakTime": "2023-01-24T04:30:00.000Z",
+      "peakLevel": 5.34,
+      "riseM": 1.91
+    },
+    {
+      "station": "Cento",
+      "start": "2023-01-22T08:30:00.000Z",
+      "end": "2023-01-26T21:00:00.000Z",
+      "peakTime": "2023-01-24T08:30:00.000Z",
+      "peakLevel": 2,
+      "riseM": 2.39
+    },
+    {
+      "station": "Dosso",
+      "start": "2023-01-22T11:30:00.000Z",
+      "end": "2023-01-26T11:30:00.000Z",
+      "peakTime": "2023-01-24T11:30:00.000Z",
+      "peakLevel": 4.74,
+      "riseM": 1.77
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2023-01-22T12:30:00.000Z",
+      "end": "2023-01-25T16:30:00.000Z",
+      "peakTime": "2023-01-24T12:30:00.000Z",
+      "peakLevel": 16.35,
+      "riseM": 0.52
+    },
+    {
+      "station": "Gallo",
+      "start": "2023-01-22T18:30:00.000Z",
+      "end": "2023-01-26T19:00:00.000Z",
+      "peakTime": "2023-01-24T18:30:00.000Z",
+      "peakLevel": 6.47,
+      "riseM": 1.92
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2023-01-22T07:30:00.000Z",
+      "end": "2023-01-26T20:00:00.000Z",
+      "peakTime": "2023-01-26T14:00:00.000Z",
+      "peakLevel": 26.86,
+      "riseM": 6.8
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-01-30T04:00:00.000Z",
+      "end": "2023-02-03T06:00:00.000Z",
+      "peakTime": "2023-01-31T03:30:00.000Z",
+      "peakLevel": 32.69,
+      "riseM": 0.53
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-02-02T18:30:00.000Z",
+      "end": "2023-02-11T04:00:00.000Z",
+      "peakTime": "2023-02-07T06:30:00.000Z",
+      "peakLevel": 32.76,
+      "riseM": 0.67
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-02-11T04:00:00.000Z",
+      "end": "2023-02-16T16:00:00.000Z",
+      "peakTime": "2023-02-12T07:00:00.000Z",
+      "peakLevel": 32.79,
+      "riseM": 0.69
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-02-13T07:30:00.000Z",
+      "end": "2023-02-20T10:30:00.000Z",
+      "peakTime": "2023-02-15T14:30:00.000Z",
+      "peakLevel": 32.78,
+      "riseM": 0.69
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-02-17T10:30:00.000Z",
+      "end": "2023-02-24T12:00:00.000Z",
+      "peakTime": "2023-02-22T12:00:00.000Z",
+      "peakLevel": 32.68,
+      "riseM": 0.71
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2023-02-24T19:30:00.000Z",
+      "end": "2023-02-28T19:30:00.000Z",
+      "peakTime": "2023-02-26T19:30:00.000Z",
+      "peakLevel": 8.62,
+      "riseM": 1.43
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-02-24T00:30:00.000Z",
+      "end": "2023-03-03T11:00:00.000Z",
+      "peakTime": "2023-02-26T20:00:00.000Z",
+      "peakLevel": 32.74,
+      "riseM": 0.82
+    },
+    {
+      "station": "Forcelli",
+      "start": "2023-02-24T23:00:00.000Z",
+      "end": "2023-03-02T01:30:00.000Z",
+      "peakTime": "2023-02-26T23:00:00.000Z",
+      "peakLevel": 8.03,
+      "riseM": 1.56
+    },
+    {
+      "station": "Forcelli",
+      "start": "2023-02-28T15:30:00.000Z",
+      "end": "2023-03-05T05:30:00.000Z",
+      "peakTime": "2023-03-02T07:00:00.000Z",
+      "peakLevel": 8.04,
+      "riseM": 0.57
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2023-02-28T14:30:00.000Z",
+      "end": "2023-03-04T20:30:00.000Z",
+      "peakTime": "2023-03-02T20:00:00.000Z",
+      "peakLevel": 8.34,
+      "riseM": 0.73
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-03-01T21:30:00.000Z",
+      "end": "2023-03-05T09:30:00.000Z",
+      "peakTime": "2023-03-03T21:30:00.000Z",
+      "peakLevel": 33.41,
+      "riseM": 0.93
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2023-03-02T06:00:00.000Z",
+      "end": "2023-03-05T22:30:00.000Z",
+      "peakTime": "2023-03-04T06:00:00.000Z",
+      "peakLevel": 4.71,
+      "riseM": 1.15
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2023-03-02T09:30:00.000Z",
+      "end": "2023-03-05T17:30:00.000Z",
+      "peakTime": "2023-03-04T09:00:00.000Z",
+      "peakLevel": 20.86,
+      "riseM": 0.85
+    },
+    {
+      "station": "Cento",
+      "start": "2023-03-02T10:30:00.000Z",
+      "end": "2023-03-06T12:30:00.000Z",
+      "peakTime": "2023-03-04T10:30:00.000Z",
+      "peakLevel": 1.6,
+      "riseM": 1.28
+    },
+    {
+      "station": "Dosso",
+      "start": "2023-03-02T15:00:00.000Z",
+      "end": "2023-03-06T16:00:00.000Z",
+      "peakTime": "2023-03-04T15:00:00.000Z",
+      "peakLevel": 4.42,
+      "riseM": 1.03
+    },
+    {
+      "station": "Gallo",
+      "start": "2023-03-02T21:00:00.000Z",
+      "end": "2023-03-07T02:30:00.000Z",
+      "peakTime": "2023-03-04T21:00:00.000Z",
+      "peakLevel": 6.24,
+      "riseM": 1.01
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2023-03-08T05:00:00.000Z",
+      "end": "2023-03-09T21:00:00.000Z",
+      "peakTime": "2023-03-09T09:00:00.000Z",
+      "peakLevel": 4.33,
+      "riseM": 0.66
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-03-08T13:30:00.000Z",
+      "end": "2023-03-15T20:00:00.000Z",
+      "peakTime": "2023-03-10T20:30:00.000Z",
+      "peakLevel": 32.76,
+      "riseM": 0.68
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2023-03-13T03:00:00.000Z",
+      "end": "2023-03-16T08:00:00.000Z",
+      "peakTime": "2023-03-15T03:00:00.000Z",
+      "peakLevel": 8.15,
+      "riseM": 0.91
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-03-12T08:30:00.000Z",
+      "end": "2023-03-20T19:30:00.000Z",
+      "peakTime": "2023-03-18T01:00:00.000Z",
+      "peakLevel": 32.87,
+      "riseM": 1
+    },
+    {
+      "station": "Casalecchio chiusa",
+      "start": "2023-03-18T11:00:00.000Z",
+      "end": "2023-03-22T11:00:00.000Z",
+      "peakTime": "2023-03-20T11:00:00.000Z",
+      "peakLevel": 0.57,
+      "riseM": 0.7
+    },
+    {
+      "station": "Casalecchio tiro a volo",
+      "start": "2023-03-18T11:30:00.000Z",
+      "end": "2023-03-22T11:30:00.000Z",
+      "peakTime": "2023-03-20T11:30:00.000Z",
+      "peakLevel": 0.12,
+      "riseM": 0.75
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2023-03-18T18:30:00.000Z",
+      "end": "2023-03-22T19:30:00.000Z",
+      "peakTime": "2023-03-20T18:30:00.000Z",
+      "peakLevel": 4.42,
+      "riseM": 1.56
+    },
+    {
+      "station": "Forcelli",
+      "start": "2023-03-18T18:30:00.000Z",
+      "end": "2023-03-22T19:30:00.000Z",
+      "peakTime": "2023-03-20T18:30:00.000Z",
+      "peakLevel": 7.48,
+      "riseM": 0.97
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-03-20T12:00:00.000Z",
+      "end": "2023-03-31T22:30:00.000Z",
+      "peakTime": "2023-03-27T01:30:00.000Z",
+      "peakLevel": 32.99,
+      "riseM": 1.01
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-03-28T17:00:00.000Z",
+      "end": "2023-04-07T02:00:00.000Z",
+      "peakTime": "2023-04-03T10:00:00.000Z",
+      "peakLevel": 33.09,
+      "riseM": 1.01
+    },
+    {
+      "station": "Vergato DX",
+      "start": "2023-04-30T09:00:00.000Z",
+      "end": "2023-05-04T09:00:00.000Z",
+      "peakTime": "2023-05-02T09:00:00.000Z",
+      "peakLevel": 1.08,
+      "riseM": 1.39
+    },
+    {
+      "station": "Casalecchio chiusa",
+      "start": "2023-04-30T12:00:00.000Z",
+      "end": "2023-05-05T03:00:00.000Z",
+      "peakTime": "2023-05-02T12:00:00.000Z",
+      "peakLevel": 1.24,
+      "riseM": 2.11
+    },
+    {
+      "station": "Casalecchio tiro a volo",
+      "start": "2023-04-30T12:00:00.000Z",
+      "end": "2023-05-05T02:30:00.000Z",
+      "peakTime": "2023-05-02T12:00:00.000Z",
+      "peakLevel": 1.32,
+      "riseM": 1.98
+    },
+    {
+      "station": "Sasso Marconi",
+      "start": "2023-04-30T12:30:00.000Z",
+      "end": "2023-05-05T01:00:00.000Z",
+      "peakTime": "2023-05-02T12:30:00.000Z",
+      "peakLevel": 1.01,
+      "riseM": 1.14
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2023-04-30T23:30:00.000Z",
+      "end": "2023-05-05T03:30:00.000Z",
+      "peakTime": "2023-05-02T14:30:00.000Z",
+      "peakLevel": 12.21,
+      "riseM": 5.85
+    },
+    {
+      "station": "Forcelli",
+      "start": "2023-04-30T16:00:00.000Z",
+      "end": "2023-05-05T06:00:00.000Z",
+      "peakTime": "2023-05-02T16:00:00.000Z",
+      "peakLevel": 12.45,
+      "riseM": 6.36
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-04-05T01:30:00.000Z",
+      "end": "2023-05-04T07:30:00.000Z",
+      "peakTime": "2023-05-02T16:30:00.000Z",
+      "peakLevel": 37.88,
+      "riseM": 5.29
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2023-05-01T07:00:00.000Z",
+      "end": "2023-05-05T07:30:00.000Z",
+      "peakTime": "2023-05-03T07:00:00.000Z",
+      "peakLevel": 10.4,
+      "riseM": 7.9
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2023-05-01T08:30:00.000Z",
+      "end": "2023-05-05T10:30:00.000Z",
+      "peakTime": "2023-05-03T08:30:00.000Z",
+      "peakLevel": 27.76,
+      "riseM": 7.77
+    },
+    {
+      "station": "Dosso",
+      "start": "2023-05-01T10:30:00.000Z",
+      "end": "2023-05-06T09:00:00.000Z",
+      "peakTime": "2023-05-03T10:30:00.000Z",
+      "peakLevel": 9.93,
+      "riseM": 7.58
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2023-05-01T10:30:00.000Z",
+      "end": "2023-05-06T08:00:00.000Z",
+      "peakTime": "2023-05-03T10:30:00.000Z",
+      "peakLevel": 21.14,
+      "riseM": 5.32
+    },
+    {
+      "station": "Cento",
+      "start": "2023-05-01T11:00:00.000Z",
+      "end": "2023-05-05T12:00:00.000Z",
+      "peakTime": "2023-05-03T11:00:00.000Z",
+      "peakLevel": 7.64,
+      "riseM": 9.29
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2023-05-01T13:30:00.000Z",
+      "end": "2023-05-04T08:00:00.000Z",
+      "peakTime": "2023-05-03T13:30:00.000Z",
+      "peakLevel": 12.31,
+      "riseM": 2.46
+    },
+    {
+      "station": "Gallo",
+      "start": "2023-05-02T00:00:00.000Z",
+      "end": "2023-05-06T13:30:00.000Z",
+      "peakTime": "2023-05-04T00:00:00.000Z",
+      "peakLevel": 11.41,
+      "riseM": 7.91
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-05-08T17:00:00.000Z",
+      "end": "2023-05-13T06:30:00.000Z",
+      "peakTime": "2023-05-10T17:00:00.000Z",
+      "peakLevel": 34.92,
+      "riseM": 2.88
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2023-05-08T17:30:00.000Z",
+      "end": "2023-05-13T05:30:00.000Z",
+      "peakTime": "2023-05-10T17:30:00.000Z",
+      "peakLevel": 9.59,
+      "riseM": 2.07
+    },
+    {
+      "station": "Casalecchio tiro a volo",
+      "start": "2023-05-08T20:30:00.000Z",
+      "end": "2023-05-12T19:30:00.000Z",
+      "peakTime": "2023-05-10T19:30:00.000Z",
+      "peakLevel": 0.36,
+      "riseM": 0.75
+    },
+    {
+      "station": "Forcelli",
+      "start": "2023-05-08T20:30:00.000Z",
+      "end": "2023-05-13T09:00:00.000Z",
+      "peakTime": "2023-05-10T20:00:00.000Z",
+      "peakLevel": 9.3,
+      "riseM": 2.16
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2023-05-09T02:00:00.000Z",
+      "end": "2023-05-13T02:30:00.000Z",
+      "peakTime": "2023-05-11T02:00:00.000Z",
+      "peakLevel": 5.45,
+      "riseM": 2.73
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2023-05-09T06:00:00.000Z",
+      "end": "2023-05-14T19:30:00.000Z",
+      "peakTime": "2023-05-11T06:00:00.000Z",
+      "peakLevel": 22.08,
+      "riseM": 2.21
+    },
+    {
+      "station": "Cento",
+      "start": "2023-05-09T10:30:00.000Z",
+      "end": "2023-05-13T11:30:00.000Z",
+      "peakTime": "2023-05-11T10:30:00.000Z",
+      "peakLevel": 2.8,
+      "riseM": 3.41
+    },
+    {
+      "station": "Dosso",
+      "start": "2023-05-09T14:00:00.000Z",
+      "end": "2023-05-13T15:30:00.000Z",
+      "peakTime": "2023-05-11T14:00:00.000Z",
+      "peakLevel": 5.53,
+      "riseM": 2.63
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2023-05-09T14:30:00.000Z",
+      "end": "2023-05-12T11:30:00.000Z",
+      "peakTime": "2023-05-11T14:30:00.000Z",
+      "peakLevel": 17.08,
+      "riseM": 1.25
+    },
+    {
+      "station": "Gallo",
+      "start": "2023-05-09T23:00:00.000Z",
+      "end": "2023-05-14T03:30:00.000Z",
+      "peakTime": "2023-05-11T23:00:00.000Z",
+      "peakLevel": 7.31,
+      "riseM": 3.06
+    },
+    {
+      "station": "Vergato DX",
+      "start": "2023-05-14T15:00:00.000Z",
+      "end": "2023-05-19T09:30:00.000Z",
+      "peakTime": "2023-05-16T15:00:00.000Z",
+      "peakLevel": 1.78,
+      "riseM": 1.84
+    },
+    {
+      "station": "Sasso Marconi",
+      "start": "2023-05-14T16:30:00.000Z",
+      "end": "2023-05-19T08:00:00.000Z",
+      "peakTime": "2023-05-16T16:30:00.000Z",
+      "peakLevel": 1.92,
+      "riseM": 1.96
+    },
+    {
+      "station": "Casalecchio tiro a volo",
+      "start": "2023-05-14T10:00:00.000Z",
+      "end": "2023-05-19T09:30:00.000Z",
+      "peakTime": "2023-05-16T18:30:00.000Z",
+      "peakLevel": 2.09,
+      "riseM": 2.34
+    },
+    {
+      "station": "Casalecchio chiusa",
+      "start": "2023-05-14T19:00:00.000Z",
+      "end": "2023-05-19T10:00:00.000Z",
+      "peakTime": "2023-05-16T19:00:00.000Z",
+      "peakLevel": 1.62,
+      "riseM": 1.25
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-05-13T19:30:00.000Z",
+      "end": "2023-05-21T03:00:00.000Z",
+      "peakTime": "2023-05-17T10:30:00.000Z",
+      "peakLevel": 38.61,
+      "riseM": 6.45
+    },
+    {
+      "station": "Forcelli",
+      "start": "2023-05-13T16:30:00.000Z",
+      "end": "2023-05-19T11:30:00.000Z",
+      "peakTime": "2023-05-17T11:30:00.000Z",
+      "peakLevel": 13.22,
+      "riseM": 5.58
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2023-05-13T13:30:00.000Z",
+      "end": "2023-05-20T08:30:00.000Z",
+      "peakTime": "2023-05-17T11:30:00.000Z",
+      "peakLevel": 13.61,
+      "riseM": 5.92
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2023-05-15T00:00:00.000Z",
+      "end": "2023-05-21T13:30:00.000Z",
+      "peakTime": "2023-05-17T14:00:00.000Z",
+      "peakLevel": 11.88,
+      "riseM": 8.67
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2023-05-15T14:00:00.000Z",
+      "end": "2023-05-19T14:30:00.000Z",
+      "peakTime": "2023-05-17T14:00:00.000Z",
+      "peakLevel": 29.08,
+      "riseM": 9.04
+    },
+    {
+      "station": "Dosso",
+      "start": "2023-05-15T16:00:00.000Z",
+      "end": "2023-05-21T21:00:00.000Z",
+      "peakTime": "2023-05-17T16:00:00.000Z",
+      "peakLevel": 10.68,
+      "riseM": 7.19
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2023-05-15T16:00:00.000Z",
+      "end": "2023-05-21T23:00:00.000Z",
+      "peakTime": "2023-05-17T16:00:00.000Z",
+      "peakLevel": 21.41,
+      "riseM": 5.59
+    },
+    {
+      "station": "Cento",
+      "start": "2023-05-15T16:30:00.000Z",
+      "end": "2023-05-19T16:30:00.000Z",
+      "peakTime": "2023-05-17T16:30:00.000Z",
+      "peakLevel": 8.63,
+      "riseM": 8.26
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2023-05-15T18:00:00.000Z",
+      "end": "2023-05-19T19:00:00.000Z",
+      "peakTime": "2023-05-17T18:00:00.000Z",
+      "peakLevel": 12.71,
+      "riseM": 2.86
+    },
+    {
+      "station": "Gallo",
+      "start": "2023-05-16T05:00:00.000Z",
+      "end": "2023-05-20T06:30:00.000Z",
+      "peakTime": "2023-05-18T05:00:00.000Z",
+      "peakLevel": 11.91,
+      "riseM": 6.58
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2023-05-19T03:30:00.000Z",
+      "end": "2023-05-21T01:30:00.000Z",
+      "peakTime": "2023-05-20T13:00:00.000Z",
+      "peakLevel": 9.05,
+      "riseM": 0.52
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-05-19T01:00:00.000Z",
+      "end": "2023-05-21T03:00:00.000Z",
+      "peakTime": "2023-05-20T14:00:00.000Z",
+      "peakLevel": 34.08,
+      "riseM": 1.01
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2023-05-19T11:30:00.000Z",
+      "end": "2023-05-21T13:30:00.000Z",
+      "peakTime": "2023-05-21T01:00:00.000Z",
+      "peakLevel": 7.47,
+      "riseM": 0.67
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2023-05-19T16:00:00.000Z",
+      "end": "2023-05-21T23:00:00.000Z",
+      "peakTime": "2023-05-21T07:30:00.000Z",
+      "peakLevel": 19.43,
+      "riseM": 0.53
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2023-06-01T18:00:00.000Z",
+      "end": "2023-06-06T21:30:00.000Z",
+      "peakTime": "2023-06-03T18:00:00.000Z",
+      "peakLevel": 9.34,
+      "riseM": 1.88
+    },
+    {
+      "station": "Casalecchio tiro a volo",
+      "start": "2023-06-01T18:30:00.000Z",
+      "end": "2023-06-05T12:00:00.000Z",
+      "peakTime": "2023-06-03T18:30:00.000Z",
+      "peakLevel": 0.23,
+      "riseM": 0.66
+    },
+    {
+      "station": "Forcelli",
+      "start": "2023-06-01T21:00:00.000Z",
+      "end": "2023-06-07T15:30:00.000Z",
+      "peakTime": "2023-06-03T21:00:00.000Z",
+      "peakLevel": 8.28,
+      "riseM": 1.46
+    },
+    {
+      "station": "Cento",
+      "start": "2023-06-02T06:30:00.000Z",
+      "end": "2023-06-06T07:30:00.000Z",
+      "peakTime": "2023-06-04T06:30:00.000Z",
+      "peakLevel": 0.98,
+      "riseM": 1.89
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-06-04T08:30:00.000Z",
+      "end": "2023-06-05T21:00:00.000Z",
+      "peakTime": "2023-06-04T20:00:00.000Z",
+      "peakLevel": 32.78,
+      "riseM": 0.74
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2023-06-08T20:00:00.000Z",
+      "end": "2023-06-11T14:30:00.000Z",
+      "peakTime": "2023-06-10T20:00:00.000Z",
+      "peakLevel": 8.26,
+      "riseM": 0.71
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2023-06-10T09:00:00.000Z",
+      "end": "2023-06-13T07:00:00.000Z",
+      "peakTime": "2023-06-11T07:00:00.000Z",
+      "peakLevel": 20.35,
+      "riseM": 0.52
+    },
+    {
+      "station": "Cento",
+      "start": "2023-06-09T23:00:00.000Z",
+      "end": "2023-06-12T05:00:00.000Z",
+      "peakTime": "2023-06-11T10:00:00.000Z",
+      "peakLevel": 1,
+      "riseM": 0.93
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-06-06T09:00:00.000Z",
+      "end": "2023-06-16T11:00:00.000Z",
+      "peakTime": "2023-06-13T19:00:00.000Z",
+      "peakLevel": 34.05,
+      "riseM": 2.17
+    },
+    {
+      "station": "Casalecchio chiusa",
+      "start": "2023-06-12T08:00:00.000Z",
+      "end": "2023-06-15T20:30:00.000Z",
+      "peakTime": "2023-06-13T20:00:00.000Z",
+      "peakLevel": 0.78,
+      "riseM": 0.56
+    },
+    {
+      "station": "Casalecchio tiro a volo",
+      "start": "2023-06-12T07:30:00.000Z",
+      "end": "2023-06-15T11:30:00.000Z",
+      "peakTime": "2023-06-13T20:30:00.000Z",
+      "peakLevel": 0.55,
+      "riseM": 0.95
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2023-06-11T20:30:00.000Z",
+      "end": "2023-06-15T07:30:00.000Z",
+      "peakTime": "2023-06-13T20:30:00.000Z",
+      "peakLevel": 8.77,
+      "riseM": 1.26
+    },
+    {
+      "station": "Forcelli",
+      "start": "2023-06-09T00:30:00.000Z",
+      "end": "2023-06-15T22:30:00.000Z",
+      "peakTime": "2023-06-13T22:30:00.000Z",
+      "peakLevel": 8.54,
+      "riseM": 1.81
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2023-06-09T23:00:00.000Z",
+      "end": "2023-06-15T18:00:00.000Z",
+      "peakTime": "2023-06-14T02:00:00.000Z",
+      "peakLevel": 5.51,
+      "riseM": 2.5
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2023-06-12T07:30:00.000Z",
+      "end": "2023-06-14T20:30:00.000Z",
+      "peakTime": "2023-06-14T07:30:00.000Z",
+      "peakLevel": 21.34,
+      "riseM": 1.37
+    },
+    {
+      "station": "Cento",
+      "start": "2023-06-12T14:00:00.000Z",
+      "end": "2023-06-16T05:00:00.000Z",
+      "peakTime": "2023-06-14T10:00:00.000Z",
+      "peakLevel": 1.87,
+      "riseM": 2.36
+    },
+    {
+      "station": "Dosso",
+      "start": "2023-06-12T13:30:00.000Z",
+      "end": "2023-06-16T04:00:00.000Z",
+      "peakTime": "2023-06-14T13:30:00.000Z",
+      "peakLevel": 4.61,
+      "riseM": 1.66
+    },
+    {
+      "station": "Gallo",
+      "start": "2023-06-13T01:00:00.000Z",
+      "end": "2023-06-16T13:30:00.000Z",
+      "peakTime": "2023-06-14T20:30:00.000Z",
+      "peakLevel": 6.15,
+      "riseM": 1.9
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-06-15T13:30:00.000Z",
+      "end": "2023-06-21T15:30:00.000Z",
+      "peakTime": "2023-06-16T21:00:00.000Z",
+      "peakLevel": 32.75,
+      "riseM": 0.91
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-06-18T07:00:00.000Z",
+      "end": "2023-06-26T17:00:00.000Z",
+      "peakTime": "2023-06-23T20:00:00.000Z",
+      "peakLevel": 32.94,
+      "riseM": 1
+    },
+    {
+      "station": "Forcelli",
+      "start": "2023-06-22T01:30:00.000Z",
+      "end": "2023-06-25T15:30:00.000Z",
+      "peakTime": "2023-06-24T01:30:00.000Z",
+      "peakLevel": 7.86,
+      "riseM": 1.43
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2023-06-30T23:00:00.000Z",
+      "end": "2023-07-04T10:00:00.000Z",
+      "peakTime": "2023-07-02T05:30:00.000Z",
+      "peakLevel": 11.47,
+      "riseM": 2
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-06-25T08:00:00.000Z",
+      "end": "2023-07-05T22:00:00.000Z",
+      "peakTime": "2023-07-03T07:30:00.000Z",
+      "peakLevel": 33.3,
+      "riseM": 1.57
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2023-07-01T09:00:00.000Z",
+      "end": "2023-07-03T09:30:00.000Z",
+      "peakTime": "2023-07-03T09:00:00.000Z",
+      "peakLevel": 19.7,
+      "riseM": 5.06
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2023-07-01T21:00:00.000Z",
+      "end": "2023-07-04T18:30:00.000Z",
+      "peakTime": "2023-07-03T21:00:00.000Z",
+      "peakLevel": 8.56,
+      "riseM": 1.21
+    },
+    {
+      "station": "Forcelli",
+      "start": "2023-07-02T01:00:00.000Z",
+      "end": "2023-07-05T16:30:00.000Z",
+      "peakTime": "2023-07-04T01:00:00.000Z",
+      "peakLevel": 8.25,
+      "riseM": 1.91
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2023-07-04T22:30:00.000Z",
+      "end": "2023-07-14T22:00:00.000Z",
+      "peakTime": "2023-07-11T06:30:00.000Z",
+      "peakLevel": 11.84,
+      "riseM": 1.85
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2023-07-10T15:30:00.000Z",
+      "end": "2023-07-14T10:00:00.000Z",
+      "peakTime": "2023-07-14T09:30:00.000Z",
+      "peakLevel": 17.38,
+      "riseM": 2.61
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-07-04T16:00:00.000Z",
+      "end": "2023-07-18T10:30:00.000Z",
+      "peakTime": "2023-07-15T14:30:00.000Z",
+      "peakLevel": 32.93,
+      "riseM": 1.14
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2023-07-15T18:00:00.000Z",
+      "end": "2023-07-18T06:00:00.000Z",
+      "peakTime": "2023-07-17T18:00:00.000Z",
+      "peakLevel": 17.38,
+      "riseM": 2.5
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2023-07-12T21:30:00.000Z",
+      "end": "2023-07-21T19:00:00.000Z",
+      "peakTime": "2023-07-19T05:30:00.000Z",
+      "peakLevel": 11.97,
+      "riseM": 1.95
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-07-17T11:00:00.000Z",
+      "end": "2023-07-25T12:30:00.000Z",
+      "peakTime": "2023-07-21T03:00:00.000Z",
+      "peakLevel": 33.15,
+      "riseM": 1.22
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2023-07-22T00:30:00.000Z",
+      "end": "2023-07-25T17:00:00.000Z",
+      "peakTime": "2023-07-22T07:00:00.000Z",
+      "peakLevel": 11.87,
+      "riseM": 2.32
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2023-07-20T22:30:00.000Z",
+      "end": "2023-07-24T17:30:00.000Z",
+      "peakTime": "2023-07-22T17:30:00.000Z",
+      "peakLevel": 8.21,
+      "riseM": 1.45
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2023-07-23T08:30:00.000Z",
+      "end": "2023-07-27T10:00:00.000Z",
+      "peakTime": "2023-07-25T08:30:00.000Z",
+      "peakLevel": 24.03,
+      "riseM": 9.18
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2023-07-23T19:00:00.000Z",
+      "end": "2023-07-29T22:30:00.000Z",
+      "peakTime": "2023-07-26T06:30:00.000Z",
+      "peakLevel": 11.86,
+      "riseM": 2.04
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-07-23T08:30:00.000Z",
+      "end": "2023-08-01T18:00:00.000Z",
+      "peakTime": "2023-07-28T02:00:00.000Z",
+      "peakLevel": 33.56,
+      "riseM": 1.78
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2023-07-26T05:30:00.000Z",
+      "end": "2023-07-31T06:00:00.000Z",
+      "peakTime": "2023-07-28T05:00:00.000Z",
+      "peakLevel": 9.34,
+      "riseM": 2.88
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2023-07-27T10:00:00.000Z",
+      "end": "2023-07-29T09:30:00.000Z",
+      "peakTime": "2023-07-29T09:00:00.000Z",
+      "peakLevel": 16.24,
+      "riseM": 1.39
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2023-07-27T19:30:00.000Z",
+      "end": "2023-08-01T19:30:00.000Z",
+      "peakTime": "2023-07-30T06:00:00.000Z",
+      "peakLevel": 11.86,
+      "riseM": 2.03
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2023-07-30T01:30:00.000Z",
+      "end": "2023-07-31T06:00:00.000Z",
+      "peakTime": "2023-07-31T05:00:00.000Z",
+      "peakLevel": 8.18,
+      "riseM": 1.33
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-07-30T12:00:00.000Z",
+      "end": "2023-08-03T23:30:00.000Z",
+      "peakTime": "2023-07-31T16:00:00.000Z",
+      "peakLevel": 33.98,
+      "riseM": 2.23
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2023-07-31T11:30:00.000Z",
+      "end": "2023-08-08T06:30:00.000Z",
+      "peakTime": "2023-08-03T17:00:00.000Z",
+      "peakLevel": 11.88,
+      "riseM": 2
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-08-01T19:00:00.000Z",
+      "end": "2023-08-07T03:30:00.000Z",
+      "peakTime": "2023-08-04T08:00:00.000Z",
+      "peakLevel": 34.4,
+      "riseM": 2.5
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2023-08-03T07:00:00.000Z",
+      "end": "2023-08-06T04:30:00.000Z",
+      "peakTime": "2023-08-05T07:00:00.000Z",
+      "peakLevel": 10.27,
+      "riseM": 3.05
+    },
+    {
+      "station": "Forcelli",
+      "start": "2023-08-03T10:00:00.000Z",
+      "end": "2023-08-07T10:30:00.000Z",
+      "peakTime": "2023-08-05T10:00:00.000Z",
+      "peakLevel": 8.21,
+      "riseM": 2.04
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-08-05T18:30:00.000Z",
+      "end": "2023-08-12T04:30:00.000Z",
+      "peakTime": "2023-08-08T06:00:00.000Z",
+      "peakLevel": 34.29,
+      "riseM": 2.49
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2023-08-07T07:00:00.000Z",
+      "end": "2023-08-11T10:00:00.000Z",
+      "peakTime": "2023-08-09T07:00:00.000Z",
+      "peakLevel": 18.29,
+      "riseM": 3.5
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2023-08-05T22:30:00.000Z",
+      "end": "2023-08-14T20:00:00.000Z",
+      "peakTime": "2023-08-10T06:00:00.000Z",
+      "peakLevel": 11.88,
+      "riseM": 2.33
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-08-10T13:30:00.000Z",
+      "end": "2023-08-16T01:00:00.000Z",
+      "peakTime": "2023-08-13T05:00:00.000Z",
+      "peakLevel": 34.8,
+      "riseM": 2.85
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2023-08-11T22:30:00.000Z",
+      "end": "2023-08-18T23:30:00.000Z",
+      "peakTime": "2023-08-15T17:30:00.000Z",
+      "peakLevel": 11.89,
+      "riseM": 2.06
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-08-15T06:00:00.000Z",
+      "end": "2023-08-22T13:00:00.000Z",
+      "peakTime": "2023-08-17T16:00:00.000Z",
+      "peakLevel": 34.82,
+      "riseM": 2.96
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2023-08-15T04:30:00.000Z",
+      "end": "2023-08-22T20:30:00.000Z",
+      "peakTime": "2023-08-18T04:00:00.000Z",
+      "peakLevel": 9.32,
+      "riseM": 2.32
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2023-08-17T21:00:00.000Z",
+      "end": "2023-08-24T13:00:00.000Z",
+      "peakTime": "2023-08-20T17:00:00.000Z",
+      "peakLevel": 11.92,
+      "riseM": 1.99
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-08-18T18:30:00.000Z",
+      "end": "2023-08-24T00:30:00.000Z",
+      "peakTime": "2023-08-20T18:00:00.000Z",
+      "peakLevel": 34.86,
+      "riseM": 3.12
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2023-08-21T02:00:00.000Z",
+      "end": "2023-08-27T07:30:00.000Z",
+      "peakTime": "2023-08-23T05:00:00.000Z",
+      "peakLevel": 9.43,
+      "riseM": 2.55
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2023-08-19T14:00:00.000Z",
+      "end": "2023-08-24T12:00:00.000Z",
+      "peakTime": "2023-08-23T06:30:00.000Z",
+      "peakLevel": 17.48,
+      "riseM": 2.6
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2023-08-22T08:30:00.000Z",
+      "end": "2023-08-29T21:30:00.000Z",
+      "peakTime": "2023-08-26T19:00:00.000Z",
+      "peakLevel": 11.95,
+      "riseM": 2.01
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2023-08-24T23:00:00.000Z",
+      "end": "2023-08-28T22:00:00.000Z",
+      "peakTime": "2023-08-27T01:30:00.000Z",
+      "peakLevel": 9.22,
+      "riseM": 2.17
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-08-21T20:00:00.000Z",
+      "end": "2023-09-01T09:30:00.000Z",
+      "peakTime": "2023-08-27T10:00:00.000Z",
+      "peakLevel": 34.85,
+      "riseM": 2.53
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2023-08-26T11:30:00.000Z",
+      "end": "2023-08-28T12:00:00.000Z",
+      "peakTime": "2023-08-28T11:30:00.000Z",
+      "peakLevel": 22.85,
+      "riseM": 7.95
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2023-08-29T02:30:00.000Z",
+      "end": "2023-09-02T19:00:00.000Z",
+      "peakTime": "2023-08-30T16:30:00.000Z",
+      "peakLevel": 11.9,
+      "riseM": 2.02
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2023-08-29T13:30:00.000Z",
+      "end": "2023-08-31T14:00:00.000Z",
+      "peakTime": "2023-08-31T13:30:00.000Z",
+      "peakLevel": 22.11,
+      "riseM": 7.31
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2023-08-30T02:00:00.000Z",
+      "end": "2023-09-02T03:00:00.000Z",
+      "peakTime": "2023-09-01T07:00:00.000Z",
+      "peakLevel": 9.14,
+      "riseM": 2.41
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-08-29T18:30:00.000Z",
+      "end": "2023-09-05T09:30:00.000Z",
+      "peakTime": "2023-09-01T15:30:00.000Z",
+      "peakLevel": 34.88,
+      "riseM": 2.7
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2023-09-01T13:00:00.000Z",
+      "end": "2023-09-06T10:30:00.000Z",
+      "peakTime": "2023-09-03T06:00:00.000Z",
+      "peakLevel": 11.91,
+      "riseM": 2.06
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2023-09-03T08:00:00.000Z",
+      "end": "2023-09-08T05:00:00.000Z",
+      "peakTime": "2023-09-05T08:00:00.000Z",
+      "peakLevel": 23.4,
+      "riseM": 8.57
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-09-04T15:30:00.000Z",
+      "end": "2023-09-12T14:30:00.000Z",
+      "peakTime": "2023-09-08T05:30:00.000Z",
+      "peakLevel": 34.92,
+      "riseM": 3.11
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2023-09-04T20:30:00.000Z",
+      "end": "2023-09-10T18:30:00.000Z",
+      "peakTime": "2023-09-08T06:00:00.000Z",
+      "peakLevel": 11.9,
+      "riseM": 2.14
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2023-09-06T08:30:00.000Z",
+      "end": "2023-09-08T09:00:00.000Z",
+      "peakTime": "2023-09-08T08:30:00.000Z",
+      "peakLevel": 23.16,
+      "riseM": 8.32
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2023-09-09T05:00:00.000Z",
+      "end": "2023-09-10T07:00:00.000Z",
+      "peakTime": "2023-09-09T06:30:00.000Z",
+      "peakLevel": 8.22,
+      "riseM": 1.43
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-09-10T00:00:00.000Z",
+      "end": "2023-09-14T21:30:00.000Z",
+      "peakTime": "2023-09-11T20:00:00.000Z",
+      "peakLevel": 33.94,
+      "riseM": 2.11
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2023-09-09T09:30:00.000Z",
+      "end": "2023-09-16T13:30:00.000Z",
+      "peakTime": "2023-09-13T05:30:00.000Z",
+      "peakLevel": 11.92,
+      "riseM": 1.97
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2023-09-10T09:30:00.000Z",
+      "end": "2023-09-14T03:00:00.000Z",
+      "peakTime": "2023-09-14T02:30:00.000Z",
+      "peakLevel": 24.09,
+      "riseM": 9.27
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2023-09-13T01:30:00.000Z",
+      "end": "2023-09-16T18:30:00.000Z",
+      "peakTime": "2023-09-14T06:30:00.000Z",
+      "peakLevel": 8.36,
+      "riseM": 1.8
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-09-13T23:00:00.000Z",
+      "end": "2023-09-17T21:30:00.000Z",
+      "peakTime": "2023-09-15T07:00:00.000Z",
+      "peakLevel": 33.93,
+      "riseM": 2.11
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2023-09-14T09:30:00.000Z",
+      "end": "2023-09-22T21:00:00.000Z",
+      "peakTime": "2023-09-18T15:00:00.000Z",
+      "peakLevel": 11.93,
+      "riseM": 2.2
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-09-16T09:00:00.000Z",
+      "end": "2023-09-23T19:30:00.000Z",
+      "peakTime": "2023-09-19T16:30:00.000Z",
+      "peakLevel": 33.41,
+      "riseM": 1.65
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2023-09-19T08:30:00.000Z",
+      "end": "2023-09-21T09:00:00.000Z",
+      "peakTime": "2023-09-21T08:30:00.000Z",
+      "peakLevel": 16.88,
+      "riseM": 2.12
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2023-09-20T00:00:00.000Z",
+      "end": "2023-09-24T18:30:00.000Z",
+      "peakTime": "2023-09-22T06:30:00.000Z",
+      "peakLevel": 11.94,
+      "riseM": 2.2
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2023-09-19T02:30:00.000Z",
+      "end": "2023-09-25T06:00:00.000Z",
+      "peakTime": "2023-09-22T14:00:00.000Z",
+      "peakLevel": 8.51,
+      "riseM": 1.89
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-09-22T00:00:00.000Z",
+      "end": "2023-09-26T23:00:00.000Z",
+      "peakTime": "2023-09-23T00:30:00.000Z",
+      "peakLevel": 33.25,
+      "riseM": 1.03
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-09-24T19:00:00.000Z",
+      "end": "2023-09-28T22:00:00.000Z",
+      "peakTime": "2023-09-26T06:00:00.000Z",
+      "peakLevel": 33.17,
+      "riseM": 1.36
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2023-09-23T19:00:00.000Z",
+      "end": "2023-09-29T23:00:00.000Z",
+      "peakTime": "2023-09-27T07:30:00.000Z",
+      "peakLevel": 11.9,
+      "riseM": 2.08
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2023-09-24T06:00:00.000Z",
+      "end": "2023-10-01T09:00:00.000Z",
+      "peakTime": "2023-09-27T10:30:00.000Z",
+      "peakLevel": 8.69,
+      "riseM": 1.93
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-09-28T22:00:00.000Z",
+      "end": "2023-10-03T02:30:00.000Z",
+      "peakTime": "2023-09-29T13:00:00.000Z",
+      "peakLevel": 33.22,
+      "riseM": 1.44
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2023-09-28T17:00:00.000Z",
+      "end": "2023-10-03T06:30:00.000Z",
+      "peakTime": "2023-09-30T13:00:00.000Z",
+      "peakLevel": 8.69,
+      "riseM": 2.3
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2023-09-28T17:30:00.000Z",
+      "end": "2023-10-03T23:00:00.000Z",
+      "peakTime": "2023-10-01T15:00:00.000Z",
+      "peakLevel": 11.91,
+      "riseM": 2.1
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-10-01T01:30:00.000Z",
+      "end": "2023-10-08T11:00:00.000Z",
+      "peakTime": "2023-10-05T03:00:00.000Z",
+      "peakLevel": 33.31,
+      "riseM": 1.61
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2023-10-02T21:00:00.000Z",
+      "end": "2023-10-10T03:30:00.000Z",
+      "peakTime": "2023-10-05T09:30:00.000Z",
+      "peakLevel": 8.64,
+      "riseM": 2.09
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2023-10-02T18:00:00.000Z",
+      "end": "2023-10-09T01:30:00.000Z",
+      "peakTime": "2023-10-06T02:30:00.000Z",
+      "peakLevel": 11.94,
+      "riseM": 2.01
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-10-06T09:30:00.000Z",
+      "end": "2023-10-13T02:00:00.000Z",
+      "peakTime": "2023-10-08T06:30:00.000Z",
+      "peakLevel": 33.27,
+      "riseM": 1.38
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-10-10T05:30:00.000Z",
+      "end": "2023-10-14T22:00:00.000Z",
+      "peakTime": "2023-10-11T12:00:00.000Z",
+      "peakLevel": 33.24,
+      "riseM": 1.42
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2023-10-07T23:00:00.000Z",
+      "end": "2023-10-14T16:30:00.000Z",
+      "peakTime": "2023-10-12T00:30:00.000Z",
+      "peakLevel": 11.92,
+      "riseM": 1.99
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2023-10-07T02:30:00.000Z",
+      "end": "2023-10-18T23:00:00.000Z",
+      "peakTime": "2023-10-15T05:30:00.000Z",
+      "peakLevel": 8.45,
+      "riseM": 1.91
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-10-13T13:30:00.000Z",
+      "end": "2023-10-20T03:30:00.000Z",
+      "peakTime": "2023-10-17T07:00:00.000Z",
+      "peakLevel": 33.33,
+      "riseM": 1.47
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2023-10-16T15:30:00.000Z",
+      "end": "2023-10-21T05:00:00.000Z",
+      "peakTime": "2023-10-18T18:30:00.000Z",
+      "peakLevel": 8.33,
+      "riseM": 1.94
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2023-10-13T02:30:00.000Z",
+      "end": "2023-10-23T21:00:00.000Z",
+      "peakTime": "2023-10-21T13:30:00.000Z",
+      "peakLevel": 11.95,
+      "riseM": 2.15
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-10-19T19:30:00.000Z",
+      "end": "2023-10-25T18:30:00.000Z",
+      "peakTime": "2023-10-23T08:00:00.000Z",
+      "peakLevel": 33.29,
+      "riseM": 1.41
+    },
+    {
+      "station": "Vergato DX",
+      "start": "2023-10-22T14:00:00.000Z",
+      "end": "2023-10-26T14:00:00.000Z",
+      "peakTime": "2023-10-24T14:00:00.000Z",
+      "peakLevel": 1.89,
+      "riseM": 2.21
+    },
+    {
+      "station": "Casalecchio chiusa",
+      "start": "2023-10-22T16:30:00.000Z",
+      "end": "2023-10-28T14:30:00.000Z",
+      "peakTime": "2023-10-24T16:30:00.000Z",
+      "peakLevel": 1.03,
+      "riseM": 0.84
+    },
+    {
+      "station": "Casalecchio tiro a volo",
+      "start": "2023-10-22T21:00:00.000Z",
+      "end": "2023-10-28T14:00:00.000Z",
+      "peakTime": "2023-10-24T17:00:00.000Z",
+      "peakLevel": 1.03,
+      "riseM": 1.62
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2023-10-22T22:30:00.000Z",
+      "end": "2023-10-29T00:00:00.000Z",
+      "peakTime": "2023-10-24T22:30:00.000Z",
+      "peakLevel": 6.65,
+      "riseM": 4.23
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2023-10-23T03:30:00.000Z",
+      "end": "2023-10-28T15:00:00.000Z",
+      "peakTime": "2023-10-25T03:30:00.000Z",
+      "peakLevel": 21.88,
+      "riseM": 1.85
+    },
+    {
+      "station": "Cento",
+      "start": "2023-10-23T11:00:00.000Z",
+      "end": "2023-10-29T10:00:00.000Z",
+      "peakTime": "2023-10-25T08:30:00.000Z",
+      "peakLevel": 2.18,
+      "riseM": 3.61
+    },
+    {
+      "station": "Dosso",
+      "start": "2023-10-23T11:00:00.000Z",
+      "end": "2023-10-29T11:00:00.000Z",
+      "peakTime": "2023-10-25T11:00:00.000Z",
+      "peakLevel": 4.82,
+      "riseM": 2.34
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2023-10-23T12:30:00.000Z",
+      "end": "2023-10-29T01:30:00.000Z",
+      "peakTime": "2023-10-25T12:30:00.000Z",
+      "peakLevel": 16.41,
+      "riseM": 1.58
+    },
+    {
+      "station": "Gallo",
+      "start": "2023-10-23T21:30:00.000Z",
+      "end": "2023-10-29T20:00:00.000Z",
+      "peakTime": "2023-10-25T21:30:00.000Z",
+      "peakLevel": 6.24,
+      "riseM": 2.68
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2023-10-22T22:30:00.000Z",
+      "end": "2023-10-28T15:30:00.000Z",
+      "peakTime": "2023-10-26T11:00:00.000Z",
+      "peakLevel": 11.97,
+      "riseM": 2.06
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-10-25T17:00:00.000Z",
+      "end": "2023-10-31T07:00:00.000Z",
+      "peakTime": "2023-10-28T12:30:00.000Z",
+      "peakLevel": 33.12,
+      "riseM": 1.35
+    },
+    {
+      "station": "Vergato DX",
+      "start": "2023-10-28T05:30:00.000Z",
+      "end": "2023-11-01T05:00:00.000Z",
+      "peakTime": "2023-10-30T05:00:00.000Z",
+      "peakLevel": 2.19,
+      "riseM": 2.3
+    },
+    {
+      "station": "Sasso Marconi",
+      "start": "2023-10-23T14:30:00.000Z",
+      "end": "2023-11-01T10:30:00.000Z",
+      "peakTime": "2023-10-30T10:30:00.000Z",
+      "peakLevel": 0.66,
+      "riseM": 0.85
+    },
+    {
+      "station": "Casalecchio chiusa",
+      "start": "2023-10-28T11:30:00.000Z",
+      "end": "2023-11-02T04:30:00.000Z",
+      "peakTime": "2023-10-30T11:30:00.000Z",
+      "peakLevel": 1.26,
+      "riseM": 0.97
+    },
+    {
+      "station": "Casalecchio tiro a volo",
+      "start": "2023-10-28T11:30:00.000Z",
+      "end": "2023-11-02T05:00:00.000Z",
+      "peakTime": "2023-10-30T11:30:00.000Z",
+      "peakLevel": 1.38,
+      "riseM": 1.77
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2023-10-28T18:00:00.000Z",
+      "end": "2023-11-02T06:30:00.000Z",
+      "peakTime": "2023-10-30T16:00:00.000Z",
+      "peakLevel": 9.23,
+      "riseM": 6.31
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2023-10-28T20:30:00.000Z",
+      "end": "2023-11-01T17:00:00.000Z",
+      "peakTime": "2023-10-30T20:30:00.000Z",
+      "peakLevel": 24.75,
+      "riseM": 4.72
+    },
+    {
+      "station": "Cento",
+      "start": "2023-10-29T11:00:00.000Z",
+      "end": "2023-11-02T01:30:00.000Z",
+      "peakTime": "2023-10-31T01:00:00.000Z",
+      "peakLevel": 4.62,
+      "riseM": 5.4
+    },
+    {
+      "station": "Dosso",
+      "start": "2023-10-29T09:00:00.000Z",
+      "end": "2023-11-02T05:30:00.000Z",
+      "peakTime": "2023-10-31T04:30:00.000Z",
+      "peakLevel": 7.07,
+      "riseM": 4.27
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2023-10-29T04:30:00.000Z",
+      "end": "2023-11-02T06:00:00.000Z",
+      "peakTime": "2023-10-31T04:30:00.000Z",
+      "peakLevel": 18.62,
+      "riseM": 3.63
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2023-10-30T03:00:00.000Z",
+      "end": "2023-11-02T09:30:00.000Z",
+      "peakTime": "2023-10-31T09:30:00.000Z",
+      "peakLevel": 9.17,
+      "riseM": 2.59
+    },
+    {
+      "station": "Gallo",
+      "start": "2023-10-29T21:00:00.000Z",
+      "end": "2023-11-02T21:30:00.000Z",
+      "peakTime": "2023-10-31T19:00:00.000Z",
+      "peakLevel": 8.56,
+      "riseM": 4.56
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2023-10-30T22:00:00.000Z",
+      "end": "2023-11-03T14:30:00.000Z",
+      "peakTime": "2023-11-01T12:30:00.000Z",
+      "peakLevel": 11.86,
+      "riseM": 2.11
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-10-30T11:30:00.000Z",
+      "end": "2023-11-05T03:00:00.000Z",
+      "peakTime": "2023-11-02T04:30:00.000Z",
+      "peakLevel": 33,
+      "riseM": 1.19
+    },
+    {
+      "station": "Vergato DX",
+      "start": "2023-10-31T19:00:00.000Z",
+      "end": "2023-11-06T08:00:00.000Z",
+      "peakTime": "2023-11-02T18:00:00.000Z",
+      "peakLevel": 2.68,
+      "riseM": 2.45
+    },
+    {
+      "station": "Sasso Marconi",
+      "start": "2023-11-01T00:30:00.000Z",
+      "end": "2023-11-06T02:30:00.000Z",
+      "peakTime": "2023-11-03T00:30:00.000Z",
+      "peakLevel": 1.55,
+      "riseM": 1.61
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2023-11-01T19:00:00.000Z",
+      "end": "2023-11-06T21:30:00.000Z",
+      "peakTime": "2023-11-03T07:00:00.000Z",
+      "peakLevel": 10.23,
+      "riseM": 7.07
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2023-11-01T15:00:00.000Z",
+      "end": "2023-11-07T01:00:00.000Z",
+      "peakTime": "2023-11-03T13:00:00.000Z",
+      "peakLevel": 26.45,
+      "riseM": 6.38
+    },
+    {
+      "station": "Forcelli",
+      "start": "2023-11-01T16:30:00.000Z",
+      "end": "2023-11-05T16:30:00.000Z",
+      "peakTime": "2023-11-03T16:30:00.000Z",
+      "peakLevel": 7.49,
+      "riseM": 1.17
+    },
+    {
+      "station": "Cento",
+      "start": "2023-11-02T06:30:00.000Z",
+      "end": "2023-11-07T04:00:00.000Z",
+      "peakTime": "2023-11-03T19:30:00.000Z",
+      "peakLevel": 6.34,
+      "riseM": 6.44
+    },
+    {
+      "station": "Dosso",
+      "start": "2023-11-02T06:30:00.000Z",
+      "end": "2023-11-07T05:30:00.000Z",
+      "peakTime": "2023-11-03T23:30:00.000Z",
+      "peakLevel": 8.9,
+      "riseM": 5.66
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2023-11-02T03:00:00.000Z",
+      "end": "2023-11-07T06:00:00.000Z",
+      "peakTime": "2023-11-04T01:00:00.000Z",
+      "peakLevel": 20.41,
+      "riseM": 5.38
+    },
+    {
+      "station": "Gallo",
+      "start": "2023-11-02T16:30:00.000Z",
+      "end": "2023-11-07T10:30:00.000Z",
+      "peakTime": "2023-11-04T09:30:00.000Z",
+      "peakLevel": 10.47,
+      "riseM": 5.69
+    },
+    {
+      "station": "Casalecchio chiusa",
+      "start": "2023-11-01T09:30:00.000Z",
+      "end": "2023-11-06T09:30:00.000Z",
+      "peakTime": "2023-11-05T08:00:00.000Z",
+      "peakLevel": 1.46,
+      "riseM": 0.9
+    },
+    {
+      "station": "Casalecchio tiro a volo",
+      "start": "2023-11-01T05:00:00.000Z",
+      "end": "2023-11-06T09:00:00.000Z",
+      "peakTime": "2023-11-05T08:30:00.000Z",
+      "peakLevel": 1.81,
+      "riseM": 1.73
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-11-03T09:30:00.000Z",
+      "end": "2023-11-12T10:00:00.000Z",
+      "peakTime": "2023-11-09T05:30:00.000Z",
+      "peakLevel": 33.1,
+      "riseM": 1.15
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2023-11-04T14:00:00.000Z",
+      "end": "2023-11-11T16:00:00.000Z",
+      "peakTime": "2023-11-10T15:30:00.000Z",
+      "peakLevel": 11.94,
+      "riseM": 2.03
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2023-11-09T09:30:00.000Z",
+      "end": "2023-11-12T20:00:00.000Z",
+      "peakTime": "2023-11-10T19:00:00.000Z",
+      "peakLevel": 4.38,
+      "riseM": 1.34
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-11-10T22:30:00.000Z",
+      "end": "2023-11-16T08:30:00.000Z",
+      "peakTime": "2023-11-12T19:00:00.000Z",
+      "peakLevel": 33.14,
+      "riseM": 1.36
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-11-15T02:00:00.000Z",
+      "end": "2023-11-19T02:00:00.000Z",
+      "peakTime": "2023-11-16T04:00:00.000Z",
+      "peakLevel": 32.99,
+      "riseM": 1.14
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-11-18T23:00:00.000Z",
+      "end": "2023-11-24T07:30:00.000Z",
+      "peakTime": "2023-11-19T15:30:00.000Z",
+      "peakLevel": 33.09,
+      "riseM": 1.31
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-11-21T21:00:00.000Z",
+      "end": "2023-11-27T00:00:00.000Z",
+      "peakTime": "2023-11-23T21:30:00.000Z",
+      "peakLevel": 33.08,
+      "riseM": 1.19
+    },
+    {
+      "station": "Vergato DX",
+      "start": "2023-11-30T06:30:00.000Z",
+      "end": "2023-12-04T16:00:00.000Z",
+      "peakTime": "2023-12-02T06:30:00.000Z",
+      "peakLevel": 1.28,
+      "riseM": 1.11
+    },
+    {
+      "station": "Sasso Marconi",
+      "start": "2023-11-28T18:00:00.000Z",
+      "end": "2023-12-04T16:30:00.000Z",
+      "peakTime": "2023-12-02T08:30:00.000Z",
+      "peakLevel": 0.61,
+      "riseM": 0.74
+    },
+    {
+      "station": "Casalecchio chiusa",
+      "start": "2023-11-30T09:30:00.000Z",
+      "end": "2023-12-04T18:00:00.000Z",
+      "peakTime": "2023-12-02T09:30:00.000Z",
+      "peakLevel": 0.9,
+      "riseM": 0.68
+    },
+    {
+      "station": "Casalecchio tiro a volo",
+      "start": "2023-11-28T23:00:00.000Z",
+      "end": "2023-12-04T18:30:00.000Z",
+      "peakTime": "2023-12-02T10:00:00.000Z",
+      "peakLevel": 0.76,
+      "riseM": 1.28
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2023-11-29T21:00:00.000Z",
+      "end": "2023-12-07T03:00:00.000Z",
+      "peakTime": "2023-12-02T22:00:00.000Z",
+      "peakLevel": 7.58,
+      "riseM": 5.08
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-11-25T13:00:00.000Z",
+      "end": "2023-12-05T23:00:00.000Z",
+      "peakTime": "2023-12-03T00:30:00.000Z",
+      "peakLevel": 32.95,
+      "riseM": 1.16
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2023-11-29T23:00:00.000Z",
+      "end": "2023-12-04T19:00:00.000Z",
+      "peakTime": "2023-12-03T02:00:00.000Z",
+      "peakLevel": 23.48,
+      "riseM": 3.57
+    },
+    {
+      "station": "Cento",
+      "start": "2023-11-30T02:00:00.000Z",
+      "end": "2023-12-05T07:30:00.000Z",
+      "peakTime": "2023-12-03T05:30:00.000Z",
+      "peakLevel": 3.7,
+      "riseM": 4.04
+    },
+    {
+      "station": "Dosso",
+      "start": "2023-11-30T06:30:00.000Z",
+      "end": "2023-12-05T07:00:00.000Z",
+      "peakTime": "2023-12-03T09:30:00.000Z",
+      "peakLevel": 6.28,
+      "riseM": 2.84
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2023-11-30T07:30:00.000Z",
+      "end": "2023-12-05T03:30:00.000Z",
+      "peakTime": "2023-12-03T10:30:00.000Z",
+      "peakLevel": 17.84,
+      "riseM": 2.76
+    },
+    {
+      "station": "Gallo",
+      "start": "2023-11-30T13:30:00.000Z",
+      "end": "2023-12-05T17:30:00.000Z",
+      "peakTime": "2023-12-03T17:00:00.000Z",
+      "peakLevel": 7.94,
+      "riseM": 2.95
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2023-12-04T21:30:00.000Z",
+      "end": "2023-12-06T17:00:00.000Z",
+      "peakTime": "2023-12-06T04:30:00.000Z",
+      "peakLevel": 20.37,
+      "riseM": 0.54
+    },
+    {
+      "station": "Cento",
+      "start": "2023-12-05T08:00:00.000Z",
+      "end": "2023-12-07T05:30:00.000Z",
+      "peakTime": "2023-12-06T08:30:00.000Z",
+      "peakLevel": 1.04,
+      "riseM": 0.55
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-12-05T00:00:00.000Z",
+      "end": "2023-12-08T00:00:00.000Z",
+      "peakTime": "2023-12-06T11:30:00.000Z",
+      "peakLevel": 32.82,
+      "riseM": 1.03
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-12-09T16:30:00.000Z",
+      "end": "2023-12-13T20:30:00.000Z",
+      "peakTime": "2023-12-10T17:00:00.000Z",
+      "peakLevel": 32.85,
+      "riseM": 1.03
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2023-12-12T12:30:00.000Z",
+      "end": "2023-12-18T07:30:00.000Z",
+      "peakTime": "2023-12-15T18:30:00.000Z",
+      "peakLevel": 32.81,
+      "riseM": 1.02
+    },
+    {
+      "station": "Sasso Marconi",
+      "start": "2024-01-04T08:00:00.000Z",
+      "end": "2024-01-09T16:30:00.000Z",
+      "peakTime": "2024-01-06T14:00:00.000Z",
+      "peakLevel": 0.7,
+      "riseM": 0.87
+    },
+    {
+      "station": "Vergato DX",
+      "start": "2024-01-04T07:30:00.000Z",
+      "end": "2024-01-09T15:30:00.000Z",
+      "peakTime": "2024-01-07T15:30:00.000Z",
+      "peakLevel": 1.19,
+      "riseM": 0.73
+    },
+    {
+      "station": "Casalecchio chiusa",
+      "start": "2024-01-04T11:00:00.000Z",
+      "end": "2024-01-09T19:00:00.000Z",
+      "peakTime": "2024-01-07T17:30:00.000Z",
+      "peakLevel": 0.96,
+      "riseM": 0.7
+    },
+    {
+      "station": "Casalecchio tiro a volo",
+      "start": "2024-01-04T10:00:00.000Z",
+      "end": "2024-01-09T18:30:00.000Z",
+      "peakTime": "2024-01-07T18:30:00.000Z",
+      "peakLevel": 0.84,
+      "riseM": 1.29
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2024-01-05T18:30:00.000Z",
+      "end": "2024-01-09T12:00:00.000Z",
+      "peakTime": "2024-01-07T18:30:00.000Z",
+      "peakLevel": 9.35,
+      "riseM": 2.05
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2024-01-05T20:30:00.000Z",
+      "end": "2024-01-09T07:00:00.000Z",
+      "peakTime": "2024-01-07T20:30:00.000Z",
+      "peakLevel": 33.4,
+      "riseM": 1.56
+    },
+    {
+      "station": "Forcelli",
+      "start": "2024-01-05T22:30:00.000Z",
+      "end": "2024-01-09T22:30:00.000Z",
+      "peakTime": "2024-01-07T22:30:00.000Z",
+      "peakLevel": 8.7,
+      "riseM": 2.31
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2024-01-04T23:00:00.000Z",
+      "end": "2024-01-08T06:30:00.000Z",
+      "peakTime": "2024-01-07T23:00:00.000Z",
+      "peakLevel": 8.41,
+      "riseM": 8.79
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2024-01-05T04:00:00.000Z",
+      "end": "2024-01-10T04:00:00.000Z",
+      "peakTime": "2024-01-08T02:30:00.000Z",
+      "peakLevel": 25.01,
+      "riseM": 4.99
+    },
+    {
+      "station": "Cento",
+      "start": "2024-01-06T09:30:00.000Z",
+      "end": "2024-01-10T09:30:00.000Z",
+      "peakTime": "2024-01-08T09:30:00.000Z",
+      "peakLevel": 5.41,
+      "riseM": 5.57
+    },
+    {
+      "station": "Dosso",
+      "start": "2024-01-06T10:30:00.000Z",
+      "end": "2024-01-10T10:30:00.000Z",
+      "peakTime": "2024-01-08T10:30:00.000Z",
+      "peakLevel": 8.05,
+      "riseM": 4.95
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2024-01-06T12:00:00.000Z",
+      "end": "2024-01-10T12:00:00.000Z",
+      "peakTime": "2024-01-08T12:00:00.000Z",
+      "peakLevel": 19.6,
+      "riseM": 4.54
+    },
+    {
+      "station": "Gallo",
+      "start": "2024-01-06T19:00:00.000Z",
+      "end": "2024-01-10T20:30:00.000Z",
+      "peakTime": "2024-01-08T19:00:00.000Z",
+      "peakLevel": 9.99,
+      "riseM": 4.51
+    },
+    {
+      "station": "Casalecchio tiro a volo",
+      "start": "2024-01-16T03:30:00.000Z",
+      "end": "2024-01-20T12:30:00.000Z",
+      "peakTime": "2024-01-18T08:30:00.000Z",
+      "peakLevel": 0.48,
+      "riseM": 0.9
+    },
+    {
+      "station": "Vergato DX",
+      "start": "2024-01-16T09:00:00.000Z",
+      "end": "2024-01-20T09:00:00.000Z",
+      "peakTime": "2024-01-18T09:00:00.000Z",
+      "peakLevel": 1.07,
+      "riseM": 0.81
+    },
+    {
+      "station": "Casalecchio chiusa",
+      "start": "2024-01-16T09:30:00.000Z",
+      "end": "2024-01-20T09:30:00.000Z",
+      "peakTime": "2024-01-18T09:30:00.000Z",
+      "peakLevel": 0.8,
+      "riseM": 0.52
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2024-01-16T15:30:00.000Z",
+      "end": "2024-01-20T17:00:00.000Z",
+      "peakTime": "2024-01-18T15:30:00.000Z",
+      "peakLevel": 6.82,
+      "riseM": 4.16
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2024-01-16T20:00:00.000Z",
+      "end": "2024-01-20T12:00:00.000Z",
+      "peakTime": "2024-01-18T20:00:00.000Z",
+      "peakLevel": 22.73,
+      "riseM": 2.59
+    },
+    {
+      "station": "Cento",
+      "start": "2024-01-17T01:00:00.000Z",
+      "end": "2024-01-21T01:00:00.000Z",
+      "peakTime": "2024-01-19T01:00:00.000Z",
+      "peakLevel": 3.04,
+      "riseM": 3.78
+    },
+    {
+      "station": "Dosso",
+      "start": "2024-01-17T03:00:00.000Z",
+      "end": "2024-01-21T05:30:00.000Z",
+      "peakTime": "2024-01-19T03:00:00.000Z",
+      "peakLevel": 5.62,
+      "riseM": 2.76
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2024-01-17T05:00:00.000Z",
+      "end": "2024-01-20T21:30:00.000Z",
+      "peakTime": "2024-01-19T05:00:00.000Z",
+      "peakLevel": 17.19,
+      "riseM": 2.11
+    },
+    {
+      "station": "Gallo",
+      "start": "2024-01-17T12:30:00.000Z",
+      "end": "2024-01-21T12:30:00.000Z",
+      "peakTime": "2024-01-19T12:30:00.000Z",
+      "peakLevel": 7.22,
+      "riseM": 2.92
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2024-01-17T13:00:00.000Z",
+      "end": "2024-01-19T14:30:00.000Z",
+      "peakTime": "2024-01-19T13:00:00.000Z",
+      "peakLevel": 8.33,
+      "riseM": 1
+    },
+    {
+      "station": "Vergato DX",
+      "start": "2024-02-08T23:00:00.000Z",
+      "end": "2024-02-12T23:00:00.000Z",
+      "peakTime": "2024-02-10T23:00:00.000Z",
+      "peakLevel": 1.34,
+      "riseM": 1.18
+    },
+    {
+      "station": "Sasso Marconi",
+      "start": "2024-02-09T00:00:00.000Z",
+      "end": "2024-02-13T00:00:00.000Z",
+      "peakTime": "2024-02-11T00:00:00.000Z",
+      "peakLevel": 0.72,
+      "riseM": 0.96
+    },
+    {
+      "station": "Casalecchio chiusa",
+      "start": "2024-02-09T01:30:00.000Z",
+      "end": "2024-02-13T02:00:00.000Z",
+      "peakTime": "2024-02-11T01:30:00.000Z",
+      "peakLevel": 1.02,
+      "riseM": 0.88
+    },
+    {
+      "station": "Casalecchio tiro a volo",
+      "start": "2024-02-09T01:30:00.000Z",
+      "end": "2024-02-13T01:30:00.000Z",
+      "peakTime": "2024-02-11T01:30:00.000Z",
+      "peakLevel": 0.96,
+      "riseM": 1.52
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2024-02-09T05:30:00.000Z",
+      "end": "2024-02-13T06:30:00.000Z",
+      "peakTime": "2024-02-11T05:30:00.000Z",
+      "peakLevel": 7.7,
+      "riseM": 5.5
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2024-02-09T12:30:00.000Z",
+      "end": "2024-02-13T13:30:00.000Z",
+      "peakTime": "2024-02-11T12:30:00.000Z",
+      "peakLevel": 23.43,
+      "riseM": 3.38
+    },
+    {
+      "station": "Cento",
+      "start": "2024-02-09T17:30:00.000Z",
+      "end": "2024-02-13T17:30:00.000Z",
+      "peakTime": "2024-02-11T17:30:00.000Z",
+      "peakLevel": 3.63,
+      "riseM": 5.13
+    },
+    {
+      "station": "Dosso",
+      "start": "2024-02-09T21:00:00.000Z",
+      "end": "2024-02-13T22:30:00.000Z",
+      "peakTime": "2024-02-11T21:00:00.000Z",
+      "peakLevel": 6.15,
+      "riseM": 3.75
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2024-02-09T21:00:00.000Z",
+      "end": "2024-02-13T23:00:00.000Z",
+      "peakTime": "2024-02-11T21:00:00.000Z",
+      "peakLevel": 17.71,
+      "riseM": 2.63
+    },
+    {
+      "station": "Gallo",
+      "start": "2024-02-10T07:00:00.000Z",
+      "end": "2024-02-14T08:00:00.000Z",
+      "peakTime": "2024-02-12T07:00:00.000Z",
+      "peakLevel": 7.78,
+      "riseM": 4.25
+    },
+    {
+      "station": "Vergato DX",
+      "start": "2024-02-21T15:00:00.000Z",
+      "end": "2024-02-25T15:00:00.000Z",
+      "peakTime": "2024-02-23T15:00:00.000Z",
+      "peakLevel": 1.42,
+      "riseM": 1.25
+    },
+    {
+      "station": "Sasso Marconi",
+      "start": "2024-02-22T11:30:00.000Z",
+      "end": "2024-02-25T18:30:00.000Z",
+      "peakTime": "2024-02-23T18:30:00.000Z",
+      "peakLevel": 0.61,
+      "riseM": 0.91
+    },
+    {
+      "station": "Casalecchio chiusa",
+      "start": "2024-02-21T19:00:00.000Z",
+      "end": "2024-02-25T19:30:00.000Z",
+      "peakTime": "2024-02-23T19:00:00.000Z",
+      "peakLevel": 0.99,
+      "riseM": 0.81
+    },
+    {
+      "station": "Casalecchio tiro a volo",
+      "start": "2024-02-21T19:00:00.000Z",
+      "end": "2024-02-25T19:30:00.000Z",
+      "peakTime": "2024-02-23T19:00:00.000Z",
+      "peakLevel": 0.91,
+      "riseM": 1.43
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2024-02-22T01:00:00.000Z",
+      "end": "2024-02-26T01:30:00.000Z",
+      "peakTime": "2024-02-24T01:00:00.000Z",
+      "peakLevel": 7.08,
+      "riseM": 4.67
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2024-02-22T05:30:00.000Z",
+      "end": "2024-02-25T13:00:00.000Z",
+      "peakTime": "2024-02-24T05:30:00.000Z",
+      "peakLevel": 22.64,
+      "riseM": 2.6
+    },
+    {
+      "station": "Cento",
+      "start": "2024-02-22T09:30:00.000Z",
+      "end": "2024-02-26T10:00:00.000Z",
+      "peakTime": "2024-02-24T09:30:00.000Z",
+      "peakLevel": 2.82,
+      "riseM": 4.06
+    },
+    {
+      "station": "Dosso",
+      "start": "2024-02-22T13:00:00.000Z",
+      "end": "2024-02-26T13:30:00.000Z",
+      "peakTime": "2024-02-24T13:00:00.000Z",
+      "peakLevel": 5.34,
+      "riseM": 2.79
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2024-02-22T13:00:00.000Z",
+      "end": "2024-02-26T01:30:00.000Z",
+      "peakTime": "2024-02-24T13:00:00.000Z",
+      "peakLevel": 16.91,
+      "riseM": 1.86
+    },
+    {
+      "station": "Gallo",
+      "start": "2024-02-22T20:30:00.000Z",
+      "end": "2024-02-26T22:00:00.000Z",
+      "peakTime": "2024-02-24T20:30:00.000Z",
+      "peakLevel": 6.84,
+      "riseM": 3.18
+    },
+    {
+      "station": "Vergato DX",
+      "start": "2024-02-25T05:30:00.000Z",
+      "end": "2024-02-29T21:00:00.000Z",
+      "peakTime": "2024-02-27T05:30:00.000Z",
+      "peakLevel": 2.9,
+      "riseM": 2.42
+    },
+    {
+      "station": "Casalecchio chiusa",
+      "start": "2024-02-25T08:30:00.000Z",
+      "end": "2024-02-29T22:30:00.000Z",
+      "peakTime": "2024-02-27T08:30:00.000Z",
+      "peakLevel": 1.75,
+      "riseM": 1.31
+    },
+    {
+      "station": "Casalecchio tiro a volo",
+      "start": "2024-02-25T09:30:00.000Z",
+      "end": "2024-02-29T23:30:00.000Z",
+      "peakTime": "2024-02-27T09:30:00.000Z",
+      "peakLevel": 2.29,
+      "riseM": 2.45
+    },
+    {
+      "station": "Sasso Marconi",
+      "start": "2024-02-25T09:30:00.000Z",
+      "end": "2024-02-29T22:00:00.000Z",
+      "peakTime": "2024-02-27T09:30:00.000Z",
+      "peakLevel": 1.6,
+      "riseM": 1.62
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2024-02-25T19:00:00.000Z",
+      "end": "2024-02-29T18:00:00.000Z",
+      "peakTime": "2024-02-27T19:00:00.000Z",
+      "peakLevel": 11.7,
+      "riseM": 8.07
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2024-02-25T08:30:00.000Z",
+      "end": "2024-03-02T17:30:00.000Z",
+      "peakTime": "2024-02-27T23:00:00.000Z",
+      "peakLevel": 9.88,
+      "riseM": 2.54
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2024-02-25T08:30:00.000Z",
+      "end": "2024-03-02T16:00:00.000Z",
+      "peakTime": "2024-02-27T23:00:00.000Z",
+      "peakLevel": 34.15,
+      "riseM": 2.35
+    },
+    {
+      "station": "Forcelli",
+      "start": "2024-02-25T11:30:00.000Z",
+      "end": "2024-03-02T14:00:00.000Z",
+      "peakTime": "2024-02-28T02:00:00.000Z",
+      "peakLevel": 10.06,
+      "riseM": 3.49
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2024-02-26T04:30:00.000Z",
+      "end": "2024-03-02T21:00:00.000Z",
+      "peakTime": "2024-02-28T04:30:00.000Z",
+      "peakLevel": 28.22,
+      "riseM": 8.18
+    },
+    {
+      "station": "Cento",
+      "start": "2024-02-26T05:30:00.000Z",
+      "end": "2024-03-02T19:30:00.000Z",
+      "peakTime": "2024-02-28T05:30:00.000Z",
+      "peakLevel": 7.92,
+      "riseM": 7.42
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-02-26T06:00:00.000Z",
+      "end": "2024-02-28T22:00:00.000Z",
+      "peakTime": "2024-02-28T06:00:00.000Z",
+      "peakLevel": 12.5,
+      "riseM": 2.54
+    },
+    {
+      "station": "Dosso",
+      "start": "2024-02-26T05:30:00.000Z",
+      "end": "2024-03-01T17:30:00.000Z",
+      "peakTime": "2024-02-28T17:00:00.000Z",
+      "peakLevel": 10.31,
+      "riseM": 6.77
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2024-02-26T05:30:00.000Z",
+      "end": "2024-03-01T19:00:00.000Z",
+      "peakTime": "2024-02-28T17:30:00.000Z",
+      "peakLevel": 21.76,
+      "riseM": 6.64
+    },
+    {
+      "station": "Gallo",
+      "start": "2024-02-27T01:30:00.000Z",
+      "end": "2024-03-02T03:30:00.000Z",
+      "peakTime": "2024-02-29T01:30:00.000Z",
+      "peakLevel": 12.47,
+      "riseM": 7.32
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2024-02-29T18:00:00.000Z",
+      "end": "2024-03-05T01:30:00.000Z",
+      "peakTime": "2024-03-02T00:30:00.000Z",
+      "peakLevel": 7.84,
+      "riseM": 9.46
+    },
+    {
+      "station": "Cento",
+      "start": "2024-03-01T10:30:00.000Z",
+      "end": "2024-03-02T19:30:00.000Z",
+      "peakTime": "2024-03-02T05:30:00.000Z",
+      "peakLevel": 5.22,
+      "riseM": 0.51
+    },
+    {
+      "station": "Vergato DX",
+      "start": "2024-03-08T15:00:00.000Z",
+      "end": "2024-03-12T02:00:00.000Z",
+      "peakTime": "2024-03-10T15:00:00.000Z",
+      "peakLevel": 2.36,
+      "riseM": 1.47
+    },
+    {
+      "station": "Sasso Marconi",
+      "start": "2024-03-08T16:00:00.000Z",
+      "end": "2024-03-12T08:00:00.000Z",
+      "peakTime": "2024-03-10T16:00:00.000Z",
+      "peakLevel": 1.53,
+      "riseM": 1.55
+    },
+    {
+      "station": "Casalecchio chiusa",
+      "start": "2024-03-08T17:30:00.000Z",
+      "end": "2024-03-12T07:00:00.000Z",
+      "peakTime": "2024-03-10T17:30:00.000Z",
+      "peakLevel": 1.4,
+      "riseM": 0.91
+    },
+    {
+      "station": "Casalecchio tiro a volo",
+      "start": "2024-03-08T18:00:00.000Z",
+      "end": "2024-03-12T07:00:00.000Z",
+      "peakTime": "2024-03-10T18:00:00.000Z",
+      "peakLevel": 1.7,
+      "riseM": 1.77
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2024-03-08T18:30:00.000Z",
+      "end": "2024-03-11T07:00:00.000Z",
+      "peakTime": "2024-03-10T18:30:00.000Z",
+      "peakLevel": 33.07,
+      "riseM": 1.21
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2024-03-08T19:00:00.000Z",
+      "end": "2024-03-12T01:30:00.000Z",
+      "peakTime": "2024-03-10T19:00:00.000Z",
+      "peakLevel": 8.53,
+      "riseM": 0.98
+    },
+    {
+      "station": "Forcelli",
+      "start": "2024-03-08T21:30:00.000Z",
+      "end": "2024-03-12T18:00:00.000Z",
+      "peakTime": "2024-03-10T21:30:00.000Z",
+      "peakLevel": 8.35,
+      "riseM": 1.31
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2024-03-08T13:30:00.000Z",
+      "end": "2024-03-12T23:00:00.000Z",
+      "peakTime": "2024-03-10T22:00:00.000Z",
+      "peakLevel": 9.55,
+      "riseM": 5.38
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2024-03-08T15:30:00.000Z",
+      "end": "2024-03-13T03:00:00.000Z",
+      "peakTime": "2024-03-11T02:30:00.000Z",
+      "peakLevel": 25.65,
+      "riseM": 5.5
+    },
+    {
+      "station": "Cento",
+      "start": "2024-03-09T07:00:00.000Z",
+      "end": "2024-03-13T07:30:00.000Z",
+      "peakTime": "2024-03-11T07:00:00.000Z",
+      "peakLevel": 5.63,
+      "riseM": 4.72
+    },
+    {
+      "station": "Dosso",
+      "start": "2024-03-08T22:00:00.000Z",
+      "end": "2024-03-13T11:00:00.000Z",
+      "peakTime": "2024-03-11T10:30:00.000Z",
+      "peakLevel": 8.15,
+      "riseM": 4.27
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2024-03-09T11:30:00.000Z",
+      "end": "2024-03-13T12:00:00.000Z",
+      "peakTime": "2024-03-11T11:30:00.000Z",
+      "peakLevel": 19.68,
+      "riseM": 4.33
+    },
+    {
+      "station": "Gallo",
+      "start": "2024-03-09T20:00:00.000Z",
+      "end": "2024-03-13T21:00:00.000Z",
+      "peakTime": "2024-03-11T20:00:00.000Z",
+      "peakLevel": 9.79,
+      "riseM": 4.15
+    },
+    {
+      "station": "Vergato DX",
+      "start": "2024-03-26T08:00:00.000Z",
+      "end": "2024-03-30T12:30:00.000Z",
+      "peakTime": "2024-03-28T15:00:00.000Z",
+      "peakLevel": 1.8,
+      "riseM": 1.05
+    },
+    {
+      "station": "Sasso Marconi",
+      "start": "2024-03-26T16:30:00.000Z",
+      "end": "2024-03-30T16:30:00.000Z",
+      "peakTime": "2024-03-28T16:30:00.000Z",
+      "peakLevel": 1.08,
+      "riseM": 1.21
+    },
+    {
+      "station": "Casalecchio chiusa",
+      "start": "2024-03-25T18:30:00.000Z",
+      "end": "2024-03-30T17:30:00.000Z",
+      "peakTime": "2024-03-28T17:30:00.000Z",
+      "peakLevel": 1.16,
+      "riseM": 0.99
+    },
+    {
+      "station": "Casalecchio tiro a volo",
+      "start": "2024-03-25T18:30:00.000Z",
+      "end": "2024-03-30T17:30:00.000Z",
+      "peakTime": "2024-03-28T17:30:00.000Z",
+      "peakLevel": 1.23,
+      "riseM": 1.74
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2024-03-26T01:00:00.000Z",
+      "end": "2024-03-30T22:30:00.000Z",
+      "peakTime": "2024-03-28T22:00:00.000Z",
+      "peakLevel": 8.48,
+      "riseM": 5.89
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2024-03-26T05:30:00.000Z",
+      "end": "2024-03-31T02:00:00.000Z",
+      "peakTime": "2024-03-29T03:00:00.000Z",
+      "peakLevel": 24.25,
+      "riseM": 4.25
+    },
+    {
+      "station": "Cento",
+      "start": "2024-03-26T09:00:00.000Z",
+      "end": "2024-03-31T07:30:00.000Z",
+      "peakTime": "2024-03-29T07:30:00.000Z",
+      "peakLevel": 4.32,
+      "riseM": 5.26
+    },
+    {
+      "station": "Dosso",
+      "start": "2024-03-27T10:30:00.000Z",
+      "end": "2024-03-31T11:00:00.000Z",
+      "peakTime": "2024-03-29T10:30:00.000Z",
+      "peakLevel": 6.78,
+      "riseM": 4.07
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2024-03-27T12:00:00.000Z",
+      "end": "2024-03-31T12:00:00.000Z",
+      "peakTime": "2024-03-29T12:00:00.000Z",
+      "peakLevel": 18.35,
+      "riseM": 3.46
+    },
+    {
+      "station": "Gallo",
+      "start": "2024-03-27T19:30:00.000Z",
+      "end": "2024-03-31T21:00:00.000Z",
+      "peakTime": "2024-03-29T19:30:00.000Z",
+      "peakLevel": 8.48,
+      "riseM": 4.56
+    },
+    {
+      "station": "Vergato DX",
+      "start": "2024-03-31T17:00:00.000Z",
+      "end": "2024-04-03T18:30:00.000Z",
+      "peakTime": "2024-04-01T13:00:00.000Z",
+      "peakLevel": 1.1,
+      "riseM": 1.1
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2024-03-31T21:00:00.000Z",
+      "end": "2024-04-04T11:30:00.000Z",
+      "peakTime": "2024-04-02T05:30:00.000Z",
+      "peakLevel": 5.35,
+      "riseM": 2.15
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2024-03-31T13:30:00.000Z",
+      "end": "2024-04-02T20:30:00.000Z",
+      "peakTime": "2024-04-02T09:30:00.000Z",
+      "peakLevel": 20.89,
+      "riseM": 0.86
+    },
+    {
+      "station": "Cento",
+      "start": "2024-04-01T05:00:00.000Z",
+      "end": "2024-04-03T23:30:00.000Z",
+      "peakTime": "2024-04-02T11:30:00.000Z",
+      "peakLevel": 1.41,
+      "riseM": 1.37
+    },
+    {
+      "station": "Gallo",
+      "start": "2024-04-01T15:00:00.000Z",
+      "end": "2024-04-04T08:30:00.000Z",
+      "peakTime": "2024-04-02T20:00:00.000Z",
+      "peakLevel": 5.85,
+      "riseM": 1.07
+    },
+    {
+      "station": "Casalecchio tiro a volo",
+      "start": "2024-04-09T16:30:00.000Z",
+      "end": "2024-04-12T12:30:00.000Z",
+      "peakTime": "2024-04-11T16:30:00.000Z",
+      "peakLevel": 0.07,
+      "riseM": 0.62
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2024-04-09T23:30:00.000Z",
+      "end": "2024-04-12T16:00:00.000Z",
+      "peakTime": "2024-04-11T23:30:00.000Z",
+      "peakLevel": 5.21,
+      "riseM": 2.28
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2024-04-10T01:00:00.000Z",
+      "end": "2024-04-12T09:30:00.000Z",
+      "peakTime": "2024-04-12T01:00:00.000Z",
+      "peakLevel": 20.81,
+      "riseM": 0.78
+    },
+    {
+      "station": "Cento",
+      "start": "2024-04-10T04:30:00.000Z",
+      "end": "2024-04-13T03:00:00.000Z",
+      "peakTime": "2024-04-12T02:30:00.000Z",
+      "peakLevel": 1.38,
+      "riseM": 2.28
+    },
+    {
+      "station": "Gallo",
+      "start": "2024-04-10T11:00:00.000Z",
+      "end": "2024-04-13T12:00:00.000Z",
+      "peakTime": "2024-04-12T08:30:00.000Z",
+      "peakLevel": 5.85,
+      "riseM": 1.93
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-04-08T11:00:00.000Z",
+      "end": "2024-04-16T16:00:00.000Z",
+      "peakTime": "2024-04-13T10:30:00.000Z",
+      "peakLevel": 11.87,
+      "riseM": 2.05
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-04-15T18:30:00.000Z",
+      "end": "2024-04-19T23:00:00.000Z",
+      "peakTime": "2024-04-16T20:00:00.000Z",
+      "peakLevel": 12.06,
+      "riseM": 2.33
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2024-04-16T05:30:00.000Z",
+      "end": "2024-04-18T15:00:00.000Z",
+      "peakTime": "2024-04-18T14:30:00.000Z",
+      "peakLevel": 9.13,
+      "riseM": 2.08
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-04-18T18:30:00.000Z",
+      "end": "2024-04-24T19:30:00.000Z",
+      "peakTime": "2024-04-20T13:30:00.000Z",
+      "peakLevel": 12.11,
+      "riseM": 2.2
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2024-04-20T13:00:00.000Z",
+      "end": "2024-04-24T23:30:00.000Z",
+      "peakTime": "2024-04-22T13:00:00.000Z",
+      "peakLevel": 8.85,
+      "riseM": 1.63
+    },
+    {
+      "station": "Vergato DX",
+      "start": "2024-04-22T02:30:00.000Z",
+      "end": "2024-04-24T10:30:00.000Z",
+      "peakTime": "2024-04-22T18:00:00.000Z",
+      "peakLevel": 1.1,
+      "riseM": 0.65
+    },
+    {
+      "station": "Casalecchio chiusa",
+      "start": "2024-04-20T23:30:00.000Z",
+      "end": "2024-04-25T23:00:00.000Z",
+      "peakTime": "2024-04-22T22:00:00.000Z",
+      "peakLevel": 0.58,
+      "riseM": 1.08
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2024-04-20T22:00:00.000Z",
+      "end": "2024-04-24T22:00:00.000Z",
+      "peakTime": "2024-04-22T22:00:00.000Z",
+      "peakLevel": 32.55,
+      "riseM": 0.78
+    },
+    {
+      "station": "Casalecchio tiro a volo",
+      "start": "2024-04-20T23:00:00.000Z",
+      "end": "2024-04-25T23:30:00.000Z",
+      "peakTime": "2024-04-22T23:00:00.000Z",
+      "peakLevel": 0.13,
+      "riseM": 0.78
+    },
+    {
+      "station": "Forcelli",
+      "start": "2024-04-21T01:00:00.000Z",
+      "end": "2024-04-25T21:30:00.000Z",
+      "peakTime": "2024-04-23T01:00:00.000Z",
+      "peakLevel": 8.73,
+      "riseM": 2.44
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2024-04-21T04:00:00.000Z",
+      "end": "2024-04-25T04:30:00.000Z",
+      "peakTime": "2024-04-23T04:00:00.000Z",
+      "peakLevel": 4.39,
+      "riseM": 1.8
+    },
+    {
+      "station": "Cento",
+      "start": "2024-04-21T13:00:00.000Z",
+      "end": "2024-04-25T13:00:00.000Z",
+      "peakTime": "2024-04-23T13:00:00.000Z",
+      "peakLevel": 1.18,
+      "riseM": 2.62
+    },
+    {
+      "station": "Gallo",
+      "start": "2024-04-21T21:00:00.000Z",
+      "end": "2024-04-26T00:00:00.000Z",
+      "peakTime": "2024-04-23T21:00:00.000Z",
+      "peakLevel": 5.71,
+      "riseM": 2.13
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-04-22T03:30:00.000Z",
+      "end": "2024-04-28T03:30:00.000Z",
+      "peakTime": "2024-04-25T10:00:00.000Z",
+      "peakLevel": 12.08,
+      "riseM": 1.99
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-04-28T03:30:00.000Z",
+      "end": "2024-05-03T15:00:00.000Z",
+      "peakTime": "2024-04-28T16:00:00.000Z",
+      "peakLevel": 12.07,
+      "riseM": 2.65
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2024-04-29T22:30:00.000Z",
+      "end": "2024-05-02T15:30:00.000Z",
+      "peakTime": "2024-05-01T22:30:00.000Z",
+      "peakLevel": 32.96,
+      "riseM": 1.17
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2024-04-30T00:00:00.000Z",
+      "end": "2024-05-03T14:30:00.000Z",
+      "peakTime": "2024-05-02T00:00:00.000Z",
+      "peakLevel": 8.47,
+      "riseM": 1.21
+    },
+    {
+      "station": "Forcelli",
+      "start": "2024-04-30T02:30:00.000Z",
+      "end": "2024-05-04T03:00:00.000Z",
+      "peakTime": "2024-05-02T02:30:00.000Z",
+      "peakLevel": 8.83,
+      "riseM": 2.43
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-04-30T20:00:00.000Z",
+      "end": "2024-05-06T19:00:00.000Z",
+      "peakTime": "2024-05-03T13:00:00.000Z",
+      "peakLevel": 12.08,
+      "riseM": 2.07
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-05-04T22:30:00.000Z",
+      "end": "2024-05-10T23:00:00.000Z",
+      "peakTime": "2024-05-06T17:30:00.000Z",
+      "peakLevel": 12.08,
+      "riseM": 1.73
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-05-08T04:00:00.000Z",
+      "end": "2024-05-15T02:30:00.000Z",
+      "peakTime": "2024-05-11T17:30:00.000Z",
+      "peakLevel": 12.14,
+      "riseM": 1.91
+    },
+    {
+      "station": "Forcelli",
+      "start": "2024-05-12T06:30:00.000Z",
+      "end": "2024-05-16T06:30:00.000Z",
+      "peakTime": "2024-05-14T06:30:00.000Z",
+      "peakLevel": 7.51,
+      "riseM": 1.23
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-05-13T22:30:00.000Z",
+      "end": "2024-05-20T00:00:00.000Z",
+      "peakTime": "2024-05-15T04:30:00.000Z",
+      "peakLevel": 12.16,
+      "riseM": 2.06
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-05-17T22:30:00.000Z",
+      "end": "2024-05-25T10:30:00.000Z",
+      "peakTime": "2024-05-20T15:00:00.000Z",
+      "peakLevel": 12.24,
+      "riseM": 0.94
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2024-05-18T20:30:00.000Z",
+      "end": "2024-05-21T19:00:00.000Z",
+      "peakTime": "2024-05-20T20:30:00.000Z",
+      "peakLevel": 36.14,
+      "riseM": 4.35
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2024-05-19T03:00:00.000Z",
+      "end": "2024-05-23T03:00:00.000Z",
+      "peakTime": "2024-05-21T03:00:00.000Z",
+      "peakLevel": 10.31,
+      "riseM": 3.11
+    },
+    {
+      "station": "Casalecchio chiusa",
+      "start": "2024-05-19T19:00:00.000Z",
+      "end": "2024-05-23T03:30:00.000Z",
+      "peakTime": "2024-05-21T03:30:00.000Z",
+      "peakLevel": 0.6,
+      "riseM": 1.19
+    },
+    {
+      "station": "Casalecchio tiro a volo",
+      "start": "2024-05-19T03:30:00.000Z",
+      "end": "2024-05-23T02:00:00.000Z",
+      "peakTime": "2024-05-21T03:30:00.000Z",
+      "peakLevel": 0.17,
+      "riseM": 0.82
+    },
+    {
+      "station": "Forcelli",
+      "start": "2024-05-19T03:30:00.000Z",
+      "end": "2024-05-23T04:00:00.000Z",
+      "peakTime": "2024-05-21T03:30:00.000Z",
+      "peakLevel": 11.41,
+      "riseM": 5.11
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2024-05-19T10:30:00.000Z",
+      "end": "2024-05-23T04:00:00.000Z",
+      "peakTime": "2024-05-21T10:30:00.000Z",
+      "peakLevel": 4.78,
+      "riseM": 2.35
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2024-05-19T11:00:00.000Z",
+      "end": "2024-05-22T05:30:00.000Z",
+      "peakTime": "2024-05-21T11:00:00.000Z",
+      "peakLevel": 21.87,
+      "riseM": 1.89
+    },
+    {
+      "station": "Cento",
+      "start": "2024-05-19T13:00:00.000Z",
+      "end": "2024-05-23T13:00:00.000Z",
+      "peakTime": "2024-05-21T13:00:00.000Z",
+      "peakLevel": 2.61,
+      "riseM": 4.1
+    },
+    {
+      "station": "Dosso",
+      "start": "2024-05-19T16:00:00.000Z",
+      "end": "2024-05-23T16:00:00.000Z",
+      "peakTime": "2024-05-21T16:00:00.000Z",
+      "peakLevel": 5.18,
+      "riseM": 2.73
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2024-05-19T16:00:00.000Z",
+      "end": "2024-05-22T16:30:00.000Z",
+      "peakTime": "2024-05-21T16:00:00.000Z",
+      "peakLevel": 16.78,
+      "riseM": 1.88
+    },
+    {
+      "station": "Gallo",
+      "start": "2024-05-19T23:30:00.000Z",
+      "end": "2024-05-24T01:30:00.000Z",
+      "peakTime": "2024-05-21T23:30:00.000Z",
+      "peakLevel": 6.68,
+      "riseM": 3.13
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-05-22T22:00:00.000Z",
+      "end": "2024-06-01T12:00:00.000Z",
+      "peakTime": "2024-05-28T08:30:00.000Z",
+      "peakLevel": 12.33,
+      "riseM": 1.15
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2024-05-29T17:00:00.000Z",
+      "end": "2024-06-01T15:30:00.000Z",
+      "peakTime": "2024-05-31T17:00:00.000Z",
+      "peakLevel": 9.99,
+      "riseM": 2.73
+    },
+    {
+      "station": "Forcelli",
+      "start": "2024-05-30T00:00:00.000Z",
+      "end": "2024-06-03T20:30:00.000Z",
+      "peakTime": "2024-06-01T00:00:00.000Z",
+      "peakLevel": 8.18,
+      "riseM": 1.73
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2024-06-06T20:00:00.000Z",
+      "end": "2024-06-11T15:30:00.000Z",
+      "peakTime": "2024-06-09T15:30:00.000Z",
+      "peakLevel": 8.55,
+      "riseM": 2.18
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-05-29T21:30:00.000Z",
+      "end": "2024-06-13T23:30:00.000Z",
+      "peakTime": "2024-06-10T06:30:00.000Z",
+      "peakLevel": 12.53,
+      "riseM": 1.21
+    },
+    {
+      "station": "Sasso Marconi",
+      "start": "2024-06-09T09:30:00.000Z",
+      "end": "2024-06-11T10:00:00.000Z",
+      "peakTime": "2024-06-11T09:30:00.000Z",
+      "peakLevel": 3.59,
+      "riseM": 4.03
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-06-13T03:00:00.000Z",
+      "end": "2024-06-23T23:30:00.000Z",
+      "peakTime": "2024-06-19T16:30:00.000Z",
+      "peakLevel": 12.66,
+      "riseM": 2.59
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2024-06-13T11:00:00.000Z",
+      "end": "2024-06-23T13:00:00.000Z",
+      "peakTime": "2024-06-19T21:30:00.000Z",
+      "peakLevel": 9.28,
+      "riseM": 2.86
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-06-21T22:00:00.000Z",
+      "end": "2024-06-29T00:30:00.000Z",
+      "peakTime": "2024-06-24T15:30:00.000Z",
+      "peakLevel": 12.62,
+      "riseM": 2.42
+    },
+    {
+      "station": "Vergato DX",
+      "start": "2024-06-23T04:00:00.000Z",
+      "end": "2024-06-27T16:30:00.000Z",
+      "peakTime": "2024-06-24T21:30:00.000Z",
+      "peakLevel": 2.65,
+      "riseM": 2.9
+    },
+    {
+      "station": "Casalecchio chiusa",
+      "start": "2024-06-22T18:00:00.000Z",
+      "end": "2024-06-27T20:00:00.000Z",
+      "peakTime": "2024-06-25T00:30:00.000Z",
+      "peakLevel": 1.52,
+      "riseM": 2.84
+    },
+    {
+      "station": "Casalecchio tiro a volo",
+      "start": "2024-06-22T18:00:00.000Z",
+      "end": "2024-06-27T20:00:00.000Z",
+      "peakTime": "2024-06-25T00:30:00.000Z",
+      "peakLevel": 1.87,
+      "riseM": 2.6
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2024-06-22T18:30:00.000Z",
+      "end": "2024-06-27T09:00:00.000Z",
+      "peakTime": "2024-06-25T01:30:00.000Z",
+      "peakLevel": 36.86,
+      "riseM": 5.03
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2024-06-21T02:00:00.000Z",
+      "end": "2024-06-27T10:00:00.000Z",
+      "peakTime": "2024-06-25T02:00:00.000Z",
+      "peakLevel": 10.32,
+      "riseM": 3.89
+    },
+    {
+      "station": "Forcelli",
+      "start": "2024-06-23T03:30:00.000Z",
+      "end": "2024-06-27T06:30:00.000Z",
+      "peakTime": "2024-06-25T03:30:00.000Z",
+      "peakLevel": 11.94,
+      "riseM": 5.8
+    },
+    {
+      "station": "Sasso Marconi",
+      "start": "2024-06-22T22:30:00.000Z",
+      "end": "2024-06-27T06:30:00.000Z",
+      "peakTime": "2024-06-25T06:30:00.000Z",
+      "peakLevel": 1.52,
+      "riseM": 2.02
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2024-06-23T04:30:00.000Z",
+      "end": "2024-06-27T11:30:00.000Z",
+      "peakTime": "2024-06-25T11:30:00.000Z",
+      "peakLevel": 9.98,
+      "riseM": 8.37
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2024-06-23T14:00:00.000Z",
+      "end": "2024-06-27T14:00:00.000Z",
+      "peakTime": "2024-06-25T14:00:00.000Z",
+      "peakLevel": 26.57,
+      "riseM": 6.55
+    },
+    {
+      "station": "Cento",
+      "start": "2024-06-23T17:30:00.000Z",
+      "end": "2024-06-27T17:30:00.000Z",
+      "peakTime": "2024-06-25T17:30:00.000Z",
+      "peakLevel": 6.45,
+      "riseM": 8.2
+    },
+    {
+      "station": "Dosso",
+      "start": "2024-06-23T21:00:00.000Z",
+      "end": "2024-06-27T22:00:00.000Z",
+      "peakTime": "2024-06-25T21:00:00.000Z",
+      "peakLevel": 8.79,
+      "riseM": 6.51
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2024-06-23T22:30:00.000Z",
+      "end": "2024-06-27T22:30:00.000Z",
+      "peakTime": "2024-06-25T22:30:00.000Z",
+      "peakLevel": 20.31,
+      "riseM": 5.35
+    },
+    {
+      "station": "Gallo",
+      "start": "2024-06-24T08:30:00.000Z",
+      "end": "2024-06-28T09:00:00.000Z",
+      "peakTime": "2024-06-26T08:30:00.000Z",
+      "peakLevel": 10.17,
+      "riseM": 6.79
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-06-26T01:30:00.000Z",
+      "end": "2024-07-04T16:00:00.000Z",
+      "peakTime": "2024-06-30T00:30:00.000Z",
+      "peakLevel": 12.67,
+      "riseM": 2.59
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-07-02T20:30:00.000Z",
+      "end": "2024-07-10T00:00:00.000Z",
+      "peakTime": "2024-07-07T06:00:00.000Z",
+      "peakLevel": 12.71,
+      "riseM": 1.09
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-07-09T01:30:00.000Z",
+      "end": "2024-07-15T05:30:00.000Z",
+      "peakTime": "2024-07-10T06:00:00.000Z",
+      "peakLevel": 12.71,
+      "riseM": 1.11
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2024-07-08T16:30:00.000Z",
+      "end": "2024-07-16T19:30:00.000Z",
+      "peakTime": "2024-07-13T19:30:00.000Z",
+      "peakLevel": 8.89,
+      "riseM": 2.43
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-07-12T21:00:00.000Z",
+      "end": "2024-07-20T03:00:00.000Z",
+      "peakTime": "2024-07-16T08:30:00.000Z",
+      "peakLevel": 12.77,
+      "riseM": 0.9
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2024-07-22T08:30:00.000Z",
+      "end": "2024-07-24T09:30:00.000Z",
+      "peakTime": "2024-07-22T09:30:00.000Z",
+      "peakLevel": 15.93,
+      "riseM": 1.82
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-07-18T00:00:00.000Z",
+      "end": "2024-07-26T21:30:00.000Z",
+      "peakTime": "2024-07-23T03:30:00.000Z",
+      "peakLevel": 12.77,
+      "riseM": 2.61
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2024-07-16T19:30:00.000Z",
+      "end": "2024-07-28T01:00:00.000Z",
+      "peakTime": "2024-07-23T10:00:00.000Z",
+      "peakLevel": 8.88,
+      "riseM": 1.93
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2024-07-24T17:00:00.000Z",
+      "end": "2024-08-01T07:30:00.000Z",
+      "peakTime": "2024-07-29T06:00:00.000Z",
+      "peakLevel": 8.92,
+      "riseM": 2.13
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-07-24T21:00:00.000Z",
+      "end": "2024-08-03T16:30:00.000Z",
+      "peakTime": "2024-07-29T19:00:00.000Z",
+      "peakLevel": 12.78,
+      "riseM": 2.73
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2024-07-30T13:00:00.000Z",
+      "end": "2024-08-06T02:30:00.000Z",
+      "peakTime": "2024-08-01T23:30:00.000Z",
+      "peakLevel": 8.85,
+      "riseM": 2.09
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-08-01T00:30:00.000Z",
+      "end": "2024-08-07T20:00:00.000Z",
+      "peakTime": "2024-08-03T05:30:00.000Z",
+      "peakLevel": 12.77,
+      "riseM": 0.62
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2024-08-04T10:00:00.000Z",
+      "end": "2024-08-10T09:30:00.000Z",
+      "peakTime": "2024-08-05T23:30:00.000Z",
+      "peakLevel": 8.74,
+      "riseM": 1.62
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2024-08-07T23:30:00.000Z",
+      "end": "2024-08-15T09:30:00.000Z",
+      "peakTime": "2024-08-12T09:00:00.000Z",
+      "peakLevel": 8.64,
+      "riseM": 2.03
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-08-04T23:30:00.000Z",
+      "end": "2024-08-16T02:30:00.000Z",
+      "peakTime": "2024-08-12T23:30:00.000Z",
+      "peakLevel": 12.86,
+      "riseM": 2.83
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2024-08-14T21:30:00.000Z",
+      "end": "2024-08-22T08:30:00.000Z",
+      "peakTime": "2024-08-17T12:30:00.000Z",
+      "peakLevel": 8.85,
+      "riseM": 2.11
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-08-14T17:30:00.000Z",
+      "end": "2024-08-24T00:30:00.000Z",
+      "peakTime": "2024-08-21T14:00:00.000Z",
+      "peakLevel": 12.77,
+      "riseM": 2.61
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-08-24T00:30:00.000Z",
+      "end": "2024-08-28T23:00:00.000Z",
+      "peakTime": "2024-08-25T23:30:00.000Z",
+      "peakLevel": 12.76,
+      "riseM": 2.98
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2024-08-25T15:30:00.000Z",
+      "end": "2024-08-31T20:30:00.000Z",
+      "peakTime": "2024-08-28T09:00:00.000Z",
+      "peakLevel": 8.21,
+      "riseM": 1.14
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2024-08-25T12:30:00.000Z",
+      "end": "2024-09-02T14:30:00.000Z",
+      "peakTime": "2024-08-30T13:30:00.000Z",
+      "peakLevel": 17.58,
+      "riseM": 2.69
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-08-27T02:00:00.000Z",
+      "end": "2024-09-04T20:30:00.000Z",
+      "peakTime": "2024-09-01T18:00:00.000Z",
+      "peakLevel": 12.77,
+      "riseM": 2.95
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2024-09-02T06:30:00.000Z",
+      "end": "2024-09-04T07:30:00.000Z",
+      "peakTime": "2024-09-04T06:30:00.000Z",
+      "peakLevel": 17.09,
+      "riseM": 2.23
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2024-09-04T05:00:00.000Z",
+      "end": "2024-09-10T07:30:00.000Z",
+      "peakTime": "2024-09-05T19:00:00.000Z",
+      "peakLevel": 8.5,
+      "riseM": 2.09
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-09-04T19:30:00.000Z",
+      "end": "2024-09-08T16:30:00.000Z",
+      "peakTime": "2024-09-06T03:00:00.000Z",
+      "peakLevel": 12.76,
+      "riseM": 2.66
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2024-09-06T22:00:00.000Z",
+      "end": "2024-09-10T21:30:00.000Z",
+      "peakTime": "2024-09-08T21:30:00.000Z",
+      "peakLevel": 8.3,
+      "riseM": 1.81
+    },
+    {
+      "station": "Sasso Marconi",
+      "start": "2024-09-06T22:30:00.000Z",
+      "end": "2024-09-10T08:00:00.000Z",
+      "peakTime": "2024-09-08T22:30:00.000Z",
+      "peakLevel": 1.09,
+      "riseM": 1.32
+    },
+    {
+      "station": "Casalecchio chiusa",
+      "start": "2024-09-07T21:00:00.000Z",
+      "end": "2024-09-10T23:30:00.000Z",
+      "peakTime": "2024-09-08T23:30:00.000Z",
+      "peakLevel": 0.87,
+      "riseM": 1.87
+    },
+    {
+      "station": "Casalecchio tiro a volo",
+      "start": "2024-09-06T23:30:00.000Z",
+      "end": "2024-09-10T23:30:00.000Z",
+      "peakTime": "2024-09-08T23:30:00.000Z",
+      "peakLevel": 0.64,
+      "riseM": 1.37
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2024-09-07T05:00:00.000Z",
+      "end": "2024-09-11T05:00:00.000Z",
+      "peakTime": "2024-09-09T05:00:00.000Z",
+      "peakLevel": 6.08,
+      "riseM": 4.1
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-09-07T19:30:00.000Z",
+      "end": "2024-09-13T03:00:00.000Z",
+      "peakTime": "2024-09-09T08:00:00.000Z",
+      "peakLevel": 12.78,
+      "riseM": 2.88
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2024-09-07T10:00:00.000Z",
+      "end": "2024-09-10T09:00:00.000Z",
+      "peakTime": "2024-09-09T10:00:00.000Z",
+      "peakLevel": 21.4,
+      "riseM": 1.42
+    },
+    {
+      "station": "Cento",
+      "start": "2024-09-07T13:30:00.000Z",
+      "end": "2024-09-11T13:00:00.000Z",
+      "peakTime": "2024-09-09T13:30:00.000Z",
+      "peakLevel": 1.63,
+      "riseM": 3.41
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2024-09-07T16:00:00.000Z",
+      "end": "2024-09-10T09:00:00.000Z",
+      "peakTime": "2024-09-09T16:00:00.000Z",
+      "peakLevel": 15.9,
+      "riseM": 0.99
+    },
+    {
+      "station": "Dosso",
+      "start": "2024-09-07T16:30:00.000Z",
+      "end": "2024-09-11T12:30:00.000Z",
+      "peakTime": "2024-09-09T16:30:00.000Z",
+      "peakLevel": 4.34,
+      "riseM": 2.04
+    },
+    {
+      "station": "Gallo",
+      "start": "2024-09-08T01:30:00.000Z",
+      "end": "2024-09-11T14:00:00.000Z",
+      "peakTime": "2024-09-10T01:30:00.000Z",
+      "peakLevel": 5.75,
+      "riseM": 2.38
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-09-10T23:30:00.000Z",
+      "end": "2024-09-15T20:00:00.000Z",
+      "peakTime": "2024-09-12T21:30:00.000Z",
+      "peakLevel": 12.77,
+      "riseM": 2.75
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2024-09-12T14:30:00.000Z",
+      "end": "2024-09-16T17:00:00.000Z",
+      "peakTime": "2024-09-14T14:30:00.000Z",
+      "peakLevel": 24.1,
+      "riseM": 9.18
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-09-14T02:00:00.000Z",
+      "end": "2024-09-19T10:00:00.000Z",
+      "peakTime": "2024-09-16T09:30:00.000Z",
+      "peakLevel": 12.76,
+      "riseM": 2.84
+    },
+    {
+      "station": "Vergato DX",
+      "start": "2024-09-17T00:30:00.000Z",
+      "end": "2024-09-20T21:30:00.000Z",
+      "peakTime": "2024-09-18T21:30:00.000Z",
+      "peakLevel": 2.12,
+      "riseM": 2.37
+    },
+    {
+      "station": "Sasso Marconi",
+      "start": "2024-09-16T22:00:00.000Z",
+      "end": "2024-09-20T22:00:00.000Z",
+      "peakTime": "2024-09-18T22:00:00.000Z",
+      "peakLevel": 1.61,
+      "riseM": 1.86
+    },
+    {
+      "station": "Casalecchio chiusa",
+      "start": "2024-09-17T01:00:00.000Z",
+      "end": "2024-09-21T01:00:00.000Z",
+      "peakTime": "2024-09-19T01:00:00.000Z",
+      "peakLevel": 1.61,
+      "riseM": 2.46
+    },
+    {
+      "station": "Casalecchio tiro a volo",
+      "start": "2024-09-17T01:00:00.000Z",
+      "end": "2024-09-21T01:00:00.000Z",
+      "peakTime": "2024-09-19T01:00:00.000Z",
+      "peakLevel": 1.99,
+      "riseM": 2.7
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2024-09-17T01:30:00.000Z",
+      "end": "2024-09-21T16:30:00.000Z",
+      "peakTime": "2024-09-19T01:30:00.000Z",
+      "peakLevel": 11.72,
+      "riseM": 4.52
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2024-09-17T01:30:00.000Z",
+      "end": "2024-09-21T08:30:00.000Z",
+      "peakTime": "2024-09-19T01:30:00.000Z",
+      "peakLevel": 36.64,
+      "riseM": 4.8
+    },
+    {
+      "station": "Forcelli",
+      "start": "2024-09-17T03:00:00.000Z",
+      "end": "2024-09-21T03:00:00.000Z",
+      "peakTime": "2024-09-19T03:00:00.000Z",
+      "peakLevel": 13,
+      "riseM": 6.97
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2024-09-17T09:30:00.000Z",
+      "end": "2024-09-19T18:30:00.000Z",
+      "peakTime": "2024-09-19T09:30:00.000Z",
+      "peakLevel": 11.37,
+      "riseM": 9.06
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2024-09-17T13:30:00.000Z",
+      "end": "2024-09-21T13:30:00.000Z",
+      "peakTime": "2024-09-19T13:30:00.000Z",
+      "peakLevel": 27.86,
+      "riseM": 7.83
+    },
+    {
+      "station": "Cento",
+      "start": "2024-09-17T17:00:00.000Z",
+      "end": "2024-09-21T17:00:00.000Z",
+      "peakTime": "2024-09-19T17:00:00.000Z",
+      "peakLevel": 7.6,
+      "riseM": 9.28
+    },
+    {
+      "station": "Dosso",
+      "start": "2024-09-17T19:00:00.000Z",
+      "end": "2024-09-21T20:00:00.000Z",
+      "peakTime": "2024-09-19T19:00:00.000Z",
+      "peakLevel": 9.62,
+      "riseM": 7.29
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2024-09-17T20:00:00.000Z",
+      "end": "2024-09-21T20:00:00.000Z",
+      "peakTime": "2024-09-19T20:00:00.000Z",
+      "peakLevel": 20.88,
+      "riseM": 6.05
+    },
+    {
+      "station": "Gallo",
+      "start": "2024-09-18T06:00:00.000Z",
+      "end": "2024-09-22T08:00:00.000Z",
+      "peakTime": "2024-09-20T06:00:00.000Z",
+      "peakLevel": 11.34,
+      "riseM": 7.59
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-09-18T01:30:00.000Z",
+      "end": "2024-09-24T01:00:00.000Z",
+      "peakTime": "2024-09-21T07:30:00.000Z",
+      "peakLevel": 12.71,
+      "riseM": 2.76
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-09-22T17:30:00.000Z",
+      "end": "2024-09-27T17:00:00.000Z",
+      "peakTime": "2024-09-24T16:00:00.000Z",
+      "peakLevel": 12.75,
+      "riseM": 2.71
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-09-26T22:30:00.000Z",
+      "end": "2024-10-01T17:30:00.000Z",
+      "peakTime": "2024-09-29T04:00:00.000Z",
+      "peakLevel": 12.74,
+      "riseM": 2.79
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-10-01T00:00:00.000Z",
+      "end": "2024-10-03T09:30:00.000Z",
+      "peakTime": "2024-10-02T11:00:00.000Z",
+      "peakLevel": 12.74,
+      "riseM": 2.85
+    },
+    {
+      "station": "Vergato DX",
+      "start": "2024-10-02T07:30:00.000Z",
+      "end": "2024-10-05T16:30:00.000Z",
+      "peakTime": "2024-10-03T15:00:00.000Z",
+      "peakLevel": 1.41,
+      "riseM": 0.77
+    },
+    {
+      "station": "Sasso Marconi",
+      "start": "2024-10-01T17:00:00.000Z",
+      "end": "2024-10-05T17:00:00.000Z",
+      "peakTime": "2024-10-03T17:00:00.000Z",
+      "peakLevel": 0.86,
+      "riseM": 1.08
+    },
+    {
+      "station": "Casalecchio chiusa",
+      "start": "2024-10-01T17:30:00.000Z",
+      "end": "2024-10-05T18:30:00.000Z",
+      "peakTime": "2024-10-03T17:30:00.000Z",
+      "peakLevel": 1.02,
+      "riseM": 0.73
+    },
+    {
+      "station": "Casalecchio tiro a volo",
+      "start": "2024-10-01T18:00:00.000Z",
+      "end": "2024-10-05T19:00:00.000Z",
+      "peakTime": "2024-10-03T18:00:00.000Z",
+      "peakLevel": 0.95,
+      "riseM": 1.29
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2024-10-01T21:00:00.000Z",
+      "end": "2024-10-05T21:00:00.000Z",
+      "peakTime": "2024-10-03T21:00:00.000Z",
+      "peakLevel": 9.62,
+      "riseM": 2.36
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2024-10-01T21:30:00.000Z",
+      "end": "2024-10-05T21:30:00.000Z",
+      "peakTime": "2024-10-03T21:30:00.000Z",
+      "peakLevel": 33.31,
+      "riseM": 1.52
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2024-10-02T01:00:00.000Z",
+      "end": "2024-10-06T01:00:00.000Z",
+      "peakTime": "2024-10-04T01:00:00.000Z",
+      "peakLevel": 8.19,
+      "riseM": 5.22
+    },
+    {
+      "station": "Forcelli",
+      "start": "2024-10-02T04:30:00.000Z",
+      "end": "2024-10-06T05:00:00.000Z",
+      "peakTime": "2024-10-04T04:30:00.000Z",
+      "peakLevel": 9.64,
+      "riseM": 3.31
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2024-10-02T07:30:00.000Z",
+      "end": "2024-10-05T23:30:00.000Z",
+      "peakTime": "2024-10-04T07:30:00.000Z",
+      "peakLevel": 23.99,
+      "riseM": 3.96
+    },
+    {
+      "station": "Cento",
+      "start": "2024-10-02T12:30:00.000Z",
+      "end": "2024-10-06T13:00:00.000Z",
+      "peakTime": "2024-10-04T12:30:00.000Z",
+      "peakLevel": 4.3,
+      "riseM": 4.86
+    },
+    {
+      "station": "Dosso",
+      "start": "2024-10-02T15:00:00.000Z",
+      "end": "2024-10-06T15:30:00.000Z",
+      "peakTime": "2024-10-04T15:00:00.000Z",
+      "peakLevel": 6.65,
+      "riseM": 3.71
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2024-10-02T15:30:00.000Z",
+      "end": "2024-10-06T15:30:00.000Z",
+      "peakTime": "2024-10-04T15:30:00.000Z",
+      "peakLevel": 18.18,
+      "riseM": 3.28
+    },
+    {
+      "station": "Gallo",
+      "start": "2024-10-03T01:00:00.000Z",
+      "end": "2024-10-07T01:00:00.000Z",
+      "peakTime": "2024-10-05T01:00:00.000Z",
+      "peakLevel": 8.43,
+      "riseM": 4.23
+    },
+    {
+      "station": "Vergato DX",
+      "start": "2024-10-06T22:00:00.000Z",
+      "end": "2024-10-10T17:00:00.000Z",
+      "peakTime": "2024-10-08T17:00:00.000Z",
+      "peakLevel": 2.14,
+      "riseM": 2.56
+    },
+    {
+      "station": "Sasso Marconi",
+      "start": "2024-10-06T19:00:00.000Z",
+      "end": "2024-10-10T19:00:00.000Z",
+      "peakTime": "2024-10-08T19:00:00.000Z",
+      "peakLevel": 0.64,
+      "riseM": 0.74
+    },
+    {
+      "station": "Casalecchio chiusa",
+      "start": "2024-10-07T01:00:00.000Z",
+      "end": "2024-10-10T20:00:00.000Z",
+      "peakTime": "2024-10-08T20:00:00.000Z",
+      "peakLevel": 1.25,
+      "riseM": 0.99
+    },
+    {
+      "station": "Casalecchio tiro a volo",
+      "start": "2024-10-06T23:30:00.000Z",
+      "end": "2024-10-10T20:00:00.000Z",
+      "peakTime": "2024-10-08T20:00:00.000Z",
+      "peakLevel": 1.37,
+      "riseM": 1.82
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2024-10-07T05:00:00.000Z",
+      "end": "2024-10-12T13:30:00.000Z",
+      "peakTime": "2024-10-09T01:00:00.000Z",
+      "peakLevel": 8.6,
+      "riseM": 5.81
+    },
+    {
+      "station": "Forcelli",
+      "start": "2024-10-07T10:30:00.000Z",
+      "end": "2024-10-11T02:30:00.000Z",
+      "peakTime": "2024-10-09T02:30:00.000Z",
+      "peakLevel": 8.27,
+      "riseM": 1.48
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2024-10-07T07:00:00.000Z",
+      "end": "2024-10-12T11:00:00.000Z",
+      "peakTime": "2024-10-09T07:00:00.000Z",
+      "peakLevel": 23.95,
+      "riseM": 3.88
+    },
+    {
+      "station": "Cento",
+      "start": "2024-10-07T15:30:00.000Z",
+      "end": "2024-10-12T09:30:00.000Z",
+      "peakTime": "2024-10-09T12:30:00.000Z",
+      "peakLevel": 4.05,
+      "riseM": 4.8
+    },
+    {
+      "station": "Dosso",
+      "start": "2024-10-07T15:00:00.000Z",
+      "end": "2024-10-11T17:30:00.000Z",
+      "peakTime": "2024-10-09T15:00:00.000Z",
+      "peakLevel": 6.42,
+      "riseM": 3.59
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2024-10-08T14:30:00.000Z",
+      "end": "2024-10-11T17:00:00.000Z",
+      "peakTime": "2024-10-09T16:30:00.000Z",
+      "peakLevel": 17.97,
+      "riseM": 13.14
+    },
+    {
+      "station": "Gallo",
+      "start": "2024-10-08T01:00:00.000Z",
+      "end": "2024-10-12T01:00:00.000Z",
+      "peakTime": "2024-10-10T01:00:00.000Z",
+      "peakLevel": 8.18,
+      "riseM": 4.12
+    },
+    {
+      "station": "Vergato DX",
+      "start": "2024-10-16T00:30:00.000Z",
+      "end": "2024-10-20T18:30:00.000Z",
+      "peakTime": "2024-10-18T00:00:00.000Z",
+      "peakLevel": 4.15,
+      "riseM": 4.4
+    },
+    {
+      "station": "Sasso Marconi",
+      "start": "2024-10-16T01:30:00.000Z",
+      "end": "2024-10-21T04:30:00.000Z",
+      "peakTime": "2024-10-18T01:30:00.000Z",
+      "peakLevel": 1.92,
+      "riseM": 2.06
+    },
+    {
+      "station": "Casalecchio tiro a volo",
+      "start": "2024-10-16T04:00:00.000Z",
+      "end": "2024-10-21T01:30:00.000Z",
+      "peakTime": "2024-10-18T04:00:00.000Z",
+      "peakLevel": 3,
+      "riseM": 3.32
+    },
+    {
+      "station": "Casalecchio chiusa",
+      "start": "2024-10-16T05:00:00.000Z",
+      "end": "2024-10-21T01:00:00.000Z",
+      "peakTime": "2024-10-18T05:00:00.000Z",
+      "peakLevel": 1.98,
+      "riseM": 1.61
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2024-10-16T09:00:00.000Z",
+      "end": "2024-10-21T12:00:00.000Z",
+      "peakTime": "2024-10-18T09:00:00.000Z",
+      "peakLevel": 12.47,
+      "riseM": 9.51
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2024-10-16T02:30:00.000Z",
+      "end": "2024-10-22T00:00:00.000Z",
+      "peakTime": "2024-10-20T00:00:00.000Z",
+      "peakLevel": 13.27,
+      "riseM": 5.19
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2024-10-16T03:00:00.000Z",
+      "end": "2024-10-21T16:00:00.000Z",
+      "peakTime": "2024-10-20T02:30:00.000Z",
+      "peakLevel": 37.73,
+      "riseM": 5.44
+    },
+    {
+      "station": "Forcelli",
+      "start": "2024-10-16T04:30:00.000Z",
+      "end": "2024-10-22T04:30:00.000Z",
+      "peakTime": "2024-10-20T04:30:00.000Z",
+      "peakLevel": 13.99,
+      "riseM": 5.61
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2024-10-16T11:00:00.000Z",
+      "end": "2024-10-21T18:00:00.000Z",
+      "peakTime": "2024-10-20T11:00:00.000Z",
+      "peakLevel": 28.78,
+      "riseM": 3.44
+    },
+    {
+      "station": "Dosso",
+      "start": "2024-10-16T23:30:00.000Z",
+      "end": "2024-10-22T02:30:00.000Z",
+      "peakTime": "2024-10-20T12:00:00.000Z",
+      "peakLevel": 11.17,
+      "riseM": 2.18
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2024-10-18T12:30:00.000Z",
+      "end": "2024-10-21T13:30:00.000Z",
+      "peakTime": "2024-10-20T12:30:00.000Z",
+      "peakLevel": 12.78,
+      "riseM": 2.96
+    },
+    {
+      "station": "Cento",
+      "start": "2024-10-16T19:30:00.000Z",
+      "end": "2024-10-21T23:00:00.000Z",
+      "peakTime": "2024-10-20T13:00:00.000Z",
+      "peakLevel": 8.69,
+      "riseM": 2.48
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2024-10-17T00:30:00.000Z",
+      "end": "2024-10-22T06:00:00.000Z",
+      "peakTime": "2024-10-20T23:00:00.000Z",
+      "peakLevel": 22.55,
+      "riseM": 2
+    },
+    {
+      "station": "Gallo",
+      "start": "2024-10-17T12:00:00.000Z",
+      "end": "2024-10-22T09:00:00.000Z",
+      "peakTime": "2024-10-21T03:30:00.000Z",
+      "peakLevel": 14.07,
+      "riseM": 2.06
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2024-10-22T05:30:00.000Z",
+      "end": "2024-10-26T17:00:00.000Z",
+      "peakTime": "2024-10-23T17:30:00.000Z",
+      "peakLevel": 10.13,
+      "riseM": 1.83
+    },
+    {
+      "station": "Vergato DX",
+      "start": "2024-10-22T02:00:00.000Z",
+      "end": "2024-10-26T22:00:00.000Z",
+      "peakTime": "2024-10-23T20:00:00.000Z",
+      "peakLevel": 1.95,
+      "riseM": 1.04
+    },
+    {
+      "station": "Sasso Marconi",
+      "start": "2024-10-22T00:00:00.000Z",
+      "end": "2024-10-25T12:00:00.000Z",
+      "peakTime": "2024-10-23T22:30:00.000Z",
+      "peakLevel": 1.34,
+      "riseM": 1.23
+    },
+    {
+      "station": "Casalecchio chiusa",
+      "start": "2024-10-22T06:00:00.000Z",
+      "end": "2024-10-26T00:00:00.000Z",
+      "peakTime": "2024-10-23T23:30:00.000Z",
+      "peakLevel": 1.31,
+      "riseM": 0.8
+    },
+    {
+      "station": "Casalecchio tiro a volo",
+      "start": "2024-10-22T06:00:00.000Z",
+      "end": "2024-10-27T02:30:00.000Z",
+      "peakTime": "2024-10-23T23:30:00.000Z",
+      "peakLevel": 1.54,
+      "riseM": 1.6
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2024-10-23T07:00:00.000Z",
+      "end": "2024-10-28T11:00:00.000Z",
+      "peakTime": "2024-10-24T05:00:00.000Z",
+      "peakLevel": 9.99,
+      "riseM": 4.67
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2024-10-23T10:30:00.000Z",
+      "end": "2024-10-27T13:30:00.000Z",
+      "peakTime": "2024-10-24T11:30:00.000Z",
+      "peakLevel": 26.33,
+      "riseM": 4.26
+    },
+    {
+      "station": "Cento",
+      "start": "2024-10-23T13:30:00.000Z",
+      "end": "2024-10-27T15:30:00.000Z",
+      "peakTime": "2024-10-24T19:30:00.000Z",
+      "peakLevel": 6.42,
+      "riseM": 3.5
+    },
+    {
+      "station": "Dosso",
+      "start": "2024-10-23T15:30:00.000Z",
+      "end": "2024-10-27T17:00:00.000Z",
+      "peakTime": "2024-10-24T22:30:00.000Z",
+      "peakLevel": 8.84,
+      "riseM": 3.13
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2024-10-24T00:30:00.000Z",
+      "end": "2024-10-27T17:30:00.000Z",
+      "peakTime": "2024-10-25T01:00:00.000Z",
+      "peakLevel": 20.31,
+      "riseM": 10.55
+    },
+    {
+      "station": "Gallo",
+      "start": "2024-10-23T22:00:00.000Z",
+      "end": "2024-10-27T20:30:00.000Z",
+      "peakTime": "2024-10-25T09:00:00.000Z",
+      "peakLevel": 11.06,
+      "riseM": 2.74
+    },
+    {
+      "station": "Paltrone Samoggia",
+      "start": "2024-10-25T06:00:00.000Z",
+      "end": "2024-10-26T22:30:00.000Z",
+      "peakTime": "2024-10-26T03:00:00.000Z",
+      "peakLevel": 33.27,
+      "riseM": 1.01
+    },
+    {
+      "station": "Forcelli",
+      "start": "2024-10-23T07:30:00.000Z",
+      "end": "2024-10-27T01:30:00.000Z",
+      "peakTime": "2024-10-26T06:00:00.000Z",
+      "peakLevel": 9.22,
+      "riseM": 0.85
+    },
+    {
+      "station": "Vergato DX",
+      "start": "2024-11-20T04:00:00.000Z",
+      "end": "2024-11-22T23:30:00.000Z",
+      "peakTime": "2024-11-22T04:00:00.000Z",
+      "peakLevel": 2.34,
+      "riseM": 1.38
+    },
+    {
+      "station": "Sasso Marconi",
+      "start": "2024-11-20T05:00:00.000Z",
+      "end": "2024-11-24T05:30:00.000Z",
+      "peakTime": "2024-11-22T04:30:00.000Z",
+      "peakLevel": 0.58,
+      "riseM": 0.79
+    },
+    {
+      "station": "Casalecchio chiusa",
+      "start": "2024-11-20T06:00:00.000Z",
+      "end": "2024-11-24T06:00:00.000Z",
+      "peakTime": "2024-11-22T06:00:00.000Z",
+      "peakLevel": 1.27,
+      "riseM": 0.84
+    },
+    {
+      "station": "Casalecchio tiro a volo",
+      "start": "2024-11-20T06:00:00.000Z",
+      "end": "2024-11-24T06:00:00.000Z",
+      "peakTime": "2024-11-22T06:00:00.000Z",
+      "peakLevel": 1.42,
+      "riseM": 1.6
+    },
+    {
+      "station": "Bonconvento",
+      "start": "2024-11-19T13:00:00.000Z",
+      "end": "2024-11-24T12:00:00.000Z",
+      "peakTime": "2024-11-22T11:30:00.000Z",
+      "peakLevel": 9.48,
+      "riseM": 5.63
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2024-11-20T16:00:00.000Z",
+      "end": "2024-11-24T16:30:00.000Z",
+      "peakTime": "2024-11-22T16:00:00.000Z",
+      "peakLevel": 25.23,
+      "riseM": 5.2
+    },
+    {
+      "station": "Cento",
+      "start": "2024-11-20T20:30:00.000Z",
+      "end": "2024-11-24T21:00:00.000Z",
+      "peakTime": "2024-11-22T20:30:00.000Z",
+      "peakLevel": 5.12,
+      "riseM": 5.09
+    },
+    {
+      "station": "Dosso",
+      "start": "2024-11-20T23:30:00.000Z",
+      "end": "2024-11-25T00:00:00.000Z",
+      "peakTime": "2024-11-22T23:30:00.000Z",
+      "peakLevel": 7.36,
+      "riseM": 4.13
+    },
+    {
+      "station": "Opera Reno Panfilia",
+      "start": "2024-11-22T22:30:00.000Z",
+      "end": "2024-11-23T05:00:00.000Z",
+      "peakTime": "2024-11-23T00:00:00.000Z",
+      "peakLevel": 18.86,
+      "riseM": 12.62
+    },
+    {
+      "station": "Gallo",
+      "start": "2024-11-21T07:30:00.000Z",
+      "end": "2024-11-25T08:00:00.000Z",
+      "peakTime": "2024-11-23T07:30:00.000Z",
+      "peakLevel": 9.11,
+      "riseM": 4.14
+    },
+    {
+      "station": "Vergato DX",
+      "start": "2024-11-24T18:30:00.000Z",
+      "end": "2024-11-28T18:30:00.000Z",
+      "peakTime": "2024-11-26T11:00:00.000Z",
+      "peakLevel": 1.06,
+      "riseM": 1.12
+    },
+    {
+      "station": "Vergato DX",
+      "start": "2024-11-28T18:30:00.000Z",
+      "end": "2024-12-04T13:00:00.000Z",
+      "peakTime": "2024-12-01T08:30:00.000Z",
+      "peakLevel": 1.08,
+      "riseM": 1.2
+    },
+    {
+      "station": "Vergato DX",
+      "start": "2024-12-02T20:30:00.000Z",
       "end": "2024-12-07T23:30:00.000Z",
       "peakTime": "2024-12-07T20:30:00.000Z",
       "peakLevel": 1.1,
@@ -448,8 +4608,24 @@
     },
     {
       "station": "Vergato DX",
-      "start": "2025-01-08T02:30:00.000Z",
-      "end": "2025-01-11T16:30:00.000Z",
+      "start": "2024-12-26T11:00:00.000Z",
+      "end": "2025-01-02T10:30:00.000Z",
+      "peakTime": "2024-12-28T11:00:00.000Z",
+      "peakLevel": 1.06,
+      "riseM": 0.95
+    },
+    {
+      "station": "Vergato DX",
+      "start": "2025-01-02T17:30:00.000Z",
+      "end": "2025-01-06T20:00:00.000Z",
+      "peakTime": "2025-01-02T22:00:00.000Z",
+      "peakLevel": 1.07,
+      "riseM": 0.75
+    },
+    {
+      "station": "Vergato DX",
+      "start": "2025-01-06T20:00:00.000Z",
+      "end": "2025-01-12T14:30:00.000Z",
       "peakTime": "2025-01-09T16:00:00.000Z",
       "peakLevel": 1.46,
       "riseM": 1.43
@@ -529,10 +4705,18 @@
     {
       "station": "Vergato DX",
       "start": "2025-01-12T14:30:00.000Z",
-      "end": "2025-01-15T08:30:00.000Z",
+      "end": "2025-01-16T23:30:00.000Z",
       "peakTime": "2025-01-13T08:30:00.000Z",
       "peakLevel": 1.08,
       "riseM": 1.1
+    },
+    {
+      "station": "Vergato DX",
+      "start": "2025-01-19T07:30:00.000Z",
+      "end": "2025-01-23T07:30:00.000Z",
+      "peakTime": "2025-01-19T09:00:00.000Z",
+      "peakLevel": 1.06,
+      "riseM": 1.06
     },
     {
       "station": "Casalecchio tiro a volo",
@@ -785,7 +4969,7 @@
     {
       "station": "Paltrone Samoggia",
       "start": "2025-02-07T08:30:00.000Z",
-      "end": "2025-02-14T08:00:00.000Z",
+      "end": "2025-02-10T15:30:00.000Z",
       "peakTime": "2025-02-09T08:30:00.000Z",
       "peakLevel": 33.53,
       "riseM": 1.67
@@ -943,14 +5127,6 @@
       "riseM": 2.07
     },
     {
-      "station": "Secondo Salto",
-      "start": "2025-02-12T18:30:00.000Z",
-      "end": "2025-02-18T08:00:00.000Z",
-      "peakTime": "2025-02-16T08:00:00.000Z",
-      "peakLevel": 10.31,
-      "riseM": 0.6
-    },
-    {
       "station": "Casalecchio tiro a volo",
       "start": "2025-02-24T14:00:00.000Z",
       "end": "2025-02-28T15:30:00.000Z",
@@ -969,7 +5145,7 @@
     {
       "station": "Paltrone Samoggia",
       "start": "2025-02-24T17:30:00.000Z",
-      "end": "2025-03-01T03:30:00.000Z",
+      "end": "2025-02-28T16:30:00.000Z",
       "peakTime": "2025-02-26T17:30:00.000Z",
       "peakLevel": 32.87,
       "riseM": 0.98
@@ -1017,7 +5193,7 @@
     {
       "station": "Opera Reno Panfilia",
       "start": "2025-02-25T13:00:00.000Z",
-      "end": "2025-03-02T12:30:00.000Z",
+      "end": "2025-02-28T23:30:00.000Z",
       "peakTime": "2025-02-27T10:00:00.000Z",
       "peakLevel": 17.02,
       "riseM": 11.59
@@ -1041,7 +5217,7 @@
     {
       "station": "Sostegno Reno",
       "start": "2025-02-28T17:30:00.000Z",
-      "end": "2025-03-06T22:30:00.000Z",
+      "end": "2025-03-03T00:30:00.000Z",
       "peakTime": "2025-03-02T06:00:00.000Z",
       "peakLevel": 20.88,
       "riseM": 0.76
@@ -1053,14 +5229,6 @@
       "peakTime": "2025-03-02T07:30:00.000Z",
       "peakLevel": 1.48,
       "riseM": 0.94
-    },
-    {
-      "station": "Opera Reno Panfilia",
-      "start": "2025-02-28T23:30:00.000Z",
-      "end": "2025-03-02T12:30:00.000Z",
-      "peakTime": "2025-03-02T11:00:00.000Z",
-      "peakLevel": 15.77,
-      "riseM": 10.29
     },
     {
       "station": "Gallo",
@@ -1168,7 +5336,7 @@
     },
     {
       "station": "Dosso",
-      "start": "2025-03-11T22:00:00.000Z",
+      "start": "2025-03-09T03:00:00.000Z",
       "end": "2025-03-17T11:30:00.000Z",
       "peakTime": "2025-03-15T16:30:00.000Z",
       "peakLevel": 9.29,
@@ -1303,14 +5471,6 @@
       "riseM": 0.85
     },
     {
-      "station": "Secondo Salto",
-      "start": "2025-03-30T00:00:00.000Z",
-      "end": "2025-04-01T04:30:00.000Z",
-      "peakTime": "2025-03-30T04:30:00.000Z",
-      "peakLevel": 10.45,
-      "riseM": 0.55
-    },
-    {
       "station": "Bonconvento",
       "start": "2025-03-29T03:00:00.000Z",
       "end": "2025-03-31T11:00:00.000Z",
@@ -1357,22 +5517,6 @@
       "peakTime": "2025-03-30T23:30:00.000Z",
       "peakLevel": 7.11,
       "riseM": 1.08
-    },
-    {
-      "station": "Secondo Salto",
-      "start": "2025-04-01T23:00:00.000Z",
-      "end": "2025-04-14T02:00:00.000Z",
-      "peakTime": "2025-04-10T15:00:00.000Z",
-      "peakLevel": 10.49,
-      "riseM": 0.67
-    },
-    {
-      "station": "Secondo Salto",
-      "start": "2025-04-11T18:30:00.000Z",
-      "end": "2025-04-19T03:30:00.000Z",
-      "peakTime": "2025-04-15T05:30:00.000Z",
-      "peakLevel": 10.68,
-      "riseM": 0.87
     },
     {
       "station": "Vergato DX",
@@ -1479,14 +5623,6 @@
       "riseM": 1.46
     },
     {
-      "station": "Secondo Salto",
-      "start": "2025-04-17T08:00:00.000Z",
-      "end": "2025-04-23T20:30:00.000Z",
-      "peakTime": "2025-04-21T04:00:00.000Z",
-      "peakLevel": 10.79,
-      "riseM": 0.88
-    },
-    {
       "station": "Bonconvento",
       "start": "2025-04-23T13:30:00.000Z",
       "end": "2025-04-24T22:30:00.000Z",
@@ -1495,36 +5631,12 @@
       "riseM": 0.8
     },
     {
-      "station": "Secondo Salto",
-      "start": "2025-04-23T20:30:00.000Z",
-      "end": "2025-05-04T14:30:00.000Z",
-      "peakTime": "2025-04-29T23:30:00.000Z",
-      "peakLevel": 10.99,
-      "riseM": 1.14
-    },
-    {
-      "station": "Secondo Salto",
-      "start": "2025-05-01T09:00:00.000Z",
-      "end": "2025-05-08T19:30:00.000Z",
-      "peakTime": "2025-05-05T00:30:00.000Z",
-      "peakLevel": 11.09,
-      "riseM": 1.15
-    },
-    {
-      "station": "Secondo Salto",
-      "start": "2025-05-06T17:30:00.000Z",
-      "end": "2025-05-09T08:00:00.000Z",
-      "peakTime": "2025-05-09T07:30:00.000Z",
-      "peakLevel": 11.19,
-      "riseM": 1.38
-    },
-    {
-      "station": "Secondo Salto",
-      "start": "2025-05-12T09:00:00.000Z",
-      "end": "2025-05-15T21:30:00.000Z",
-      "peakTime": "2025-05-15T09:00:00.000Z",
-      "peakLevel": 10.29,
-      "riseM": 0.76
+      "station": "Vergato DX",
+      "start": "2025-04-28T17:30:00.000Z",
+      "end": "2025-05-01T09:00:00.000Z",
+      "peakTime": "2025-04-29T09:00:00.000Z",
+      "peakLevel": 1.06,
+      "riseM": 0.5
     },
     {
       "station": "Paltrone Samoggia",
@@ -1567,30 +5679,6 @@
       "riseM": 1.76
     },
     {
-      "station": "Secondo Salto",
-      "start": "2025-05-23T14:30:00.000Z",
-      "end": "2025-05-26T12:30:00.000Z",
-      "peakTime": "2025-05-26T12:00:00.000Z",
-      "peakLevel": 10.26,
-      "riseM": 0.71
-    },
-    {
-      "station": "Secondo Salto",
-      "start": "2025-05-27T18:00:00.000Z",
-      "end": "2025-06-01T07:30:00.000Z",
-      "peakTime": "2025-05-30T09:00:00.000Z",
-      "peakLevel": 10.26,
-      "riseM": 0.71
-    },
-    {
-      "station": "Secondo Salto",
-      "start": "2025-06-11T08:00:00.000Z",
-      "end": "2025-06-13T20:30:00.000Z",
-      "peakTime": "2025-06-13T08:00:00.000Z",
-      "peakLevel": 10.27,
-      "riseM": 0.69
-    },
-    {
       "station": "Casalecchio tiro a volo",
       "start": "2025-06-14T16:30:00.000Z",
       "end": "2025-06-18T07:30:00.000Z",
@@ -1607,14 +5695,6 @@
       "riseM": 4.17
     },
     {
-      "station": "Paltrone Samoggia",
-      "start": "2025-06-14T19:00:00.000Z",
-      "end": "2025-06-17T11:30:00.000Z",
-      "peakTime": "2025-06-16T19:00:00.000Z",
-      "peakLevel": 32.44,
-      "riseM": 0.62
-    },
-    {
       "station": "Forcelli",
       "start": "2025-06-14T19:30:00.000Z",
       "end": "2025-06-18T18:00:00.000Z",
@@ -1623,12 +5703,12 @@
       "riseM": 2.66
     },
     {
-      "station": "Secondo Salto",
-      "start": "2025-06-27T21:00:00.000Z",
-      "end": "2025-06-30T04:00:00.000Z",
-      "peakTime": "2025-06-29T20:30:00.000Z",
-      "peakLevel": 10.36,
-      "riseM": 0.77
+      "station": "Lavino di Sotto",
+      "start": "2025-06-27T17:00:00.000Z",
+      "end": "2025-06-28T07:00:00.000Z",
+      "peakTime": "2025-06-28T03:00:00.000Z",
+      "peakLevel": 8.16,
+      "riseM": 0.76
     },
     {
       "station": "Opera Reno Panfilia",
@@ -1637,14 +5717,6 @@
       "peakTime": "2025-07-03T12:00:00.000Z",
       "peakLevel": 22.02,
       "riseM": 17.17
-    },
-    {
-      "station": "Secondo Salto",
-      "start": "2025-07-01T11:00:00.000Z",
-      "end": "2025-07-06T00:00:00.000Z",
-      "peakTime": "2025-07-04T05:30:00.000Z",
-      "peakLevel": 11.19,
-      "riseM": 1.6
     },
     {
       "station": "Lavino di Sotto",
@@ -1671,22 +5743,6 @@
       "riseM": 2.25
     },
     {
-      "station": "Secondo Salto",
-      "start": "2025-07-06T00:00:00.000Z",
-      "end": "2025-07-10T20:00:00.000Z",
-      "peakTime": "2025-07-07T20:30:00.000Z",
-      "peakLevel": 10.29,
-      "riseM": 0.7
-    },
-    {
-      "station": "Secondo Salto",
-      "start": "2025-07-09T20:30:00.000Z",
-      "end": "2025-07-12T05:00:00.000Z",
-      "peakTime": "2025-07-11T19:30:00.000Z",
-      "peakLevel": 10.18,
-      "riseM": 0.62
-    },
-    {
       "station": "Lavino di Sotto",
       "start": "2025-07-24T04:00:00.000Z",
       "end": "2025-07-30T01:00:00.000Z",
@@ -1701,14 +5757,6 @@
       "peakTime": "2025-07-28T23:30:00.000Z",
       "peakLevel": 8.24,
       "riseM": 0.84
-    },
-    {
-      "station": "Secondo Salto",
-      "start": "2025-07-28T01:00:00.000Z",
-      "end": "2025-07-30T02:00:00.000Z",
-      "peakTime": "2025-07-30T01:00:00.000Z",
-      "peakLevel": 10.4,
-      "riseM": 0.83
     },
     {
       "station": "Lavino di Sotto",
@@ -1733,14 +5781,6 @@
       "peakTime": "2025-08-15T06:30:00.000Z",
       "peakLevel": 8.41,
       "riseM": 1.41
-    },
-    {
-      "station": "Secondo Salto",
-      "start": "2025-08-19T00:00:00.000Z",
-      "end": "2025-08-22T18:30:00.000Z",
-      "peakTime": "2025-08-22T16:00:00.000Z",
-      "peakLevel": 11.25,
-      "riseM": 1.68
     },
     {
       "station": "Lavino di Sotto",
@@ -1864,7 +5904,7 @@
     },
     {
       "station": "Lavino di Sotto",
-      "start": "2025-10-09T00:00:00.000Z",
+      "start": "2025-10-08T06:00:00.000Z",
       "end": "2025-10-13T20:00:00.000Z",
       "peakTime": "2025-10-11T01:30:00.000Z",
       "peakLevel": 8.46,
@@ -1873,7 +5913,7 @@
     {
       "station": "Lavino di Sotto",
       "start": "2025-10-13T00:00:00.000Z",
-      "end": "2025-10-20T19:00:00.000Z",
+      "end": "2025-10-22T17:00:00.000Z",
       "peakTime": "2025-10-20T00:30:00.000Z",
       "peakLevel": 8.52,
       "riseM": 1.45
@@ -1881,7 +5921,7 @@
     {
       "station": "Vergato DX",
       "start": "2025-10-22T06:30:00.000Z",
-      "end": "2025-10-25T18:00:00.000Z",
+      "end": "2025-10-28T10:30:00.000Z",
       "peakTime": "2025-10-23T18:00:00.000Z",
       "peakLevel": 1.61,
       "riseM": 1.66
@@ -1943,6 +5983,14 @@
       "riseM": 11.41
     },
     {
+      "station": "Dosso",
+      "start": "2025-10-22T23:30:00.000Z",
+      "end": "2025-10-26T04:30:00.000Z",
+      "peakTime": "2025-10-24T15:30:00.000Z",
+      "peakLevel": 4.58,
+      "riseM": 1.98
+    },
+    {
       "station": "Gallo",
       "start": "2025-10-22T23:00:00.000Z",
       "end": "2025-10-26T13:00:00.000Z",
@@ -1951,8 +5999,16 @@
       "riseM": 2.34
     },
     {
+      "station": "Lavino di Sotto",
+      "start": "2025-10-27T02:00:00.000Z",
+      "end": "2025-10-27T06:00:00.000Z",
+      "peakTime": "2025-10-27T04:30:00.000Z",
+      "peakLevel": 8.21,
+      "riseM": 1.16
+    },
+    {
       "station": "Vergato DX",
-      "start": "2025-10-28T10:30:00.000Z",
+      "start": "2025-10-25T20:00:00.000Z",
       "end": "2025-10-30T18:00:00.000Z",
       "peakTime": "2025-10-30T15:30:00.000Z",
       "peakLevel": 3.19,
@@ -2069,14 +6125,6 @@
       "peakTime": "2025-11-03T20:00:00.000Z",
       "peakLevel": 1.49,
       "riseM": 1.42
-    },
-    {
-      "station": "Opera Reno Panfilia",
-      "start": "2025-11-02T21:30:00.000Z",
-      "end": "2025-11-05T03:00:00.000Z",
-      "peakTime": "2025-11-04T00:30:00.000Z",
-      "peakLevel": 15.79,
-      "riseM": 0.72
     },
     {
       "station": "Gallo",
@@ -2865,7 +6913,7 @@
     {
       "station": "Vergato DX",
       "start": "2026-03-30T00:00:00.000Z",
-      "end": "2026-04-02T07:30:00.000Z",
+      "end": "2026-04-02T23:30:00.000Z",
       "peakTime": "2026-03-31T07:30:00.000Z",
       "peakLevel": 1.08,
       "riseM": 1.12
@@ -2881,7 +6929,7 @@
     {
       "station": "Vergato DX",
       "start": "2026-04-03T02:00:00.000Z",
-      "end": "2026-04-05T09:30:00.000Z",
+      "end": "2026-04-08T09:00:00.000Z",
       "peakTime": "2026-04-03T09:30:00.000Z",
       "peakLevel": 1.08,
       "riseM": 1.08
@@ -2896,8 +6944,8 @@
     },
     {
       "station": "Vergato DX",
-      "start": "2026-04-08T10:00:00.000Z",
-      "end": "2026-04-11T09:30:00.000Z",
+      "start": "2026-04-06T06:30:00.000Z",
+      "end": "2026-04-14T09:00:00.000Z",
       "peakTime": "2026-04-09T09:30:00.000Z",
       "peakLevel": 1.08,
       "riseM": 0.66
@@ -2913,7 +6961,7 @@
     {
       "station": "Vergato DX",
       "start": "2026-04-11T17:30:00.000Z",
-      "end": "2026-04-15T07:30:00.000Z",
+      "end": "2026-04-16T02:30:00.000Z",
       "peakTime": "2026-04-12T19:00:00.000Z",
       "peakLevel": 1.08,
       "riseM": 0.62
@@ -2949,6 +6997,14 @@
       "peakTime": "2026-04-17T09:00:00.000Z",
       "peakLevel": 14.33,
       "riseM": 1.24
+    },
+    {
+      "station": "Vergato DX",
+      "start": "2026-04-19T08:30:00.000Z",
+      "end": "2026-04-22T20:30:00.000Z",
+      "peakTime": "2026-04-19T09:30:00.000Z",
+      "peakLevel": 1.06,
+      "riseM": 0.56
     },
     {
       "station": "Dosso",
@@ -2989,6 +7045,14 @@
       "peakTime": "2026-04-28T17:00:00.000Z",
       "peakLevel": 14.34,
       "riseM": 1.26
+    },
+    {
+      "station": "Vergato DX",
+      "start": "2026-05-01T01:00:00.000Z",
+      "end": "2026-05-04T09:30:00.000Z",
+      "peakTime": "2026-05-01T09:30:00.000Z",
+      "peakLevel": 1.06,
+      "riseM": 0.81
     },
     {
       "station": "Dosso",
@@ -3159,6 +7223,14 @@
       "riseM": 2.7
     },
     {
+      "station": "Vergato DX",
+      "start": "2026-06-06T02:00:00.000Z",
+      "end": "2026-06-09T19:00:00.000Z",
+      "peakTime": "2026-06-07T17:30:00.000Z",
+      "peakLevel": 1.06,
+      "riseM": 0.53
+    },
+    {
       "station": "Sasso Marconi",
       "start": "2026-06-29T14:00:00.000Z",
       "end": "2026-07-01T22:30:00.000Z",
@@ -3184,8 +7256,8 @@
     },
     {
       "station": "Secondo Salto",
-      "start": "2026-07-13T19:30:00.000Z",
-      "end": "2026-07-20T06:30:00.000Z",
+      "start": "2026-07-14T15:30:00.000Z",
+      "end": "2026-07-19T17:00:00.000Z",
       "peakTime": "2026-07-17T17:00:00.000Z",
       "peakLevel": 11.5,
       "riseM": 1.83
@@ -3193,26 +7265,10 @@
     {
       "station": "Secondo Salto",
       "start": "2026-07-21T20:00:00.000Z",
-      "end": "2026-07-25T20:00:00.000Z",
+      "end": "2026-07-24T14:30:00.000Z",
       "peakTime": "2026-07-22T14:30:00.000Z",
       "peakLevel": 11.46,
       "riseM": 1.87
-    },
-    {
-      "station": "Opera Reno Panfilia",
-      "start": "2026-07-22T12:30:00.000Z",
-      "end": "2026-07-30T21:30:00.000Z",
-      "peakTime": "2026-07-27T23:00:00.000Z",
-      "peakLevel": 15.63,
-      "riseM": 0.99
-    },
-    {
-      "station": "Opera Reno Panfilia",
-      "start": "2026-07-30T21:30:00.000Z",
-      "end": "2026-08-06T21:30:00.000Z",
-      "peakTime": "2026-08-02T04:30:00.000Z",
-      "peakLevel": 15.78,
-      "riseM": 1.18
     },
     {
       "station": "Casalecchio tiro a volo",
@@ -3223,36 +7279,12 @@
       "riseM": 1.14
     },
     {
-      "station": "Opera Reno Panfilia",
-      "start": "2026-08-04T04:00:00.000Z",
-      "end": "2026-08-11T04:30:00.000Z",
-      "peakTime": "2026-08-06T05:30:00.000Z",
-      "peakLevel": 15.59,
-      "riseM": 1.12
-    },
-    {
-      "station": "Opera Reno Panfilia",
-      "start": "2026-08-18T22:30:00.000Z",
-      "end": "2026-08-23T05:00:00.000Z",
-      "peakTime": "2026-08-21T05:00:00.000Z",
-      "peakLevel": 15.54,
-      "riseM": 1.06
-    },
-    {
       "station": "Vergato DX",
       "start": "2026-08-23T05:00:00.000Z",
-      "end": "2026-08-26T23:00:00.000Z",
+      "end": "2026-08-28T21:00:00.000Z",
       "peakTime": "2026-08-24T11:00:00.000Z",
       "peakLevel": 1.1,
       "riseM": 0.73
-    },
-    {
-      "station": "Opera Reno Panfilia",
-      "start": "2026-09-08T05:30:00.000Z",
-      "end": "2026-09-11T01:00:00.000Z",
-      "peakTime": "2026-09-08T16:30:00.000Z",
-      "peakLevel": 15.46,
-      "riseM": 0.6
     },
     {
       "station": "Vergato DX",
@@ -3288,7 +7320,7 @@
     },
     {
       "station": "Vergato DX",
-      "start": "2026-10-04T06:00:00.000Z",
+      "start": "2026-10-03T08:30:00.000Z",
       "end": "2026-10-09T11:00:00.000Z",
       "peakTime": "2026-10-07T11:00:00.000Z",
       "peakLevel": 1.15,
@@ -3297,14 +7329,14 @@
     {
       "station": "Vergato DX",
       "start": "2026-10-20T02:30:00.000Z",
-      "end": "2026-10-22T22:30:00.000Z",
+      "end": "2026-10-25T13:30:00.000Z",
       "peakTime": "2026-10-20T22:30:00.000Z",
       "peakLevel": 1.1,
       "riseM": 0.65
     },
     {
       "station": "Vergato DX",
-      "start": "2026-10-26T20:30:00.000Z",
+      "start": "2026-10-23T00:00:00.000Z",
       "end": "2026-11-01T22:00:00.000Z",
       "peakTime": "2026-10-28T01:00:00.000Z",
       "peakLevel": 1.15,
@@ -3321,7 +7353,7 @@
     {
       "station": "Vergato DX",
       "start": "2026-11-02T01:00:00.000Z",
-      "end": "2026-11-05T04:00:00.000Z",
+      "end": "2026-11-05T18:00:00.000Z",
       "peakTime": "2026-11-03T04:00:00.000Z",
       "peakLevel": 1.09,
       "riseM": 0.73
@@ -3329,82 +7361,106 @@
     {
       "station": "Vergato DX",
       "start": "2026-11-09T16:30:00.000Z",
-      "end": "2026-11-12T16:30:00.000Z",
-      "peakTime": "2026-11-10T16:30:00.000Z",
-      "peakLevel": 1.89,
-      "riseM": 1.19
+      "end": "2026-11-14T10:00:00.000Z",
+      "peakTime": "2026-11-12T19:30:00.000Z",
+      "peakLevel": 3.91,
+      "riseM": 3.02
     },
     {
       "station": "Sasso Marconi",
       "start": "2026-11-08T17:30:00.000Z",
-      "end": "2026-11-12T17:30:00.000Z",
-      "peakTime": "2026-11-10T17:30:00.000Z",
-      "peakLevel": 0.85,
-      "riseM": 1.06
+      "end": "2026-11-14T22:00:00.000Z",
+      "peakTime": "2026-11-12T20:00:00.000Z",
+      "peakLevel": 2.03,
+      "riseM": 2.09
     },
     {
       "station": "Casalecchio chiusa",
       "start": "2026-11-09T14:00:00.000Z",
-      "end": "2026-11-12T19:00:00.000Z",
-      "peakTime": "2026-11-10T19:00:00.000Z",
-      "peakLevel": 1.13,
-      "riseM": 2.76
+      "end": "2026-11-14T23:30:00.000Z",
+      "peakTime": "2026-11-12T23:00:00.000Z",
+      "peakLevel": 1.83,
+      "riseM": 1.43
     },
     {
       "station": "Casalecchio tiro a volo",
       "start": "2026-11-08T19:30:00.000Z",
-      "end": "2026-11-12T19:30:00.000Z",
-      "peakTime": "2026-11-10T19:30:00.000Z",
-      "peakLevel": 1.16,
-      "riseM": 1.94
+      "end": "2026-11-15T01:30:00.000Z",
+      "peakTime": "2026-11-12T23:00:00.000Z",
+      "peakLevel": 2.66,
+      "riseM": 2.91
     },
     {
       "station": "Bonconvento",
       "start": "2026-11-09T00:00:00.000Z",
-      "end": "2026-11-13T00:00:00.000Z",
-      "peakTime": "2026-11-11T00:00:00.000Z",
-      "peakLevel": 7.09,
-      "riseM": 4.72
-    },
-    {
-      "station": "Sostegno Reno",
-      "start": "2026-11-09T04:00:00.000Z",
-      "end": "2026-11-13T04:30:00.000Z",
-      "peakTime": "2026-11-11T04:00:00.000Z",
-      "peakLevel": 22.36,
-      "riseM": 2.31
-    },
-    {
-      "station": "Cento",
-      "start": "2026-11-09T08:30:00.000Z",
-      "end": "2026-11-13T08:30:00.000Z",
-      "peakTime": "2026-11-11T08:30:00.000Z",
-      "peakLevel": 2.44,
-      "riseM": 4.11
-    },
-    {
-      "station": "Dosso",
-      "start": "2026-11-09T11:00:00.000Z",
-      "end": "2026-11-13T12:30:00.000Z",
-      "peakTime": "2026-11-11T11:00:00.000Z",
-      "peakLevel": 4.92,
-      "riseM": 2.61
+      "end": "2026-11-16T00:00:00.000Z",
+      "peakTime": "2026-11-13T03:30:00.000Z",
+      "peakLevel": 10.93,
+      "riseM": 6.97
     },
     {
       "station": "Opera Reno Panfilia",
       "start": "2026-11-09T11:30:00.000Z",
-      "end": "2026-11-13T11:30:00.000Z",
-      "peakTime": "2026-11-11T11:30:00.000Z",
-      "peakLevel": 16.49,
-      "riseM": 1.22
+      "end": "2026-11-16T10:00:00.000Z",
+      "peakTime": "2026-11-13T14:30:00.000Z",
+      "peakLevel": 20.68,
+      "riseM": 5.26
+    },
+    {
+      "station": "Dosso",
+      "start": "2026-11-09T11:00:00.000Z",
+      "end": "2026-11-16T09:30:00.000Z",
+      "peakTime": "2026-11-13T15:00:00.000Z",
+      "peakLevel": 9.28,
+      "riseM": 5.63
+    },
+    {
+      "station": "Lavino di Sotto",
+      "start": "2026-11-10T21:00:00.000Z",
+      "end": "2026-11-14T21:00:00.000Z",
+      "peakTime": "2026-11-13T17:30:00.000Z",
+      "peakLevel": 9.02,
+      "riseM": 1.08
+    },
+    {
+      "station": "Forcelli",
+      "start": "2026-11-11T10:00:00.000Z",
+      "end": "2026-11-16T00:00:00.000Z",
+      "peakTime": "2026-11-13T23:30:00.000Z",
+      "peakLevel": 8.69,
+      "riseM": 2.03
+    },
+    {
+      "station": "Sostegno Reno",
+      "start": "2026-11-09T04:00:00.000Z",
+      "end": "2026-11-16T03:00:00.000Z",
+      "peakTime": "2026-11-14T02:30:00.000Z",
+      "peakLevel": 27.25,
+      "riseM": 7.06
+    },
+    {
+      "station": "Cento",
+      "start": "2026-11-09T08:30:00.000Z",
+      "end": "2026-11-16T07:00:00.000Z",
+      "peakTime": "2026-11-14T07:00:00.000Z",
+      "peakLevel": 7.17,
+      "riseM": 5.76
+    },
+    {
+      "station": "Secondo Salto",
+      "start": "2026-11-11T15:30:00.000Z",
+      "end": "2026-11-15T03:00:00.000Z",
+      "peakTime": "2026-11-14T07:30:00.000Z",
+      "peakLevel": 11.92,
+      "riseM": 2.35
     },
     {
       "station": "Gallo",
       "start": "2026-11-09T18:00:00.000Z",
-      "end": "2026-11-13T18:00:00.000Z",
-      "peakTime": "2026-11-11T18:00:00.000Z",
-      "peakLevel": 6.23,
-      "riseM": 2.81
+      "end": "2026-11-16T17:00:00.000Z",
+      "peakTime": "2026-11-14T17:00:00.000Z",
+      "peakLevel": 10.91,
+      "riseM": 4.62
     }
   ]
 }

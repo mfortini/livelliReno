@@ -162,10 +162,13 @@
         .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 2000; padding: .8rem; background: white; }
         .skip-link:focus { top: 1rem; }
         :root { --header-h: 10rem; }
+        /* Prevent scroll-anchoring feedback when the sticky header height changes. */
+        html { overflow-anchor: none; }
         .site-header {
             position: sticky; top: 0; z-index: 1100;
             padding: 1.35rem clamp(1rem, 4vw, 4rem) 1.1rem; background: #123847; color: #fff;
             transition: padding .2s ease, box-shadow .2s ease;
+            overflow-anchor: none;
         }
         .site-header.is-compact {
             padding: .45rem clamp(1rem, 4vw, 3rem);
@@ -471,7 +474,11 @@
     function updateHeaderCompact() {
         const header = document.getElementById('site-header');
         if (!header) return;
-        header.classList.toggle('is-compact', window.scrollY > 20);
+        const y = window.scrollY;
+        const was = header.classList.contains('is-compact');
+        // Hysteresis stops open/close chatter around the threshold when height changes.
+        const now = was ? y > 16 : y > 72;
+        if (now !== was) header.classList.toggle('is-compact', now);
         document.documentElement.style.setProperty('--header-h', `${header.offsetHeight}px`);
     }
 

@@ -11,6 +11,7 @@
     <style>
         :root { --ink: #173747; --muted: #536b78; --accent: #086b78; --line: #dce6eb; --surface: #fff; --header-h: 10rem; }
         * { box-sizing: border-box; }
+        html { overflow-anchor: none; }
         body { margin: 0; background: #f3f7f9; color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
         a { color: #086575; text-underline-offset: .2em; }
         :focus-visible { outline: 3px solid #007f95; outline-offset: 4px; }
@@ -18,6 +19,7 @@
             position: sticky; top: 0; z-index: 1100;
             padding: 1.35rem clamp(1rem, 4vw, 4rem) 1.1rem; background: #123847; color: #fff;
             transition: padding .2s ease, box-shadow .2s ease;
+            overflow-anchor: none;
         }
         .site-header.is-compact { padding: .45rem clamp(1rem, 4vw, 3rem); box-shadow: 0 1px 12px #00000033; }
         .header-inner { max-width: 1600px; margin: auto; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
@@ -143,7 +145,7 @@
     </div>
     <div class="page-intro">
         <h2>Prove di trasferimento monte→valle</h2>
-        <p>Si mostrano solo le stazioni con stima affidabile (limite inferiore dello skill in evento ≥ 0.10 per entrare; isteresi a 0.05 per uscire). Per ciascuna: mediana e banda sperimentale 10–90 (o forchetta residua) che oltre l’orizzonte affidabile si allarga e sfuma, invece di tagliarsi di netto. Indizi statistici, non una previsione operativa.</p>
+        <p>Si mostrano solo le stazioni con stima affidabile (limite inferiore dello skill in evento ≥ 0.10 per entrare; isteresi a 0.05 per uscire). Per ciascuna: traiettoria <strong>più probabile</strong> (moda del timing di attraversamento, dove disponibile) e fan sperimentale 10–90 (o forchetta residua) che oltre l’orizzonte affidabile si allarga e sfuma. Indizi statistici, non una previsione operativa.</p>
     </div>
     <p id="status-line" class="status-line" role="status">Caricamento osservazioni ARPAE…</p>
     <div class="pred-layout">
@@ -164,14 +166,14 @@
             </div>
             <details class="reading-help">
                 <summary>Come leggere grafici e soglie</summary>
-                <p>Stesso intervallo e soglie delle Osservazioni. A destra di «ora»: linea mediana e banda (min–max / quantili 10–90 dove disponibili). Fino all’orizzonte affidabile la banda è piena; oltre si sfuma e si allarga. Se una stazione di monte manca o è obsoleta, la banda si allarga e compare un avviso. «Predizione storica» confronta ŷ(t−H) con l’osservato. Non è allerta territoriale.</p>
+                <p>Stesso intervallo e soglie delle Osservazioni. A destra di «ora»: linea «più probabile» e fan (min–max / quantili 10–90). Fino all’orizzonte affidabile la banda è piena; oltre si sfuma e si allarga. Se una stazione di monte manca o è obsoleta, la banda si allarga e compare un avviso. «Predizione storica» confronta ŷ(t−H) con l’osservato. Non è allerta territoriale.</p>
             </details>
             <div id="edge-grid" class="edge-grid" aria-live="polite"></div>
         </div>
     </div>
     <footer class="source-notes">
         <h2>Limiti e disclaimer</h2>
-        <p>I numeri mostrati non certificano il livello futuro di nessuna stazione. La banda 10–90 (o forchetta residua) è un intervallo empirico di incertezza del modello, non una probabilità di superamento soglia né un’allerta. Non sostituiscono modelli idraulici, radar, pioggia prevista né bollettini ufficiali. Non basare su di essi evacuazioni, aperture di paratoie o comunicazioni al pubblico.</p>
+        <p>I numeri mostrati non certificano il livello futuro di nessuna stazione. La curva «più probabile» e la banda 10–90 sono una distribuzione empirica del modello (timing + livelli), non una probabilità ufficiale di superamento soglia né un’allerta. Non sostituiscono modelli idraulici, radar, pioggia prevista né bollettini ufficiali. Non basare su di essi evacuazioni, aperture di paratoie o comunicazioni al pubblico.</p>
     </footer>
 </main>
 
@@ -236,7 +238,11 @@
 
     function updateHeaderCompact() {
         const header = document.getElementById('site-header');
-        header.classList.toggle('is-compact', window.scrollY > 20);
+        if (!header) return;
+        const y = window.scrollY;
+        const was = header.classList.contains('is-compact');
+        const now = was ? y > 16 : y > 72;
+        if (now !== was) header.classList.toggle('is-compact', now);
         document.documentElement.style.setProperty('--header-h', `${header.offsetHeight}px`);
     }
 
@@ -348,7 +354,7 @@
             { x: solid.map(p => +p.time), y: solid.map(p => p.min), type: 'scatter', mode: 'lines', fill: 'tonexty', fillcolor: 'rgba(198,40,40,.18)', line: { width: 0 }, hoverinfo: 'skip', showlegend: false },
             {
                 x: solid.map(p => +p.time), y: solid.map(p => p.med), type: 'scatter', mode: 'lines',
-                name: 'Previsione', line: { color: FORECAST_RED, width: 2.25 }
+                name: prediction.probableLabel || 'Più probabile', line: { color: FORECAST_RED, width: 2.75 }
             }
         ];
         if (fade.length > 1) {
@@ -799,9 +805,13 @@
             renderAll();
             // Banda q10–90 Cento (~48 MB): dopo il primo paint, senza bloccare il caricamento.
             if (coeffs?.nodes?.Cento?.kind === 'window_delta_mlp') {
-                P.softMergeCentoBands(window.fetch.bind(window), coeffs).then(ok => {
+                const fetchFn = window.fetch.bind(window);
+                P.softMergeCentoBands(fetchFn, coeffs).then(ok => {
                     if (ok) renderAll();
                 }).catch(() => { /* banda residua già in pagina */ });
+                P.softMergeCentoCrossing(fetchFn, coeffs).then(ok => {
+                    if (ok) renderAll();
+                }).catch(() => { /* crossing opzionale */ });
             }
         } catch (error) {
             document.getElementById('status-line').textContent = error.message || 'Impossibile caricare i dati.';

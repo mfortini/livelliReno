@@ -1,0 +1,308 @@
+{
+  "kind": "wp1_diagnosis",
+  "version": 1,
+  "disclaimer": "Sperimentale: non operativo, non allertistico.",
+  "generatedAt": "2026-11-15T12:15:00.588Z",
+  "assumptions": {
+    "timeStepMin": 30,
+    "rawArchiveApproxMin": 15,
+    "rainAvailable": true,
+    "rainUsedInWp1Models": false,
+    "downstreamGauge": "Dosso",
+    "downstreamUsedInWp1Models": false,
+    "travelTimeAssumptionGt120": false,
+    "minMeasuredLagMin": 0,
+    "geometryInRepo": [
+      "river_reno.geojson",
+      "torrente_samoggia.geojson"
+    ],
+    "dtmInRepo": false
+  },
+  "h3": {
+    "levelCuts": {
+      "p33": -1.57,
+      "p66": -0.5
+    },
+    "byUpstream": {
+      "Forcelli": {
+        "low": {
+          "lagSteps": 9,
+          "lagMin": 270,
+          "r": 0.4027453313874717,
+          "n": 22121
+        },
+        "mid": {
+          "lagSteps": 10,
+          "lagMin": 300,
+          "r": 0.49820890298096765,
+          "n": 22508
+        },
+        "high": {
+          "lagSteps": 17,
+          "lagMin": 510,
+          "r": 0.6690920451121272,
+          "n": 23059
+        }
+      },
+      "Sostegno Reno": {
+        "low": {
+          "lagSteps": 0,
+          "lagMin": 0,
+          "r": 0.140997615955804,
+          "n": 19081
+        },
+        "mid": {
+          "lagSteps": 11,
+          "lagMin": 330,
+          "r": 0.32782316708948234,
+          "n": 18798
+        },
+        "high": {
+          "lagSteps": 5,
+          "lagMin": 150,
+          "r": 0.9679555037708616,
+          "n": 17965
+        }
+      },
+      "Bonconvento": {
+        "low": {
+          "lagSteps": 7,
+          "lagMin": 210,
+          "r": 0.5535604945011876,
+          "n": 22114
+        },
+        "mid": {
+          "lagSteps": 11,
+          "lagMin": 330,
+          "r": 0.826843769059743,
+          "n": 22575
+        },
+        "high": {
+          "lagSteps": 13,
+          "lagMin": 390,
+          "r": 0.9767941262847505,
+          "n": 23106
+        }
+      },
+      "Casalecchio tiro a volo": {
+        "low": {
+          "lagSteps": 17,
+          "lagMin": 510,
+          "r": 0.7903860807580535,
+          "n": 22116
+        },
+        "mid": {
+          "lagSteps": 16,
+          "lagMin": 480,
+          "r": 0.8246801848297303,
+          "n": 22583
+        },
+        "high": {
+          "lagSteps": 25,
+          "lagMin": 750,
+          "r": 0.9107989613059242,
+          "n": 23105
+        }
+      },
+      "Casalecchio chiusa": {
+        "low": {
+          "lagSteps": 2,
+          "lagMin": 60,
+          "r": 0.4335025172509808,
+          "n": 22091
+        },
+        "mid": {
+          "lagSteps": 11,
+          "lagMin": 330,
+          "r": 0.4904290847813046,
+          "n": 22556
+        },
+        "high": {
+          "lagSteps": 25,
+          "lagMin": 750,
+          "r": 0.9120288312733656,
+          "n": 23067
+        }
+      }
+    },
+    "minLagMin": 0,
+    "note": "lagMin = minutes Cento lags upstream (cross-corr peak). Decrease with level ⇒ H3."
+  },
+  "hysteresis": [
+    {
+      "peakTime": "2024-10-20T13:00:00.000Z",
+      "peakLevel": 8.69,
+      "riseM": 2.48,
+      "loopScoreSostegno": -0.8645907444005339,
+      "nPoints": 248
+    },
+    {
+      "peakTime": "2023-05-17T16:30:00.000Z",
+      "peakLevel": 8.63,
+      "riseM": 8.26,
+      "loopScoreSostegno": -0.37417418384878687,
+      "nPoints": 193
+    },
+    {
+      "peakTime": "2024-02-28T05:30:00.000Z",
+      "peakLevel": 7.92,
+      "riseM": 7.42,
+      "loopScoreSostegno": -0.882348484848503,
+      "nPoints": 269
+    }
+  ],
+  "enkf": {
+    "available": true,
+    "openLoop120": {
+      "n": 55688,
+      "rmse": 0.12657306307668312,
+      "skillPersist": 0.03427164547821415,
+      "eventN": 10148,
+      "eventRmse": 0.24315293949100075
+    },
+    "innovations": {
+      "calmVar": 0.006100514596946227,
+      "floodVar": 0.06855195964581999,
+      "calmN": 45539,
+      "floodN": 10153,
+      "ratioFloodOverCalm": 11.237078209785036
+    },
+    "ensembleSpread": {
+      "calmMean": 0.00975416813525443,
+      "floodMean": 0.009753755090025172
+    },
+    "enkfSkill120Holdout": -0.3793
+  },
+  "rcStep": {
+    "kind": "fixed_theta_rc_step",
+    "riseTime50Min": 90,
+    "asymptoteZ": 1.7499609736959028,
+    "note": "RC step is exponential (diffusion). A pure delay would jump after lag with little early rise."
+  },
+  "h8": {
+    "testEvents": 9,
+    "prod": {
+      "n": 472,
+      "rmse": 0.07920266662416588,
+      "skill": 0.723637478885611,
+      "phaseLagMin": 22.61823835727631,
+      "phaseLagMinDiscrete": 30
+    },
+    "q50": {
+      "n": 472,
+      "rmse": 0.07628853482505246,
+      "skill": 0.733805783125722,
+      "phaseLagMin": 21.119619143783588,
+      "phaseLagMinDiscrete": 30
+    },
+    "note": "q50 = pinball median (≈ MAE). Smaller |phaseLag| vs MSE would support H8."
+  },
+  "h10": {
+    "available": true,
+    "issues": 473,
+    "decodeOps": 193,
+    "liftOps": 166,
+    "warpOps": 27,
+    "noCrossDecode": 150,
+    "decodeOnNoCrossRate": 0.7772020725388601,
+    "rmseAll": 0.25824382363698345,
+    "rmseWhenObservedCross": 0.35962669373785794,
+    "rmseWhenNoObservedCross": 0.24344998538669183,
+    "nWhenCross": 50,
+    "nWhenNoCross": 422
+  },
+  "h11": {
+    "available": true,
+    "nearestDownstream": "Dosso",
+    "nResiduals": 3217,
+    "corrResidVsDosso": 0.07282669820708386,
+    "corrResidVsDiff": 0.0465444231469944,
+    "corrResidVsDossoRising": 0.09057088132872006,
+    "corrResidVsDiffRising": 0.06334074091309384,
+    "dossoP66": 3,
+    "rmseHighDosso": 0.07134360064376698,
+    "rmseLowDosso": 0.1554482598086528,
+    "nHighDosso": 2688,
+    "nLowDosso": 529,
+    "secondWave": {
+      "n": 1317,
+      "rmse": 0.08950519174630982,
+      "nEvents": 30
+    },
+    "allEvents": {
+      "n": 3218,
+      "rmse": 0.09086416246238697,
+      "nEvents": 65
+    },
+    "priorValleGate": {
+      "promoteMlpValleToTransferCoeffs": false,
+      "promoteRc": false,
+      "keepOperational": "window_delta_mlp without valle (existing transfer-coeffs / cento-dnn)",
+      "reason": "MLP+valle does not beat MLP without valle on validate/holdout event skill@120; RC holdout skill negative. Opera Reno Panfilia loses ~2906 points to spike filter, thinning acceptor coverage."
+    }
+  },
+  "verdicts": [
+    {
+      "id": "H1",
+      "status": "confirmed",
+      "reason": "Open-loop EnKF@120 skill=0.034 (event RMSE=0.243); filter summary skill=-0.3793. Poor open-loop ⇒ process structure, not only the filter."
+    },
+    {
+      "id": "H2",
+      "status": "confirmed",
+      "reason": "RC/Muskingum/EnKF hybrids operate on levels or level anomalies; docs state no mass balance. No Q-space model in repo."
+    },
+    {
+      "id": "H3",
+      "status": "not clear",
+      "reason": "minLag=0′. Lags by band: Forcelli: 270/300/510; Sostegno Reno: 0/330/150; Bonconvento: 210/330/390; Casalecchio tiro a volo: 510/480/750; Casalecchio chiusa: 60/330/750. Travel-time assumption >120′: CHECK — min lag ≤120′ or null."
+    },
+    {
+      "id": "H4",
+      "status": "confirmed",
+      "reason": "Fixed-θ RC step 50%-rise ≈ 90′ (smooth exponential). Equation is G·Δz/C (diffusion), not a transport delay."
+    },
+    {
+      "id": "H5",
+      "status": "not clear",
+      "reason": "Rain series exist under storico/rain/ and enter EnKF α·rain / MLP rain features, but no explicit Q_lat state. Cannot reject; needs WP3 Q_lat test."
+    },
+    {
+      "id": "H6",
+      "status": "confirmed",
+      "reason": "Innovation var flood/calm=11.24; spread flood=0.010 calm=0.010. Constant Q,R."
+    },
+    {
+      "id": "H7",
+      "status": "confirmed",
+      "reason": "EnKF fit blends 1+4-step MSE; MLP trains direct horizons 30–360′. Comparison is not equal (by construction)."
+    },
+    {
+      "id": "H8",
+      "status": "not clear",
+      "reason": "prod lag=22.6′ rmse=0.079; q50 lag=21.1′ rmse=0.076."
+    },
+    {
+      "id": "H9",
+      "status": "confirmed",
+      "reason": "Rising RMSE@120=0.119 vs falling=0.021; CSI/crossing metrics now in protocol (WP0)."
+    },
+    {
+      "id": "H10",
+      "status": "confirmed",
+      "reason": "decodeOps=193 (lift=166, warp=27); on no-cross samples=150 (78% of decodes). RMSE no-cross=0.243 vs cross=0.360."
+    },
+    {
+      "id": "H11",
+      "status": "not clear",
+      "reason": "corr(resid,Dosso) rising=0.091; corr(resid,Cento−Dosso) rising=0.063; RMSE high/low Dosso=0.071/0.155; second-wave RMSE=0.090 (nEv=30) vs all=0.091. Prior valle gate did not promote acceptors."
+    }
+  ],
+  "decisionHints": {
+    "H8": "If confirmed → prioritize WP2 items 6–7 (shape/time loss, generative decode).",
+    "H10": "If confirmed → WP2 items 2–3 (hazard + gate) before next crossing A/B.",
+    "H1_H2_H3": "If confirmed → continue WP3 nonlinear Q routing.",
+    "H11": "If confirmed → WP2 item 9 downstream inputs + WP3 stage-fall-discharge.",
+    "reject_H1_to_H4": "If rejected → inspect filter implementation bugs first."
+  }
+}

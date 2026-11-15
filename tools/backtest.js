@@ -240,7 +240,10 @@ function predictCandidate(name, down, ups, now, horizonHours, sensorMap, rainSen
         rainSensors,
         sensorMap,
         smooth: payload.smooth,
-        maxStep: payload.maxStep
+        maxStep: payload.maxStep,
+        onlineCorrection: payload.onlineCorrection === true,
+        onlineWindowHours: payload.onlineWindowHours,
+        useCrossingTime: payload.useCrossingTime === true
     });
     const phaseMs = Number(payload.phaseShiftMin) * 60000;
     if (result?.ok && Number.isFinite(phaseMs) && phaseMs !== 0) {
@@ -303,6 +306,25 @@ if (compareNode) {
             note: 'pinball q75: timing-oriented upper quantile, biased high in calm'
         } : null,
         mlp_ew4: mlpEw4 ? { coeffs: { nodes: { [compareNode]: force(mlpEw4) } }, smooth: 0 } : null,
+        mlp_online: prodNode ? {
+            coeffs: { nodes: { [compareNode]: force(prodNode) } },
+            smooth: 0,
+            onlineCorrection: true,
+            note: 'M8 online phase+bias on prod MLP; opt-in A/B only'
+        } : null,
+        mlp_prob_cross: (() => {
+            if (!prodNode) return null;
+            const crossingPath = path.resolve(root, opt('crossing', 'models/cento-crossing-time.json'));
+            const crossing = fs.existsSync(crossingPath) ? JSON.parse(fs.readFileSync(crossingPath, 'utf8')) : null;
+            if (!crossing?.thresholds) return null;
+            const node = force({ ...prodNode, crossingTime: { ...crossing, adopt: true } });
+            return {
+                coeffs: { nodes: { [compareNode]: node } },
+                smooth: 0,
+                useCrossingTime: true,
+                note: 'M9 crossing-time warp + moda; flood-only τ'
+            };
+        })(),
         seq_gru: seqGru ? {
             coeffs: { nodes: { [compareNode]: force(seqGru) } },
             note: 'forced reliable for experimental compare only; does not promote runtime'

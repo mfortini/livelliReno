@@ -639,6 +639,51 @@ test('maxStep floor preserves observed local slope on rising limb', () => {
     assert.ok(pts[1].value - y0 >= 0.39, `got Δ=${pts[1].value - y0}`);
 });
 
+test('applyMlpOnlineCorrection subtracts bias and advances phase', () => {
+    const t0 = Date.parse('2026-11-11T12:00:00Z');
+    const forecast = [
+        { time: new Date(t0), value: 1.0, regime: 'anchor' },
+        { time: new Date(t0 + 30 * 60000), value: 1.5, regime: 'high', med: 1.5, min: 1.4, max: 1.6 }
+    ];
+    const out = P.applyMlpOnlineCorrection(forecast, { bias: 0.2, phaseShiftMin: 30 });
+    assert.equal(out[0].value, 1.0);
+    assert.equal(out[0].regime, 'anchor');
+    assert.ok(Math.abs(out[1].value - 1.3) < 1e-9);
+    assert.ok(Math.abs(out[1].med - 1.3) < 1e-9);
+    assert.equal(+out[1].time, t0); // advanced by 30′
+});
+
+test('warpForecastByCrossing advances rise to match mode tau', () => {
+    const nowMs = Date.parse('2026-11-11T12:00:00Z');
+    const y0 = 0;
+    const forecast = [
+        { time: new Date(nowMs), value: 0, med: 0, regime: 'anchor' },
+        { time: new Date(nowMs + 120 * 60000), value: 1.0, med: 1.0, min: 0.8, max: 1.2, regime: 'high' },
+        { time: new Date(nowMs + 240 * 60000), value: 1.5, med: 1.5, min: 1.2, max: 1.8, regime: 'high' }
+    ];
+    // Path hits +1 m at 120′; mode says 60′ → scale 0.5
+    const warped = P.warpForecastByCrossing(forecast, { modeMin: 60, offsetM: 1, censorMin: 360 }, y0, nowMs);
+    assert.equal(warped.warped, true);
+    assert.equal(warped.method, 'time_warp');
+    assert.ok(Math.abs(warped.scale - 0.5) < 1e-9);
+    assert.equal(+warped.forecast[1].time, nowMs + 60 * 60000);
+    assert.equal(+warped.forecast[2].time, nowMs + 120 * 60000);
+});
+
+test('warpForecastByCrossing lifts path that never reaches offset', () => {
+    const nowMs = Date.parse('2026-11-11T12:00:00Z');
+    const y0 = 0;
+    const forecast = [
+        { time: new Date(nowMs), value: 0, med: 0, regime: 'anchor' },
+        { time: new Date(nowMs + 60 * 60000), value: 0.2, med: 0.2, min: 0.1, max: 0.3, regime: 'high' },
+        { time: new Date(nowMs + 120 * 60000), value: 0.3, med: 0.3, min: 0.2, max: 0.4, regime: 'high' }
+    ];
+    const warped = P.warpForecastByCrossing(forecast, { modeMin: 60, offsetM: 1, censorMin: 360 }, y0, nowMs);
+    assert.equal(warped.warped, true);
+    assert.equal(warped.method, 'level_lift');
+    assert.ok(warped.forecast[1].med >= 0.99, `expected ~1 at modeTau, got ${warped.forecast[1].med}`);
+});
+
 test('muskingum_gru rejects unreliable model and rolls dense when reliable', () => {
     const start = new Date('2026-11-10T00:00:00Z');
     const now = new Date('2026-11-11T12:00:00Z');
@@ -1134,7 +1179,10 @@ test('config dependencies form a connected DAG used by rankNodes', () => {
     const ranks = P.rankNodes(cfg);
     assert.equal(ranks.Cento > ranks.Dosso, true);
     assert.equal(ranks['Sostegno Reno'] > ranks.Cento, true);
+    assert.equal(ranks['Bagnetto Reno'] > ranks.Cento, true);
     assert.equal(ranks['Vergato DX'] > ranks['Casalecchio chiusa'], true);
+    assert.equal(ranks.Pracchia > ranks['Vergato DX'], true);
+    assert.equal(ranks['Secondo Salto'] > ranks['Opera Po'], true);
 });
 
 test('maxReliableHorizonMinutes cuts below SKILL_KEEP and respects cap', () => {

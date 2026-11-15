@@ -103,6 +103,13 @@ test('formatEvalMarkdown includes station and model rows', () => {
                         skillEventPersistCI: { lo: 0.3, hi: 0.6 },
                         skillEventPoly2: 0.1,
                         skillEventRidge: 0.05,
+                        skillEventArx: 0.2,
+                        risingRmse: 0.1,
+                        fallingRmse: 0.02,
+                        phaseLagMin: 28.5,
+                        csi: { yellow: 0.7, orange: 0.5, red: 0.2 },
+                        crossingTimeErrMed: 15,
+                        pinballEvent: 0.04,
                         peakLevelErrMed: -0.2,
                         peakTimeErrMed: 30,
                         nEvents: 3
@@ -115,4 +122,63 @@ test('formatEvalMarkdown includes station and model rows', () => {
     assert.match(md, /## Cento/);
     assert.match(md, /prod/);
     assert.match(md, /0\.50/);
+    assert.match(md, /CSI/);
+});
+
+test('fitArx recovers a linear relation', () => {
+    const x = [];
+    const y = [];
+    for (let i = 0; i < 40; i++) {
+        const a = i * 0.1;
+        const b = Math.sin(i);
+        x.push([a, b]);
+        y.push(2 + 3 * a - 1.5 * b);
+    }
+    const model = EP.fitArx({ x, y }, { ridge: 1e-9 });
+    assert.ok(model);
+    assert.ok(Math.abs(model.intercept - 2) < 0.05);
+    assert.ok(Math.abs(model.coef[0] - 3) < 0.05);
+    assert.ok(Math.abs(model.coef[1] + 1.5) < 0.05);
+    const pred = EP.predictArx(model, [1, 0]);
+    assert.ok(Math.abs(pred - 5) < 0.05);
+});
+
+test('csiFromCounts and pinballScore basics', () => {
+    assert.equal(EP.csiFromCounts(2, 1, 1), 0.5);
+    assert.equal(EP.csiFromCounts(0, 0, 0), null);
+    assert.ok(EP.pinballScore(1, 0, 0.9) > EP.pinballScore(1, 0, 0.1));
+    const mp = EP.meanPinball(1.0, [
+        { tau: 0.1, q: 0.5 },
+        { tau: 0.5, q: 0.9 },
+        { tau: 0.9, q: 1.2 }
+    ]);
+    assert.ok(Number.isFinite(mp));
+});
+
+test('firstCrossingTime and crossingTimeErrorMin', () => {
+    const t0 = Date.parse('2026-04-01T00:00:00Z');
+    const obs = new Map();
+    const fc = new Map();
+    for (let k = 0; k <= 8; k++) {
+        obs.set(t0 + k * EP.STEP_MS, 1 + k * 0.2);
+        fc.set(t0 + k * EP.STEP_MS, 1 + k * 0.25);
+    }
+    const obsCross = EP.firstCrossingTime(obs, t0, 1.5, 8);
+    const fcCross = EP.firstCrossingTime(fc, t0, 1.5, 8);
+    assert.ok(fcCross < obsCross);
+    const err = EP.crossingTimeErrorMin(obs, fc, t0, 1.5, 8);
+    assert.ok(err < 0);
+});
+
+test('phaseLagSubStep interpolates around discrete minimum', () => {
+    const seByShift = {
+        '-1': { n: 50, se: 50 * 0.04 },
+        '0': { n: 50, se: 50 * 0.01 },
+        '1': { n: 50, se: 50 * 0.02 }
+    };
+    const lag = EP.phaseLagSubStep(seByShift, { minN: 20 });
+    assert.ok(Number.isFinite(lag.phaseLagMin));
+    assert.equal(lag.phaseLagMinDiscrete, 0);
+    // Vertex should be slightly positive shift ⇒ negative lag minutes
+    assert.ok(lag.phaseLagMin < 0);
 });

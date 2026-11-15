@@ -238,6 +238,148 @@
         return out;
     }
 
+    // Soft-attach flood-only crossing-time export (M9). Warp is opt-in via adopt / useCrossingTime.
+    function mergeCrossingTime(node, crossing) {
+        if (!node || node.kind !== 'window_delta_mlp' || !crossing?.thresholds) return node;
+        if (crossing.kind && crossing.kind !== 'cento_crossing_time') return node;
+        return { ...node, crossingTime: crossing };
+    }
+
+    function predictCrossingTau(crossing, sensorMap, rainSensors, nowMs, stepMs = DEFAULT_STEP_MS) {
+        if (!crossing?.thresholds || !crossing.featureNames) return null;
+        const primaryNum = Number(crossing.primaryOffsetM ?? 1);
+        const block = crossing.thresholds[String(primaryNum)]
+            || crossing.thresholds[primaryNum.toFixed(1)]
+            || crossing.thresholds['1']
+            || crossing.thresholds['1.0'];
+        if (!block?.models) return null;
+        const raw = buildWindowFeatureVector(
+            sensorMap,
+            crossing.stations || [],
+            crossing.lookbackSteps || 48,
+            nowMs,
+            stepMs,
+            rainSensors,
+            crossing.useRain !== false,
+            crossing.featureRecipe || {},
+            0
+        );
+        const x = standardizeWindowFeatures(raw, crossing.featureNames, crossing.mean, crossing.std);
+        if (!x) return null;
+        const censor = finite(block.censorMin) ? block.censorMin : 360;
+        const clipTau = tau => Math.max(30, Math.min(censor, tau));
+        const runQ = key => {
+            const layers = block.models[key]?.layers;
+            if (!layers) return null;
+            const tau = mlpForward(x, layers);
+            return finite(tau) ? clipTau(tau) : null;
+        };
+        const q10 = runQ('0.1');
+        const q50 = runQ('0.5');
+        const q90 = runQ('0.9');
+        // Mode ≈ q50 for unimodal pinball trio.
+        if (!finite(q50)) return null;
+        return {
+            offsetM: Number(block.offsetM) || Number(primary) || 1,
+            censorMin: censor,
+            q10,
+            q50,
+            q90,
+            modeMin: q50
+        };
+    }
+
+    function pathRiseTauMin(forecast, y0, offsetM, nowMs) {
+        if (!finite(y0) || !finite(offsetM) || !forecast?.length) return null;
+        const thr = y0 + offsetM;
+        for (const p of forecast) {
+            if (p.regime === 'anchor') continue;
+            const v = p.med ?? p.value;
+            if (!finite(v) || !p.time) continue;
+            if (v >= thr) return Math.max(30, (+p.time - nowMs) / MINUTE);
+        }
+        return null;
+    }
+
+    // Align level fan to crossing-time mode (most probable): warp if path already rises,
+    // otherwise lift the rising limb so y0+offset is hit at modeTau (MLP often never reaches it).
+    function warpForecastByCrossing(forecast, crossingPred, y0, nowMs) {
+        if (!forecast?.length || !crossingPred || !finite(crossingPred.modeMin)) {
+            return { forecast, warped: false, scale: 1, pathTau: null };
+        }
+        const censor = finite(crossingPred.censorMin) ? crossingPred.censorMin : 360;
+        const offsetM = finite(crossingPred.offsetM) ? crossingPred.offsetM : 1;
+        if (crossingPred.modeMin >= censor - 1) {
+            return { forecast, warped: false, scale: 1, pathTau: null, stable: true };
+        }
+        const thr = y0 + offsetM;
+        const modeMs = crossingPred.modeMin * MINUTE;
+        const pathTau = pathRiseTauMin(forecast, y0, offsetM, nowMs);
+
+        if (finite(pathTau) && pathTau >= 15) {
+            const scale = crossingPred.modeMin / pathTau;
+            if (scale > 0.25 && scale < 4 && Math.abs(scale - 1) > 0.05) {
+                const warped = forecast.map(p => {
+                    if (p.regime === 'anchor') return p;
+                    const dt = +p.time - nowMs;
+                    return { ...p, time: new Date(nowMs + dt * scale), probable: true };
+                });
+                return {
+                    forecast: warped,
+                    warped: true,
+                    method: 'time_warp',
+                    scale,
+                    pathTau,
+                    modeTau: crossingPred.modeMin,
+                    q10: crossingPred.q10,
+                    q90: crossingPred.q90
+                };
+            }
+        }
+
+        // Constructive lift: force med/min/max to reach thr at modeTau, then keep MLP shape after.
+        const lifted = forecast.map(p => {
+            if (p.regime === 'anchor') return { ...p, probable: true };
+            const dt = +p.time - nowMs;
+            const med0 = finite(p.med) ? p.med : p.value;
+            let med = med0;
+            if (dt <= modeMs) {
+                const frac = modeMs > 0 ? Math.max(0, Math.min(1, dt / modeMs)) : 1;
+                const ramp = y0 + (thr - y0) * frac;
+                med = Math.max(med0, ramp);
+            } else {
+                // After crossing: keep MLP increment relative to path-at-mode if available.
+                const pathAtMode = pathTau
+                    ? null
+                    : null;
+                void pathAtMode;
+                med = Math.max(med0, thr + Math.max(0, med0 - thr) * 0.25);
+                if (med0 < thr) med = Math.max(med0, thr);
+            }
+            const lift = med - med0;
+            const min = finite(p.min) ? p.min + lift : med;
+            const max = finite(p.max) ? Math.max(p.max + lift, med) : med;
+            return {
+                ...p,
+                value: med,
+                med,
+                min: Math.min(min, med),
+                max: Math.max(max, med),
+                probable: true
+            };
+        });
+        return {
+            forecast: lifted,
+            warped: true,
+            method: 'level_lift',
+            scale: 1,
+            pathTau,
+            modeTau: crossingPred.modeMin,
+            q10: crossingPred.q10,
+            q90: crossingPred.q90
+        };
+    }
+
     function applySkillGates(data, gates) {
         if (!data?.nodes || !gates?.stations) return data;
         const enter = finite(Number(gates.skillEnter)) ? Number(gates.skillEnter) : SKILL_ENTER;
@@ -1092,7 +1234,10 @@
             a: [],
             b: 0,
             c: [],
-            trainedAt: typeof node.trainedAt === 'string' ? node.trainedAt : null
+            trainedAt: typeof node.trainedAt === 'string' ? node.trainedAt : null,
+            crossingTime: node.crossingTime && typeof node.crossingTime === 'object' ? node.crossingTime : null,
+            quantiles: Array.isArray(node.quantiles) ? node.quantiles.slice() : null,
+            bandSource: typeof node.bandSource === 'string' ? node.bandSource : null
         };
     }
 
@@ -1508,6 +1653,96 @@
             if ((x - thr.mean) / thr.std > thr.z85) return true;
         }
         return false;
+    }
+
+    // Online phase + level bias for window_delta_mlp (A/B; default off in predictNode).
+    // Reuses forecastWindowMlp on a short causal window — never calls predictNode (no recursion).
+    const ONLINE_PHASE_MAX_MIN = 60; // gated ±2 steps @30′
+    const ONLINE_CORR_MIN_BIAS = 4;
+    const ONLINE_CORR_MIN_LAG = 10;
+    const ONLINE_CORR_MIN_R = 0.5;
+
+    function estimateMlpOnlineCorrection(model, sensorMap, rainSensors, downstream, now = new Date(), stepMs = DEFAULT_STEP_MS, options = {}) {
+        if (!model?.horizons || !downstream?.timeSeries?.length) {
+            return { bias: 0, phaseShiftMin: 0, lag: null, nBias: 0, nLag: 0 };
+        }
+        const nowMs = +now;
+        const windowHours = finite(options.onlineWindowHours) ? options.onlineWindowHours : 12;
+        const horizonHours = 2;
+        const stride = Math.max(stepMs, HOUR);
+        const start = nowMs - windowHours * HOUR;
+        const lagPoints = [];
+        let ema = 0;
+        let count = 0;
+        for (let origin = start; origin <= nowMs - horizonHours * HOUR + 1; origin += stride) {
+            const downT = truncateSensor(downstream, origin);
+            const anchor = latestFinite(downT?.timeSeries);
+            if (!anchor || origin - +anchor.time > stepMs) continue;
+            const mapT = {};
+            for (const [key, sensor] of Object.entries(sensorMap || {})) {
+                mapT[key] = truncateSensor(sensor, origin);
+            }
+            if (downT?.id) mapT[downT.id] = downT;
+            const rainT = (rainSensors || []).map(sensor => truncateSensor(sensor, origin));
+            const forecast = forecastWindowMlp(model, mapT, rainT, horizonHours, new Date(origin), stepMs, {
+                anchor,
+                downstream: downT,
+                maxStep: options.maxStep,
+                smooth: 0
+            });
+            let firstKnot = null;
+            for (const point of forecast) {
+                if (point.regime === 'anchor') continue;
+                if (+point.time > nowMs) continue;
+                const observed = sampleAt(downstream.timeSeries, +point.time);
+                if (!finite(observed) || !finite(point.value)) continue;
+                lagPoints.push({ predicted: point.value, observed });
+                if (!firstKnot) firstKnot = point;
+            }
+            if (firstKnot) {
+                const observed = sampleAt(downstream.timeSeries, +firstKnot.time);
+                if (finite(observed)) {
+                    const resid = firstKnot.value - observed;
+                    ema = count === 0 ? resid : (1 - BIAS_EMA_ALPHA) * ema + BIAS_EMA_ALPHA * resid;
+                    count++;
+                }
+            }
+        }
+        const lag = estimatePredictedLag(
+            lagPoints.map(point => ({ predicted: point.predicted, observed: point.observed })),
+            stepMs
+        );
+        let phaseShiftMin = 0;
+        if (lag && lagPoints.length >= ONLINE_CORR_MIN_LAG && finite(lag.lagMin) && Math.abs(lag.r) >= ONLINE_CORR_MIN_R) {
+            const steps = Math.round(lag.lagMin / 30);
+            phaseShiftMin = Math.max(-ONLINE_PHASE_MAX_MIN, Math.min(ONLINE_PHASE_MAX_MIN, steps * 30));
+        }
+        return {
+            bias: count >= ONLINE_CORR_MIN_BIAS ? ema : 0,
+            phaseShiftMin,
+            lag,
+            nBias: count,
+            nLag: lagPoints.length
+        };
+    }
+
+    function applyMlpOnlineCorrection(forecast, correction) {
+        if (!Array.isArray(forecast) || !correction) return forecast;
+        const bias = finite(correction.bias) ? correction.bias : 0;
+        const phaseMs = finite(correction.phaseShiftMin) ? correction.phaseShiftMin * MINUTE : 0;
+        if (!bias && !phaseMs) return forecast;
+        return forecast.map(point => {
+            if (point.regime === 'anchor') return point;
+            const next = { ...point };
+            if (bias) {
+                next.value = point.value - bias;
+                if (finite(point.med)) next.med = point.med - bias;
+                if (finite(point.min)) next.min = point.min - bias;
+                if (finite(point.max)) next.max = point.max - bias;
+            }
+            if (phaseMs) next.time = new Date(+point.time - phaseMs);
+            return next;
+        });
     }
 
     function estimateRecentBias(upstreams, downstream, model, now = new Date(), stepMs = DEFAULT_STEP_MS, options = {}) {
@@ -2368,7 +2603,7 @@
             }
             const rainSensors = options.rainSensors || [];
             const forecastFn = offlineNode.kind === 'window_delta_mlp' ? forecastWindowMlp : forecastWindowSeq;
-            const rawForecast = forecastFn(offlineNode, sensorMap, rainSensors, horizonHours, now, stepMs, {
+            let rawForecast = forecastFn(offlineNode, sensorMap, rainSensors, horizonHours, now, stepMs, {
                 anchor,
                 maxStep: options.maxStep === null ? null : maxStep,
                 downstream,
@@ -2377,7 +2612,16 @@
             if (!rawForecast.length) {
                 return { ok: false, reason: 'Finestra feature incompleta per il modello a finestra.' };
             }
-            const forecast = rawForecast.map(point => {
+            // M8 online phase+bias: opt-in only (A/B); default off until promotion.
+            let onlineCorr = null;
+            if (options.onlineCorrection === true && offlineNode.kind === 'window_delta_mlp') {
+                onlineCorr = estimateMlpOnlineCorrection(
+                    offlineNode, sensorMap, rainSensors, downstream, now, stepMs,
+                    { maxStep: options.maxStep === null ? null : maxStep, onlineWindowHours: options.onlineWindowHours }
+                );
+                rawForecast = applyMlpOnlineCorrection(rawForecast, onlineCorr);
+            }
+            let forecast = rawForecast.map(point => {
                 const lo = finite(point.spreadLow) ? point.spreadLow : offlineNode.spreadLow;
                 const hi = finite(point.spreadHigh) ? point.spreadHigh : offlineNode.spreadHigh;
                 const fork = forkAround(point.value, lo, hi);
@@ -2385,6 +2629,23 @@
                     ? { time: point.time, value: fork.med, min: fork.min, med: fork.med, max: fork.max }
                     : { time: point.time, value: point.value, min: point.value, med: point.value, max: point.value };
             });
+            // M9 crossing-time warp: soft-loaded model; apply when adopt or useCrossingTime.
+            let crossingMeta = null;
+            const crossing = offlineNode.crossingTime;
+            const useCross = options.useCrossingTime === true
+                || (options.useCrossingTime !== false && crossing?.adopt === true);
+            if (useCross && crossing && offlineNode.kind === 'window_delta_mlp') {
+                const tauPred = predictCrossingTau(crossing, sensorMap, rainSensors, +now, stepMs);
+                const warped = warpForecastByCrossing(forecast, tauPred, anchor.value, +now);
+                forecast = warped.forecast;
+                crossingMeta = {
+                    ...tauPred,
+                    warped: warped.warped,
+                    scale: warped.scale,
+                    pathTau: warped.pathTau,
+                    stable: warped.stable === true
+                };
+            }
             return {
                 ok: true,
                 maxHorizonMinutes,
@@ -2403,7 +2664,10 @@
                 forkSpread: offlineNode.spreadLow,
                 spreadLow: offlineNode.spreadLow,
                 spreadHigh: offlineNode.spreadHigh,
-                bias: null,
+                bias: onlineCorr ? onlineCorr.bias : null,
+                phaseShiftMin: onlineCorr ? onlineCorr.phaseShiftMin : null,
+                crossing: crossingMeta,
+                probableLabel: crossingMeta?.warped ? 'più probabile' : null,
                 maxStep,
                 predicted: [],
                 observed: [],
@@ -2752,7 +3016,9 @@
                 downstreamId: downstream?.id || options.downstreamId,
                 sensorMap,
                 rainSensors: rainT,
-                biasCorrection: options.biasCorrection
+                biasCorrection: options.biasCorrection,
+                onlineCorrection: options.onlineCorrection,
+                onlineWindowHours: options.onlineWindowHours
             });
             if (!result?.ok) continue;
             const forecast = (result.forecast || []).filter(p => p.regime !== 'anchor');
@@ -2796,6 +3062,20 @@
             if (!bands?.horizons || !data.nodes?.Cento) return false;
             if (data.nodes.Cento.kind !== 'window_delta_mlp') return false;
             data.nodes.Cento = mergeQuantileBands(data.nodes.Cento, bands);
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    async function softMergeCentoCrossing(fetcher, data) {
+        try {
+            const res = await fetcher('models/cento-crossing-time.json', { cache: 'no-store' });
+            if (!res?.ok) return false;
+            const crossing = await res.json();
+            if (!crossing?.thresholds || !data.nodes?.Cento) return false;
+            if (data.nodes.Cento.kind !== 'window_delta_mlp') return false;
+            data.nodes.Cento = mergeCrossingTime(data.nodes.Cento, crossing);
             return true;
         } catch {
             return false;
@@ -2870,10 +3150,12 @@
         muskingumWarmup, decodeMuskingumTheta, decodeKX, decodeRcTheta, rcStep, softplus, mlpForward, seqDeltaForward,
         sampleAt, sampleNormLevel, buildMuskingumSeq, buildRcSeq, buildSeqChannelMatrix, standardizeSeqMatrix,
         buildWindowFeatureVector, localPolyDerivatives, standardizeWindowFeatures, nextHalfHourForks, forkAround, withFork, loadCoeffs,
-        softMergeCentoBands, softApplySkillGates,
-        seqGruUrl, pearson, residuals, estimateRecentBias, driverIsHigh, basinRainAt, hindcastSeries,
+        softMergeCentoBands, softMergeCentoCrossing, softApplySkillGates,
+        seqGruUrl, pearson, residuals, estimateRecentBias, estimateMlpOnlineCorrection, applyMlpOnlineCorrection,
+        driverIsHigh, basinRainAt, hindcastSeries,
         truncateSensor, seriesUntil, maxReliableHorizonMinutes, maxHorizonMinutesAvailable, estimatePredictedLag,
-        reliableFromSkill, skillLoOf, mergeQuantileBands, applySkillGates, missingUpstreams, widenForecastBand,
+        reliableFromSkill, skillLoOf, mergeQuantileBands, mergeCrossingTime, predictCrossingTau, warpForecastByCrossing,
+        applySkillGates, missingUpstreams, widenForecastBand,
         DEFAULT_STEP_MS, FORK_K, SKILL_KEEP, SKILL_ENTER, SKILL_EXIT
     };
     if (typeof module !== 'undefined' && module.exports) module.exports = api;

@@ -2,7 +2,7 @@
 """Offline Cento forecast: LightGBM vs small MLP (experimental).
 
 Features (lookback L=48 × 30′ = 24 h) per station in
-  Cento + monte (Forcelli, Sostegno, Bonconvento, Casalecchio tiro a volo)
+  Cento + monte (Forcelli, Sostegno, Bonconvento, Casalecchio tiro a volo, chiusa)
   + valle acceptors (Dosso, Opera Reno Panfilia, Secondo Salto, Gallo):
   level[t-k], delta[t-k]=level[t-k]-level[t-k-1] (NaN if either missing), miss[t-k].
 Plus rain6h / rain24h basin scalars. Acceptors are backwater boundary features,
@@ -55,8 +55,21 @@ def log_step(title: str) -> None:
 
 ROOT = Path(__file__).resolve().parents[1]
 DOWNSTREAM = "Cento"
-# Direct deps + Bonconvento (covers Sostegno gaps) + Casalecchio tiro a volo (earlier Reno).
-UPSTREAMS = ["Forcelli", "Sostegno Reno", "Bonconvento", "Casalecchio tiro a volo"]
+# Direct deps + Bonconvento (covers Sostegno gaps) + Casalecchio chain (tiro a volo + chiusa).
+UPSTREAMS = [
+    "Forcelli",
+    "Sostegno Reno",
+    "Bonconvento",
+    "Casalecchio tiro a volo",
+    "Casalecchio chiusa",
+]
+UPSTREAMS_NO_CHIUSA = [
+    "Forcelli",
+    "Sostegno Reno",
+    "Bonconvento",
+    "Casalecchio tiro a volo",
+]
+EVENT_PAD = pd.Timedelta(hours=6)  # catalog flood windows ±6 h for flood-only train
 # Downstream acceptors (backwater): not chase targets.
 ACCEPTORS = ["Dosso", "Opera Reno Panfilia", "Secondo Salto", "Gallo"]
 # Successive valle edges for chain-delta features (upstream_node - acceptor_node).
@@ -492,6 +505,44 @@ def event_mask(delta: np.ndarray, base: np.ndarray) -> np.ndarray:
     return base & (np.abs(delta) >= EVENT_ABS)
 
 
+def load_catalog_events(path: Path, station: str = DOWNSTREAM) -> list[dict]:
+    catalog = json.loads(path.read_text(encoding="utf-8"))
+    events = [
+        e for e in catalog.get("events", catalog if isinstance(catalog, list) else [])
+        if e.get("station") == station
+    ]
+    if not events and "stations" in catalog:
+        events = list((catalog["stations"].get(station) or {}).get("events") or [])
+        for e in events:
+            e.setdefault("station", station)
+    return events
+
+
+def flood_window_mask(
+    index: pd.DatetimeIndex | np.ndarray,
+    events: list[dict],
+    *,
+    pad: pd.Timedelta = EVENT_PAD,
+) -> np.ndarray:
+    """True for timestamps inside any catalog flood window (start−pad … end+pad)."""
+    idx = pd.DatetimeIndex(index)
+    if idx.tz is None:
+        idx = idx.tz_localize("UTC")
+    else:
+        idx = idx.tz_convert("UTC")
+    mask = np.zeros(len(idx), dtype=bool)
+    for ev in events:
+        start = pd.Timestamp(ev["start"])
+        end = pd.Timestamp(ev["end"])
+        if start.tzinfo is None:
+            start = start.tz_localize("UTC")
+        if end.tzinfo is None:
+            end = end.tz_localize("UTC")
+        lo, hi = start - pad, end + pad
+        mask |= (idx >= lo) & (idx <= hi)
+    return mask
+
+
 def eval_splits(
     y0: np.ndarray,
     y: np.ndarray,
@@ -863,6 +914,22 @@ def main() -> None:
     parser.add_argument("--no-acceptors", action="store_true",
                         help="Baseline without valle acceptors (ablation)")
     parser.add_argument(
+        "--no-chiusa",
+        action="store_true",
+        help="Ablation: drop Casalecchio chiusa from UPSTREAMS (tiro a volo remains)",
+    )
+    parser.add_argument(
+        "--flood-only",
+        action="store_true",
+        help="Restrict train/fit masks to catalog flood windows (±6 h); calm out of loss",
+    )
+    parser.add_argument(
+        "--events",
+        type=Path,
+        default=ROOT / "models" / "events.json",
+        help="Catalog for --flood-only windows",
+    )
+    parser.add_argument(
         "--feature-set",
         choices=("raw", "yellow-headroom", "chain", "yellow-chain"),
         default="raw",
@@ -964,7 +1031,8 @@ def main() -> None:
     log(f"split={args.split}  selection-split={args.selection_split}")
 
     acceptors = [] if args.no_acceptors else list(ACCEPTORS)
-    station_list = [DOWNSTREAM, *UPSTREAMS, *acceptors]
+    ups = list(UPSTREAMS_NO_CHIUSA if args.no_chiusa else UPSTREAMS)
+    station_list = [DOWNSTREAM, *ups, *acceptors]
     use_yellow = args.feature_set in ("yellow-headroom", "yellow-chain")
     use_chain = args.feature_set in ("chain", "yellow-chain")
     tag = (
@@ -975,6 +1043,10 @@ def main() -> None:
         "valle"
     )
     tag = f"{tag}-p{poly_points}"
+    if args.no_chiusa:
+        tag = f"{tag}-nochiusa"
+    if args.flood_only:
+        tag = f"{tag}-flood"
     if args.lag_align:
         tag = f"{tag}-lag{args.lag_align}"
     if args.quantile is not None:
@@ -1002,6 +1074,14 @@ def main() -> None:
     if missing:
         raise SystemExit(f"Stazioni assenti da config: {missing}")
     log(f"stations ({len(needed)}): {needed}", level="debug")
+    log(f"upstreams={ups}  flood-only={args.flood_only}")
+
+    flood_events: list[dict] = []
+    if args.flood_only:
+        if not args.events.exists():
+            raise SystemExit(f"--flood-only requires events catalog at {args.events}")
+        flood_events = load_catalog_events(args.events, DOWNSTREAM)
+        log(f"flood catalog events for {DOWNSTREAM}: {len(flood_events)}")
 
     soglia_levels = load_soglia_levels(args.soglie, prefer="yellow") if use_yellow else {}
     if use_yellow and not soglia_levels:
@@ -1042,7 +1122,7 @@ def main() -> None:
         log_step("Stima ritardi monte→Cento (solo mesi di train)")
         train_wide, _, _ = split_masks(wide.index)
         y_down = wide[DOWNSTREAM].to_numpy(dtype=float)
-        for up in UPSTREAMS:
+        for up in ups:
             x_up = wide[up].to_numpy(dtype=float)
             lag, r = ft.estimate_lag(
                 x_up, y_down, args.max_lag_steps, train_mask=train_wide
@@ -1106,6 +1186,15 @@ def main() -> None:
         targets = build_targets(wide, h)
         X, y, y0, index = align_xy(feats, feature_cols, targets)
         train_m, val_m, hold_m = split_masks(index, mode=args.split)
+        if args.flood_only and flood_events:
+            flood_m = flood_window_mask(index, flood_events)
+            # Calm out of train loss; keep val/hold full for FAR / calm checks in eval.
+            n_before = int(train_m.sum())
+            train_m = train_m & flood_m
+            log(
+                f"flood-only train: {int(train_m.sum())}/{n_before} "
+                f"(flood rows={int(flood_m.sum())}/{len(flood_m)})"
+            )
         if train_m.sum() < WEAK_POINTS or val_m.sum() < WEAK_POINTS:
             log(f"skip: train={train_m.sum()} val={val_m.sum()}", level="warn")
             continue
@@ -1240,7 +1329,7 @@ def main() -> None:
     dnn_node = {
         "kind": "window_delta_mlp",
         "downstream": DOWNSTREAM,
-        "upstreams": UPSTREAMS,
+        "upstreams": ups,
         "acceptors": acceptors,
         "stations": needed,
         "lookbackSteps": args.lookback,
@@ -1254,6 +1343,7 @@ def main() -> None:
         "reliable": reliable,
         "trainedAt": trained_at,
         "quantile": args.quantile,
+        "floodOnly": bool(args.flood_only),
         "thresholdOn": "event_or_move",
         "holdoutBaseline": "poly2",
         "note": (
@@ -1272,7 +1362,7 @@ def main() -> None:
         "version": 1,
         "kind": "cento_lgbm_vs_dnn",
         "downstream": DOWNSTREAM,
-        "upstreams": UPSTREAMS,
+        "upstreams": ups,
         "acceptors": acceptors,
         "stations": needed,
         "featureSet": args.feature_set,

@@ -279,6 +279,238 @@ function median(arr) {
     return a.length % 2 ? a[m] : 0.5 * (a[m - 1] + a[m]);
 }
 
+/** Pinball / quantile loss at level τ ∈ (0,1). */
+function pinballScore(y, q, tau) {
+    if (!Number.isFinite(y) || !Number.isFinite(q) || !Number.isFinite(tau)) return null;
+    const e = y - q;
+    return e >= 0 ? tau * e : (tau - 1) * e;
+}
+
+/**
+ * Mean pinball over quantiles (proxy for CRPS when only a few quantiles are available).
+ * pairs: [{ tau, q }, ...] e.g. q10/q50/q90.
+ */
+function meanPinball(y, pairs) {
+    let s = 0, n = 0;
+    for (const p of pairs || []) {
+        const v = pinballScore(y, p.q, p.tau);
+        if (!Number.isFinite(v)) continue;
+        s += v;
+        n++;
+    }
+    return n ? s / n : null;
+}
+
+/** CSI = hits / (hits + misses + falseAlarms). */
+function csiFromCounts(hits, misses, falseAlarms) {
+    const den = hits + misses + falseAlarms;
+    if (!den) return null;
+    return hits / den;
+}
+
+/**
+ * First time ≥ t0 when level crosses (or equals) threshold from below.
+ * Returns ms or null if no crossing within maxSteps.
+ */
+function firstCrossingTime(byTime, t0, threshold, maxSteps = 12, stepMs = STEP_MS) {
+    if (!Number.isFinite(threshold) || !byTime) return null;
+    const y0 = byTime.get(t0);
+    if (Number.isFinite(y0) && y0 >= threshold) return t0;
+    for (let k = 1; k <= maxSteps; k++) {
+        const t = t0 + k * stepMs;
+        const y = byTime.get(t);
+        if (Number.isFinite(y) && y >= threshold) return t;
+    }
+    return null;
+}
+
+/**
+ * Crossing-time error in minutes: predicted first cross − observed first cross.
+ * Null if either side does not cross within the horizon window.
+ */
+function crossingTimeErrorMin(obsByTime, forecastByTime, issueAt, threshold, horizonSteps, stepMs = STEP_MS) {
+    const obsT = firstCrossingTime(obsByTime, issueAt, threshold, horizonSteps, stepMs);
+    const fcT = firstCrossingTime(forecastByTime, issueAt, threshold, horizonSteps, stepMs);
+    if (obsT == null || fcT == null) return null;
+    return (fcT - obsT) / 60000;
+}
+
+/**
+ * Sub-step phase lag (minutes) from per-shift squared-error stats.
+ * Convention matches backtest: phaseLagMin = −shift*30 (positive ⇒ forecast late).
+ * Interpolates a parabola through the discrete MSE minimum when neighbours exist.
+ * seByShift: { [shiftSteps]: { n, se } } with integer shifts in steps of 30′.
+ */
+function phaseLagSubStep(seByShift, options = {}) {
+    const minN = options.minN ?? 20;
+    const stepMin = options.stepMin ?? 30;
+    let bestS = null;
+    let bestRmse = Infinity;
+    const rmseAt = {};
+    for (const [sKey, acc] of Object.entries(seByShift || {})) {
+        if (!acc || acc.n < minN) continue;
+        const s = Number(sKey);
+        const r = Math.sqrt(acc.se / acc.n);
+        rmseAt[s] = r;
+        if (r < bestRmse) {
+            bestRmse = r;
+            bestS = s;
+        }
+    }
+    if (bestS == null) return { phaseLagMin: null, phaseLagMinDiscrete: null, shiftSteps: null };
+
+    const left = rmseAt[bestS - 1];
+    const mid = rmseAt[bestS];
+    const right = rmseAt[bestS + 1];
+    let vertex = bestS;
+    if (Number.isFinite(left) && Number.isFinite(right) && Number.isFinite(mid)) {
+        const denom = left - 2 * mid + right;
+        if (Math.abs(denom) > 1e-12) {
+            const delta = 0.5 * (left - right) / denom;
+            if (Number.isFinite(delta) && Math.abs(delta) <= 1) vertex = bestS + delta;
+        }
+    }
+    const discrete = -bestS * stepMin;
+    const continuous = -vertex * stepMin;
+    return {
+        phaseLagMin: Object.is(continuous, -0) ? 0 : continuous,
+        phaseLagMinDiscrete: Object.is(discrete, -0) ? 0 : discrete,
+        shiftSteps: vertex
+    };
+}
+
+/**
+ * Bootstrap CI for a pooled scalar metric over events.
+ * Each event contributes a value via `statFn(event)`; pooled via `poolFn(sampledEvents)`.
+ * Default: poolFn = mean of finite statFn values.
+ */
+function bootstrapMetricCI(events, options = {}) {
+    const B = options.draws ?? 1000;
+    const seed = options.seed ?? 1;
+    const alpha = options.alpha ?? 0.10;
+    const statFn = options.statFn || ((e) => e.value);
+    const usable = (events || []).filter(e => Number.isFinite(statFn(e)));
+    if (!usable.length) return { value: null, lo: null, hi: null, nEvents: 0 };
+
+    const poolFn = options.poolFn || ((list) => {
+        let s = 0, n = 0;
+        for (const e of list) {
+            const v = statFn(e);
+            if (!Number.isFinite(v)) continue;
+            s += v;
+            n++;
+        }
+        return n ? s / n : null;
+    });
+
+    const point = poolFn(usable);
+    if (usable.length === 1) {
+        return { value: point, lo: point, hi: point, nEvents: 1 };
+    }
+    const rand = mulberry32(seed);
+    const draws = [];
+    for (let b = 0; b < B; b++) {
+        const sample = [];
+        for (let i = 0; i < usable.length; i++) {
+            sample.push(usable[Math.floor(rand() * usable.length)]);
+        }
+        const v = poolFn(sample);
+        if (Number.isFinite(v)) draws.push(v);
+    }
+    draws.sort((a, b) => a - b);
+    if (!draws.length) return { value: point, lo: null, hi: null, nEvents: usable.length };
+    const loIdx = Math.max(0, Math.floor((alpha / 2) * draws.length));
+    const hiIdx = Math.min(draws.length - 1, Math.ceil((1 - alpha / 2) * draws.length) - 1);
+    return {
+        value: point,
+        lo: draws[loIdx],
+        hi: draws[hiIdx],
+        nEvents: usable.length
+    };
+}
+
+/**
+ * Fit multi-output ARX: y(t+h) ~ [1, y(t), y(t-1), …, y(t-p), u1(t), …].
+ * rows: { y: number[], x: number[][] } with x[i] feature vectors (no intercept).
+ * Returns { intercept, coef, horizonSteps } or null.
+ */
+function fitArx(rows, options = {}) {
+    const ridge = options.ridge ?? 1e-6;
+    if (!rows?.x?.length || rows.x.length !== rows.y.length) return null;
+    const n = rows.x.length;
+    const p = rows.x[0].length;
+    if (!n || !p || n < p + 2) return null;
+
+    // Design with intercept
+    const dim = p + 1;
+    const XtX = Array.from({ length: dim }, () => new Array(dim).fill(0));
+    const Xty = new Array(dim).fill(0);
+    for (let i = 0; i < n; i++) {
+        const xi = rows.x[i];
+        const yi = rows.y[i];
+        if (!Number.isFinite(yi) || !xi.every(Number.isFinite)) continue;
+        const row = [1, ...xi];
+        for (let a = 0; a < dim; a++) {
+            Xty[a] += row[a] * yi;
+            for (let b = 0; b < dim; b++) XtX[a][b] += row[a] * row[b];
+        }
+    }
+    for (let a = 1; a < dim; a++) XtX[a][a] += ridge;
+
+    // Gauss-Jordan solve XtX β = Xty
+    const M = XtX.map((r, i) => r.concat([Xty[i]]));
+    for (let col = 0; col < dim; col++) {
+        let piv = col;
+        for (let r = col + 1; r < dim; r++) {
+            if (Math.abs(M[r][col]) > Math.abs(M[piv][col])) piv = r;
+        }
+        [M[col], M[piv]] = [M[piv], M[col]];
+        const div = M[col][col];
+        if (!Number.isFinite(div) || Math.abs(div) < 1e-14) return null;
+        for (let c = col; c <= dim; c++) M[col][c] /= div;
+        for (let r = 0; r < dim; r++) {
+            if (r === col) continue;
+            const f = M[r][col];
+            for (let c = col; c <= dim; c++) M[r][c] -= f * M[col][c];
+        }
+    }
+    const beta = M.map(r => r[dim]);
+    return { intercept: beta[0], coef: beta.slice(1) };
+}
+
+function predictArx(model, features) {
+    if (!model || !features || features.length !== model.coef.length) return null;
+    if (!features.every(Number.isFinite)) return null;
+    let y = model.intercept;
+    for (let i = 0; i < features.length; i++) y += model.coef[i] * features[i];
+    return y;
+}
+
+/**
+ * Build ARX feature vector at anchorTime:
+ * [y0, y-1, …, y-p] + one lag-0 level per upstream name.
+ */
+function arxFeatures(downByTime, upSeriesByName, anchorTime, arOrder, upstreamNames, stepMs = STEP_MS) {
+    const feats = [];
+    for (let k = 0; k <= arOrder; k++) {
+        const v = downByTime.get(anchorTime - k * stepMs);
+        if (!Number.isFinite(v)) return null;
+        feats.push(v);
+    }
+    for (const name of upstreamNames || []) {
+        const s = upSeriesByName[name];
+        const v = s?.byTime?.get(anchorTime);
+        if (!Number.isFinite(v)) return null;
+        feats.push(v);
+    }
+    return feats;
+}
+
+/** Year (UTC) of a ms timestamp. */
+function yearOf(ms) {
+    return new Date(ms).getUTCFullYear();
+}
+
 /**
  * Peak error for one event: compare forecast peak in [peak±searchHours] issued at
  * (peakTime - horizon) vs observed peak. Returns { levelErr, timeErrMin } or null.
@@ -312,9 +544,9 @@ function peakErrorsForIssue(obsByTime, forecastByTime, peakTime, horizonSteps, s
 
 function formatEvalMarkdown(table) {
     const lines = [];
-    lines.push('# Tabella unica di valutazione (Fase 0)');
+    lines.push('# Tabella unica di valutazione (Fase 0 / WP0)');
     lines.push('');
-    lines.push(`**Protocollo:** campionamento 30′, orizzonti 30–360′, eventi da catalogo, baseline persist / poly2(6) / ridge.`);
+    lines.push(`**Protocollo:** campionamento 30′, orizzonti 30–360′, eventi da catalogo, baseline persist / poly2(6) / ridge / ARX.`);
     lines.push(`**Test congelato:** ${table.from} → ${table.to}`);
     lines.push(`**Seed bootstrap:** ${table.seed}`);
     lines.push('');
@@ -324,21 +556,45 @@ function formatEvalMarkdown(table) {
     for (const [station, models] of Object.entries(table.stations || {})) {
         lines.push(`## ${station}`);
         lines.push('');
-        lines.push('| Modello | h (′) | skill all /pers | skill evt /pers | CI90 evt | skill evt /poly2 | skill evt /ridge | peak err med (m) | peak time med (′) | n evt |');
-        lines.push('|---|---:|---:|---:|---|---:|---:|---:|---:|---:|');
+        lines.push('| Modello | h (′) | skill all /pers | skill evt /pers | CI90 evt | skill evt /poly2 | skill evt /ridge | skill evt /ARX | rising RMSE | falling RMSE | phaseLag′ | CSI y/o/r | cross err med (′) | pinball | peak err med (m) | peak time med (′) | n evt |');
+        lines.push('|---|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|---|---:|---:|---:|---:|---:|');
         for (const [model, horizons] of Object.entries(models)) {
             for (const [hMin, m] of Object.entries(horizons)) {
                 const ci = m.skillEventPersistCI;
                 const ciStr = ci && Number.isFinite(ci.lo)
                     ? `[${fmt(ci.lo)}, ${fmt(ci.hi)}]`
                     : 'n/d';
+                const csi = m.csi || {};
+                const csiStr = `${fmt(csi.yellow)}/${fmt(csi.orange)}/${fmt(csi.red)}`;
                 lines.push(
-                    `| ${model} | ${hMin} | ${fmt(m.skillAllPersist)} | ${fmt(m.skillEventPersist)} | ${ciStr} | ${fmt(m.skillEventPoly2)} | ${fmt(m.skillEventRidge)} | ${fmt(m.peakLevelErrMed)} | ${fmt(m.peakTimeErrMed, 0)} | ${m.nEvents ?? 'n/d'} |`
+                    `| ${model} | ${hMin} | ${fmt(m.skillAllPersist)} | ${fmt(m.skillEventPersist)} | ${ciStr} | ${fmt(m.skillEventPoly2)} | ${fmt(m.skillEventRidge)} | ${fmt(m.skillEventArx)} | ${fmt(m.risingRmse)} | ${fmt(m.fallingRmse)} | ${fmt(m.phaseLagMin, 1)} | ${csiStr} | ${fmt(m.crossingTimeErrMed, 0)} | ${fmt(m.pinballEvent)} | ${fmt(m.peakLevelErrMed)} | ${fmt(m.peakTimeErrMed, 0)} | ${m.nEvents ?? 'n/d'} |`
                 );
             }
         }
         lines.push('');
     }
+
+    if (table.yearFolds?.Cento) {
+        lines.push('## Cento — year folds (event windows)');
+        lines.push('');
+        lines.push('| Fold holdout | Model | h (′) | skill evt /pers | CI90 | rising RMSE | phaseLag′ | CSI yellow | n evt |');
+        lines.push('|---|---|---:|---:|---|---:|---:|---:|---:|');
+        for (const fold of table.yearFolds.Cento) {
+            for (const [model, horizons] of Object.entries(fold.models || {})) {
+                for (const [hMin, m] of Object.entries(horizons)) {
+                    const ci = m.skillEventPersistCI;
+                    const ciStr = ci && Number.isFinite(ci.lo)
+                        ? `[${fmt(ci.lo)}, ${fmt(ci.hi)}]`
+                        : 'n/d';
+                    lines.push(
+                        `| ${fold.holdoutYear} | ${model} | ${hMin} | ${fmt(m.skillEventPersist)} | ${ciStr} | ${fmt(m.risingRmse)} | ${fmt(m.phaseLagMin, 1)} | ${fmt(m.csi?.yellow)} | ${m.nEvents ?? 'n/d'} |`
+                    );
+                }
+            }
+        }
+        lines.push('');
+    }
+
     lines.push('---');
     lines.push(`Generato: ${table.generatedAt || new Date().toISOString()}`);
     return lines.join('\n') + '\n';
@@ -360,7 +616,18 @@ module.exports = {
     skillFromRmse,
     rmseOf,
     bootstrapSkillCI,
+    bootstrapMetricCI,
     median,
     peakErrorsForIssue,
+    pinballScore,
+    meanPinball,
+    csiFromCounts,
+    firstCrossingTime,
+    crossingTimeErrorMin,
+    phaseLagSubStep,
+    fitArx,
+    predictArx,
+    arxFeatures,
+    yearOf,
     formatEvalMarkdown
 };
