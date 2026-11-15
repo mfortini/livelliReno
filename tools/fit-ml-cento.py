@@ -914,9 +914,32 @@ def main() -> None:
     parser.add_argument("--no-acceptors", action="store_true",
                         help="Baseline without valle acceptors (ablation)")
     parser.add_argument(
+        "--acceptors",
+        nargs="+",
+        default=None,
+        help="Override valle acceptors (default: Dosso…Gallo). Ignored with --no-acceptors.",
+    )
+    parser.add_argument(
+        "--extra-upstreams",
+        nargs="+",
+        default=None,
+        help="Append monte stations beyond the default UPSTREAMS set (e.g. Bagnetto Reno).",
+    )
+    parser.add_argument(
         "--no-chiusa",
         action="store_true",
         help="Ablation: drop Casalecchio chiusa from UPSTREAMS (tiro a volo remains)",
+    )
+    parser.add_argument(
+        "--chiusa-weir",
+        action="store_true",
+        help="WP2.4: replace Casalecchio chiusa level with weir discharge proxy max(h-crest,0)^1.5",
+    )
+    parser.add_argument(
+        "--weir-crest",
+        type=float,
+        default=None,
+        help="Crest for --chiusa-weir (default: 10th percentile of chiusa on train months)",
     )
     parser.add_argument(
         "--flood-only",
@@ -1030,21 +1053,36 @@ def main() -> None:
     ft.SPLIT_MODE = args.split
     log(f"split={args.split}  selection-split={args.selection_split}")
 
-    acceptors = [] if args.no_acceptors else list(ACCEPTORS)
+    if args.no_acceptors:
+        acceptors = []
+    elif args.acceptors is not None:
+        acceptors = list(args.acceptors)
+    else:
+        acceptors = list(ACCEPTORS)
     ups = list(UPSTREAMS_NO_CHIUSA if args.no_chiusa else UPSTREAMS)
+    if args.extra_upstreams:
+        for name in args.extra_upstreams:
+            if name not in ups and name != DOWNSTREAM:
+                ups.append(name)
     station_list = [DOWNSTREAM, *ups, *acceptors]
     use_yellow = args.feature_set in ("yellow-headroom", "yellow-chain")
     use_chain = args.feature_set in ("chain", "yellow-chain")
     tag = (
-        "novalle" if args.no_acceptors else
+        "novalle" if not acceptors else
         "valle-yellow-chain" if args.feature_set == "yellow-chain" else
         "valle-yellow" if args.feature_set == "yellow-headroom" else
         "valle-chain" if args.feature_set == "chain" else
         "valle"
     )
+    if acceptors and acceptors != ACCEPTORS:
+        tag = f"{tag}-" + "-".join(safe_name(a) for a in acceptors)
+    if args.extra_upstreams:
+        tag = f"{tag}-x" + "-".join(safe_name(u) for u in args.extra_upstreams)
     tag = f"{tag}-p{poly_points}"
     if args.no_chiusa:
         tag = f"{tag}-nochiusa"
+    if args.chiusa_weir and not args.no_chiusa:
+        tag = f"{tag}-weir"
     if args.flood_only:
         tag = f"{tag}-flood"
     if args.lag_align:
@@ -1104,6 +1142,20 @@ def main() -> None:
         level="ok",
     )
     wide = wide_all[needed].copy()
+    weir_crest_used = None
+    if args.chiusa_weir and not args.no_chiusa and "Casalecchio chiusa" in wide.columns:
+        # WP2.4 weir law proxy: Q ∝ max(h − h_crest, 0)^1.5 (c absorbed in MLP scale).
+        series = wide["Casalecchio chiusa"]
+        if args.weir_crest is not None:
+            weir_crest_used = float(args.weir_crest)
+        else:
+            train_m0, _, _ = split_masks(wide.index, mode=args.split)
+            base = series.to_numpy(dtype=float)[train_m0]
+            base = base[np.isfinite(base)]
+            weir_crest_used = float(np.percentile(base, 10)) if len(base) else 0.0
+        q = np.maximum(series.to_numpy(dtype=float) - weir_crest_used, 0.0) ** 1.5
+        wide["Casalecchio chiusa"] = q
+        log(f"chiusa weir crest={weir_crest_used:.4f} → Q∝(h-crest)^1.5", level="ok")
 
     rain = None
     gauges = gauge_names(config)
@@ -1115,7 +1167,10 @@ def main() -> None:
         else:
             log("Pioggia: assente, fit solo livelli", level="warn")
 
-    chain_pairs = list(CHAIN_PAIRS) if use_chain and acceptors else []
+    chain_pairs = (
+        [(a, b) for a, b in CHAIN_PAIRS if a in needed and b in needed]
+        if use_chain and acceptors else []
+    )
 
     upstream_tau: dict[str, int] = {}
     if args.lag_align:
@@ -1325,6 +1380,8 @@ def main() -> None:
         },
         "quantile": args.quantile,
         "eventWeight": args.event_weight,
+        "chiusaWeir": bool(args.chiusa_weir) and not bool(args.no_chiusa),
+        "weirCrest": weir_crest_used,
     }
     dnn_node = {
         "kind": "window_delta_mlp",

@@ -238,10 +238,13 @@
         return out;
     }
 
-    // Soft-attach flood-only crossing-time export (M9). Warp is opt-in via adopt / useCrossingTime.
+    // Soft-attach crossing-time / hazard export. Warp is opt-in via adopt / useCrossingTime.
     function mergeCrossingTime(node, crossing) {
         if (!node || node.kind !== 'window_delta_mlp' || !crossing?.thresholds) return node;
-        if (crossing.kind && crossing.kind !== 'cento_crossing_time') return node;
+        const okKind = !crossing.kind
+            || crossing.kind === 'cento_crossing_time'
+            || crossing.kind === 'cento_crossing_hazard';
+        if (!okKind) return node;
         return { ...node, crossingTime: crossing };
     }
 
@@ -252,7 +255,7 @@
             || crossing.thresholds[primaryNum.toFixed(1)]
             || crossing.thresholds['1']
             || crossing.thresholds['1.0'];
-        if (!block?.models) return null;
+        if (!block) return null;
         const raw = buildWindowFeatureVector(
             sensorMap,
             crossing.stations || [],
@@ -267,6 +270,51 @@
         const x = standardizeWindowFeatures(raw, crossing.featureNames, crossing.mean, crossing.std);
         if (!x) return null;
         const censor = finite(block.censorMin) ? block.censorMin : 360;
+        const offsetM = Number(block.offsetM) || primaryNum || 1;
+        const gateP = finite(Number(crossing.decodeGateP)) ? Number(crossing.decodeGateP) : 0.35;
+
+        // WP2 hazard: multi-logit discrete-time hazards → mode τ + P(crossing).
+        if (crossing.kind === 'cento_crossing_hazard' || block.kind === 'discrete_hazard') {
+            const layers = block.layers;
+            if (!layers) return null;
+            const logits = mlpForwardVec(x, layers);
+            if (!logits?.length) return null;
+            const hazards = logits.map(z => 1 / (1 + Math.exp(-z)));
+            const nBins = hazards.length;
+            const pmf = new Array(nBins);
+            let surv = 1;
+            let pCross = 0;
+            let bestP = -1;
+            let modeBin = nBins;
+            for (let j = 0; j < nBins; j++) {
+                const p = hazards[j] * surv;
+                pmf[j] = p;
+                pCross += p;
+                if (p > bestP) {
+                    bestP = p;
+                    modeBin = j + 1;
+                }
+                surv *= (1 - hazards[j]);
+            }
+            const pCens = Math.max(0, 1 - pCross);
+            let modeMin = modeBin * (block.stepMinutes || 30);
+            if (pCens >= bestP) modeMin = censor;
+            return {
+                offsetM,
+                censorMin: censor,
+                modeMin,
+                pCross,
+                pCens,
+                decodeGateP: gateP,
+                allowDecode: pCross >= gateP && modeMin < censor - 1,
+                q10: null,
+                q50: modeMin,
+                q90: null,
+                kind: 'hazard'
+            };
+        }
+
+        if (!block?.models) return null;
         const clipTau = tau => Math.max(30, Math.min(censor, tau));
         const runQ = key => {
             const layers = block.models[key]?.layers;
@@ -277,15 +325,17 @@
         const q10 = runQ('0.1');
         const q50 = runQ('0.5');
         const q90 = runQ('0.9');
-        // Mode ≈ q50 for unimodal pinball trio.
         if (!finite(q50)) return null;
         return {
-            offsetM: Number(block.offsetM) || Number(primary) || 1,
+            offsetM,
             censorMin: censor,
             q10,
             q50,
             q90,
-            modeMin: q50
+            modeMin: q50,
+            pCross: q50 < censor - 1 ? 1 : 0,
+            allowDecode: q50 < censor - 1,
+            kind: 'pinball'
         };
     }
 
@@ -698,7 +748,7 @@
         return { rain6h: r6, rain24h: r24 };
     }
 
-    function mlpForward(x, layers) {
+    function mlpForwardVec(x, layers) {
         let cur = x.slice();
         for (const layer of layers || []) {
             const W = layer.W, b = layer.b;
@@ -713,7 +763,12 @@
             }
             cur = next;
         }
-        return cur.length === 1 ? cur[0] : null;
+        return cur;
+    }
+
+    function mlpForward(x, layers) {
+        const cur = mlpForwardVec(x, layers);
+        return cur && cur.length === 1 ? cur[0] : null;
     }
 
     function safeFeatureName(station) {
@@ -2629,21 +2684,26 @@
                     ? { time: point.time, value: fork.med, min: fork.min, med: fork.med, max: fork.max }
                     : { time: point.time, value: point.value, min: point.value, med: point.value, max: point.value };
             });
-            // M9 crossing-time warp: soft-loaded model; apply when adopt or useCrossingTime.
+            // Crossing-time / hazard warp: soft-loaded; adopt or useCrossingTime.
+            // WP2.3: hazard decode only when allowDecode (P(crossing) ≥ decodeGateP).
             let crossingMeta = null;
             const crossing = offlineNode.crossingTime;
             const useCross = options.useCrossingTime === true
                 || (options.useCrossingTime !== false && crossing?.adopt === true);
             if (useCross && crossing && offlineNode.kind === 'window_delta_mlp') {
                 const tauPred = predictCrossingTau(crossing, sensorMap, rainSensors, +now, stepMs);
-                const warped = warpForecastByCrossing(forecast, tauPred, anchor.value, +now);
+                const gated = tauPred && tauPred.allowDecode !== false;
+                const warped = gated
+                    ? warpForecastByCrossing(forecast, tauPred, anchor.value, +now)
+                    : { forecast, warped: false, scale: 1, pathTau: null, gatedOff: true };
                 forecast = warped.forecast;
                 crossingMeta = {
                     ...tauPred,
                     warped: warped.warped,
                     scale: warped.scale,
                     pathTau: warped.pathTau,
-                    stable: warped.stable === true
+                    stable: warped.stable === true,
+                    gatedOff: warped.gatedOff === true || !gated
                 };
             }
             return {
@@ -3070,9 +3130,17 @@
 
     async function softMergeCentoCrossing(fetcher, data) {
         try {
-            const res = await fetcher('models/cento-crossing-time.json', { cache: 'no-store' });
-            if (!res?.ok) return false;
-            const crossing = await res.json();
+            // Prefer discrete hazard (WP2); fall back to M9 pinball export.
+            let crossing = null;
+            for (const path of ['models/cento-crossing-hazard.json', 'models/cento-crossing-time.json']) {
+                const res = await fetcher(path, { cache: 'no-store' });
+                if (!res?.ok) continue;
+                const doc = await res.json();
+                if (doc?.thresholds) {
+                    crossing = doc;
+                    break;
+                }
+            }
             if (!crossing?.thresholds || !data.nodes?.Cento) return false;
             if (data.nodes.Cento.kind !== 'window_delta_mlp') return false;
             data.nodes.Cento = mergeCrossingTime(data.nodes.Cento, crossing);
@@ -3147,7 +3215,7 @@
         pickRegime, latestFinite, maxStepFromSeries, predictEdge, predictNode, forecastForward, forecastForwardMulti,
         forecastDirectHorizon, forecastWindowMlp, forecastWindowSeq, forecastBlendGruRidge, forecastMuskingumGru, forecastRcGru, parseOfflineNode,
         parseWindowMlpNode, parseWindowSeqNode, parseBlendGruRidgeNode, parseMuskingumGruNode, parseRcGruNode, gruForward, conv1dForward, muskingumStep, muskingumCoeffs,
-        muskingumWarmup, decodeMuskingumTheta, decodeKX, decodeRcTheta, rcStep, softplus, mlpForward, seqDeltaForward,
+        muskingumWarmup, decodeMuskingumTheta, decodeKX, decodeRcTheta, rcStep, softplus, mlpForward, mlpForwardVec, seqDeltaForward,
         sampleAt, sampleNormLevel, buildMuskingumSeq, buildRcSeq, buildSeqChannelMatrix, standardizeSeqMatrix,
         buildWindowFeatureVector, localPolyDerivatives, standardizeWindowFeatures, nextHalfHourForks, forkAround, withFork, loadCoeffs,
         softMergeCentoBands, softMergeCentoCrossing, softApplySkillGates,

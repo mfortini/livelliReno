@@ -1,0 +1,39 @@
+{
+  "version": 2,
+  "kind": "research_plan_final",
+  "disclaimer": "Sperimentale: non operativo, non allertistico.",
+  "comparedAt": "2026-11-16T00:35:00Z",
+  "report": "models/research_plan_final.md",
+  "production": {
+    "keep": "window_delta_mlp",
+    "upstreams": [
+      "Forcelli",
+      "Sostegno Reno",
+      "Bonconvento",
+      "Casalecchio tiro a volo"
+    ],
+    "adoptChanges": false,
+    "reliableChanges": false
+  },
+  "gates": {
+    "stationsMonteValle": { "promote": false, "bestRisingRmse120": 0.105, "baseline": true },
+    "wp2Hazard": { "promote": false, "risingRmse120": 0.109, "prodRisingRmse120": 0.103 },
+    "wp2Weir": { "promote": false, "valEvtSkill": 0.819, "baselineValEvtSkill": 0.834 },
+    "wp3RoutingVsArx": { "pass": false, "routingSkill": -10.18, "arxSkill": 0.641 },
+    "wp4": { "skipped": true },
+    "wp5": { "promote": null, "arxSkill": 0.641, "physSkill": 0.641, "adopt": false }
+  },
+  "hypotheses": {
+    "H1": "confirmed",
+    "H2": "confirmed",
+    "H3": "not_clear",
+    "H4": "confirmed",
+    "H5": "not_clear",
+    "H6": "confirmed",
+    "H7": "confirmed",
+    "H8": "not_clear",
+    "H9": "confirmed",
+    "H10": "confirmed",
+    "H11": "not_clear"
+  }
+}
