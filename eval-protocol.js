@@ -279,6 +279,112 @@ function median(arr) {
     return a.length % 2 ? a[m] : 0.5 * (a[m - 1] + a[m]);
 }
 
+/** Sufficient stats for NSE/KGE on (pred, obs) pairs. */
+function emptyPairStats() {
+    return { n: 0, sumO: 0, sumP: 0, sumOO: 0, sumPP: 0, sumOP: 0, se: 0 };
+}
+
+function accumulatePair(stats, pred, obs) {
+    if (!stats || !Number.isFinite(pred) || !Number.isFinite(obs)) return;
+    stats.n++;
+    stats.sumO += obs;
+    stats.sumP += pred;
+    stats.sumOO += obs * obs;
+    stats.sumPP += pred * pred;
+    stats.sumOP += obs * pred;
+    const e = pred - obs;
+    stats.se += e * e;
+}
+
+function mergePairStats(list) {
+    const out = emptyPairStats();
+    for (const s of list || []) {
+        if (!s || !s.n) continue;
+        out.n += s.n;
+        out.sumO += s.sumO;
+        out.sumP += s.sumP;
+        out.sumOO += s.sumOO;
+        out.sumPP += s.sumPP;
+        out.sumOP += s.sumOP;
+        out.se += s.se;
+    }
+    return out;
+}
+
+/** Nash–Sutcliffe efficiency from pooled pair stats. */
+function nseFromPairStats(s) {
+    if (!s || s.n < 2) return null;
+    const meanO = s.sumO / s.n;
+    const ssTot = s.sumOO - s.n * meanO * meanO;
+    if (!(ssTot > 1e-12)) return null;
+    return 1 - s.se / ssTot;
+}
+
+/**
+ * Kling–Gupta efficiency (2009) from pooled pair stats.
+ * Returns { kge, r, alpha, beta } or nulls.
+ */
+function kgeFromPairStats(s) {
+    if (!s || s.n < 2) return null;
+    const meanO = s.sumO / s.n;
+    const meanP = s.sumP / s.n;
+    const varO = s.sumOO / s.n - meanO * meanO;
+    const varP = s.sumPP / s.n - meanP * meanP;
+    if (!(varO > 1e-12) || !(varP > 1e-12)) {
+        return { kge: null, r: null, alpha: null, beta: null };
+    }
+    const cov = s.sumOP / s.n - meanO * meanP;
+    const r = cov / Math.sqrt(varO * varP);
+    const alpha = Math.sqrt(varP) / Math.sqrt(varO);
+    const beta = meanO === 0 ? null : meanP / meanO;
+    if (!Number.isFinite(r) || !Number.isFinite(alpha) || !Number.isFinite(beta)) {
+        return { kge: null, r, alpha, beta };
+    }
+    const kge = 1 - Math.sqrt((r - 1) ** 2 + (alpha - 1) ** 2 + (beta - 1) ** 2);
+    return { kge, r, alpha, beta };
+}
+
+/**
+ * Bootstrap 90% CI of NSE or KGE by resampling event-level pair stats.
+ * metric: 'nse' | 'kge'
+ */
+function bootstrapHydroCI(eventPairStats, metric, options = {}) {
+    const B = options.draws ?? 1000;
+    const seed = options.seed ?? 1;
+    const alpha = options.alpha ?? 0.10;
+    const usable = (eventPairStats || []).filter(s => s && s.n > 0);
+    const score = (list) => {
+        const pooled = mergePairStats(list);
+        if (metric === 'kge') return kgeFromPairStats(pooled)?.kge ?? null;
+        return nseFromPairStats(pooled);
+    };
+    const point = score(usable);
+    if (!usable.length) return { value: null, lo: null, hi: null, nEvents: 0 };
+    if (usable.length === 1) {
+        return { value: point, lo: point, hi: point, nEvents: 1 };
+    }
+    const rand = mulberry32(seed);
+    const draws = [];
+    for (let b = 0; b < B; b++) {
+        const sample = [];
+        for (let i = 0; i < usable.length; i++) {
+            sample.push(usable[Math.floor(rand() * usable.length)]);
+        }
+        const v = score(sample);
+        if (Number.isFinite(v)) draws.push(v);
+    }
+    draws.sort((a, b) => a - b);
+    if (!draws.length) return { value: point, lo: null, hi: null, nEvents: usable.length };
+    const loIdx = Math.max(0, Math.floor((alpha / 2) * draws.length));
+    const hiIdx = Math.min(draws.length - 1, Math.ceil((1 - alpha / 2) * draws.length) - 1);
+    return {
+        value: point,
+        lo: draws[loIdx],
+        hi: draws[hiIdx],
+        nEvents: usable.length
+    };
+}
+
 /** Pinball / quantile loss at level τ ∈ (0,1). */
 function pinballScore(y, q, tau) {
     if (!Number.isFinite(y) || !Number.isFinite(q) || !Number.isFinite(tau)) return null;
@@ -556,8 +662,8 @@ function formatEvalMarkdown(table) {
     for (const [station, models] of Object.entries(table.stations || {})) {
         lines.push(`## ${station}`);
         lines.push('');
-        lines.push('| Modello | h (′) | skill all /pers | skill evt /pers | CI90 evt | skill evt /poly2 | skill evt /ridge | skill evt /ARX | rising RMSE | falling RMSE | phaseLag′ | CSI y/o/r | cross err med (′) | pinball | peak err med (m) | peak time med (′) | n evt |');
-        lines.push('|---|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|---|---:|---:|---:|---:|---:|');
+        lines.push('| Modello | h (′) | skill all /pers | skill evt /pers | CI90 evt | skill evt /poly2 | skill evt /ridge | skill evt /ARX | rising RMSE | falling RMSE | phaseLag′ | NSE evt | KGE evt | CSI y/o/r | cross err med (′) | pinball | peak err med (m) | peak time med (′) | n evt |');
+        lines.push('|---|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|---:|---:|---:|');
         for (const [model, horizons] of Object.entries(models)) {
             for (const [hMin, m] of Object.entries(horizons)) {
                 const ci = m.skillEventPersistCI;
@@ -567,7 +673,7 @@ function formatEvalMarkdown(table) {
                 const csi = m.csi || {};
                 const csiStr = `${fmt(csi.yellow)}/${fmt(csi.orange)}/${fmt(csi.red)}`;
                 lines.push(
-                    `| ${model} | ${hMin} | ${fmt(m.skillAllPersist)} | ${fmt(m.skillEventPersist)} | ${ciStr} | ${fmt(m.skillEventPoly2)} | ${fmt(m.skillEventRidge)} | ${fmt(m.skillEventArx)} | ${fmt(m.risingRmse)} | ${fmt(m.fallingRmse)} | ${fmt(m.phaseLagMin, 1)} | ${csiStr} | ${fmt(m.crossingTimeErrMed, 0)} | ${fmt(m.pinballEvent)} | ${fmt(m.peakLevelErrMed)} | ${fmt(m.peakTimeErrMed, 0)} | ${m.nEvents ?? 'n/d'} |`
+                    `| ${model} | ${hMin} | ${fmt(m.skillAllPersist)} | ${fmt(m.skillEventPersist)} | ${ciStr} | ${fmt(m.skillEventPoly2)} | ${fmt(m.skillEventRidge)} | ${fmt(m.skillEventArx)} | ${fmt(m.risingRmse)} | ${fmt(m.fallingRmse)} | ${fmt(m.phaseLagMin, 1)} | ${fmt(m.nseEvent)} | ${fmt(m.kgeEvent)} | ${csiStr} | ${fmt(m.crossingTimeErrMed, 0)} | ${fmt(m.pinballEvent)} | ${fmt(m.peakLevelErrMed)} | ${fmt(m.peakTimeErrMed, 0)} | ${m.nEvents ?? 'n/d'} |`
                 );
             }
         }
@@ -618,6 +724,12 @@ module.exports = {
     bootstrapSkillCI,
     bootstrapMetricCI,
     median,
+    emptyPairStats,
+    accumulatePair,
+    mergePairStats,
+    nseFromPairStats,
+    kgeFromPairStats,
+    bootstrapHydroCI,
     peakErrorsForIssue,
     pinballScore,
     meanPinball,

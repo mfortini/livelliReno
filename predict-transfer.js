@@ -775,6 +775,78 @@
         return String(station).replace(/ /g, '_');
     }
 
+    function lin3Extrapolate(series, endMs, stepMs, hSteps, nPoints = 3) {
+        // OLS linear on last nPoints (oldest→newest); predict hSteps after the last sample.
+        // Fallback: last finite level (persistence) when the window is incomplete.
+        const n = Math.max(2, Math.round(Number(nPoints) || 3));
+        const y = [];
+        for (let i = 0; i < n; i++) {
+            const v = sampleAt(series, endMs - (n - 1 - i) * stepMs);
+            if (!finite(v)) {
+                const y0 = sampleAt(series, endMs);
+                return finite(y0) ? y0 : null;
+            }
+            y.push(v);
+        }
+        let sx = 0, sy = 0, sxx = 0, sxy = 0;
+        for (let i = 0; i < n; i++) {
+            sx += i; sy += y[i]; sxx += i * i; sxy += i * y[i];
+        }
+        const det = n * sxx - sx * sx;
+        if (!finite(det) || Math.abs(det) < 1e-12) return y[n - 1];
+        const a0 = (sy * sxx - sx * sxy) / det;
+        const a1 = (n * sxy - sx * sy) / det;
+        const xh = (n - 1) + (finite(Number(hSteps)) ? Number(hSteps) : 0);
+        return a0 + a1 * xh;
+    }
+
+    function poly2Extrapolate(series, endMs, stepMs, hSteps, nPoints = 6) {
+        // OLS quadratic on last nPoints; predict hSteps after the last sample.
+        // Fallback: persistence, then 3-point poly2 if the full window is incomplete.
+        const tryNs = [Math.max(3, Math.round(Number(nPoints) || 6)), 3];
+        const y0 = sampleAt(series, endMs);
+        for (const n of tryNs) {
+            const y = [];
+            let complete = true;
+            for (let i = 0; i < n; i++) {
+                const v = sampleAt(series, endMs - (n - 1 - i) * stepMs);
+                if (!finite(v)) { complete = false; break; }
+                y.push(v);
+            }
+            if (!complete) continue;
+            let sx = 0, sx2 = 0, sx3 = 0, sx4 = 0, sy = 0, sxy = 0, sx2y = 0;
+            for (let i = 0; i < n; i++) {
+                const xi = i, yi = y[i], xi2 = xi * xi;
+                sx += xi; sx2 += xi2; sx3 += xi2 * xi; sx4 += xi2 * xi2;
+                sy += yi; sxy += xi * yi; sx2y += xi2 * yi;
+            }
+            const M = [
+                [n, sx, sx2, sy],
+                [sx, sx2, sx3, sxy],
+                [sx2, sx3, sx4, sx2y]
+            ];
+            let singular = false;
+            for (let col = 0; col < 3; col++) {
+                let piv = col;
+                for (let r = col + 1; r < 3; r++) if (Math.abs(M[r][col]) > Math.abs(M[piv][col])) piv = r;
+                [M[col], M[piv]] = [M[piv], M[col]];
+                const div = M[col][col];
+                if (!finite(div) || Math.abs(div) < 1e-12) { singular = true; break; }
+                for (let c = col; c < 4; c++) M[col][c] /= div;
+                for (let r = 0; r < 3; r++) {
+                    if (r === col) continue;
+                    const f = M[r][col];
+                    for (let c = col; c < 4; c++) M[r][c] -= f * M[col][c];
+                }
+            }
+            if (singular) continue;
+            const a0 = M[0][3], a1 = M[1][3], a2 = M[2][3];
+            const xh = (n - 1) + (finite(Number(hSteps)) ? Number(hSteps) : 0);
+            return a0 + a1 * xh + a2 * xh * xh;
+        }
+        return finite(y0) ? y0 : null;
+    }
+
     function localPolyDerivatives(series, endMs, stepMs, nPoints = 4) {
         // OLS y ≈ a0 + a1 x + a2 x² with x = -(n-1)..0 → d1=a1, d2=2 a2 (per step).
         const tryN = [nPoints, 3];
@@ -834,6 +906,16 @@
         return Math.round(lagMin / stepMinutes) - hSteps;
     }
 
+    function stationWindowLagKeys(recipe, station, lookback) {
+        const sparse = recipe?.stationLagSteps?.[station];
+        if (Array.isArray(sparse) && sparse.length) {
+            return sparse.map((s) => Math.round(Number(s))).filter((s) => Number.isFinite(s) && s >= 0);
+        }
+        const per = Number(recipe?.stationLookbackSteps?.[station]);
+        const lb = Number.isFinite(per) && per > 0 ? Math.min(lookback, Math.round(per)) : lookback;
+        return Array.from({ length: Math.max(1, lb) }, (_, k) => k);
+    }
+
     function buildWindowFeatureVector(sensorMap, stations, lookback, nowMs, stepMs, rainSensors, useRain, recipe = null, horizonMinutes = 0) {
         const values = {};
         const sogliaLevels = recipe?.sogliaLevels || {};
@@ -845,12 +927,22 @@
         const levelPrefix = useHeadroom ? `headroom_${sogliaKind}` : 'level';
         const ratioPrefix = `ratio_${sogliaKind}`;
         const stepMinutes = stepMs / MINUTE;
+        const tauFrac = recipe?.tauFrac === true;
+        const dropLevelAll = recipe?.featureSignal === 'delta';
+        const dropLevelSet = new Set(
+            Array.isArray(recipe?.dropLevelStations) ? recipe.dropLevelStations : []
+        );
+        const dropLevelUpsTau = tauFrac && recipe?.tauFracSignal === 'delta';
         for (const station of stations) {
             const series = sensorMap?.[station]?.timeSeries;
             const tag = safeFeatureName(station);
             const ref = sogliaLevels[station];
-            const head = useHeadroom && finite(ref) && ref > 0;
-            const ratioOn = useRatio && finite(ref) && ref > 0;
+            const sparseKeys = Array.isArray(recipe?.stationLagSteps?.[station]);
+            const dropLevel = dropLevelAll
+                || dropLevelSet.has(station)
+                || (dropLevelUpsTau && sparseKeys);
+            const head = !dropLevel && useHeadroom && finite(ref) && ref > 0;
+            const ratioOn = !dropLevel && useRatio && finite(ref) && ref > 0;
             const lagMode = recipe?.upstreamLagAlign === true ? (recipe?.upstreamLagMode || 'shift') : null;
             const lagOff = lagMode === 'shift'
                 ? upstreamLagOffsetSteps(recipe, station, horizonMinutes, stepMinutes)
@@ -858,7 +950,8 @@
             const augmentSteps = lagMode === 'augment'
                 ? upstreamLagOffsetSteps(recipe, station, horizonMinutes, stepMinutes)
                 : null;
-            for (let k = 0; k < lookback; k++) {
+            const lagKeys = stationWindowLagKeys(recipe, station, lookback);
+            for (const k of lagKeys) {
                 const kEff = k + lagOff;
                 const t = kEff >= 0 ? nowMs - kEff * stepMs : null;
                 const level = t === null ? null : sampleAt(series, t);
@@ -867,9 +960,11 @@
                 const signal = head && finite(level) ? ref - level : level;
                 const signalPrev = head && finite(prev) ? ref - prev : prev;
                 const delta = finite(signal) && finite(signalPrev) ? signal - signalPrev : null;
-                values[`${head ? levelPrefix : 'level'}_${tag}_lag${k}`] = finite(signal) ? signal : null;
                 values[`delta_${tag}_lag${k}`] = delta;
                 values[`miss_${tag}_lag${k}`] = miss;
+                if (!dropLevel) {
+                    values[`${head ? levelPrefix : 'level'}_${tag}_lag${k}`] = finite(signal) ? signal : null;
+                }
                 if (usePolyD) {
                     const { d1, d2 } = t === null
                         ? { d1: null, d2: null }
@@ -926,6 +1021,23 @@
             const rain = basinRainAt(rainSensors, nowMs, stepMs);
             values.rain6h = rain.rain6h;
             values.rain24h = rain.rain24h;
+        }
+        // Residual baselines: Cento ŷ(t+h) − y0 as an explicit feature (matches fit-ml-cento).
+        if (recipe?.targetMode === 'residual_lin3' || recipe?.targetMode === 'residual_poly2') {
+            const down = stations[0];
+            const tag = safeFeatureName(down);
+            const series = sensorMap?.[down]?.timeSeries;
+            const hSteps = Math.round((finite(Number(horizonMinutes)) ? Number(horizonMinutes) : 0) / stepMinutes);
+            const y0 = sampleAt(series, nowMs);
+            if (recipe.targetMode === 'residual_lin3') {
+                const nPts = Math.max(2, Math.round(Number(recipe.lin3Points) || 3));
+                const lin3 = lin3Extrapolate(series, nowMs, stepMs, hSteps, nPts);
+                values[`lin3_delta_${tag}`] = finite(lin3) && finite(y0) ? lin3 - y0 : 0;
+            } else {
+                const nPts = Math.max(3, Math.round(Number(recipe.poly2Points) || 6));
+                const poly2 = poly2Extrapolate(series, nowMs, stepMs, hSteps, nPts);
+                values[`poly2_delta_${tag}`] = finite(poly2) && finite(y0) ? poly2 - y0 : 0;
+            }
         }
         return values;
     }
@@ -1389,6 +1501,183 @@
         return cur.map(ch => ch[L - 1]);
     }
 
+    function layerNormVec(x, norm) {
+        if (!Array.isArray(x) || !norm || !Array.isArray(norm.weight) || !Array.isArray(norm.bias)) return null;
+        const d = x.length;
+        if (norm.weight.length !== d || norm.bias.length !== d) return null;
+        const eps = finite(Number(norm.eps)) ? Number(norm.eps) : 1e-5;
+        let mean = 0;
+        for (let i = 0; i < d; i++) mean += x[i];
+        mean /= d;
+        let var_ = 0;
+        for (let i = 0; i < d; i++) {
+            const z = x[i] - mean;
+            var_ += z * z;
+        }
+        var_ /= d;
+        const inv = 1 / Math.sqrt(var_ + eps);
+        const out = new Array(d);
+        for (let i = 0; i < d; i++) out[i] = (x[i] - mean) * inv * norm.weight[i] + norm.bias[i];
+        return out;
+    }
+
+    function linearVec(x, layer) {
+        if (!Array.isArray(x) || !layer || !Array.isArray(layer.W) || !Array.isArray(layer.b)) return null;
+        const out = new Array(layer.b.length);
+        for (let o = 0; o < layer.b.length; o++) {
+            const row = layer.W[o];
+            if (!Array.isArray(row) || row.length !== x.length) return null;
+            let s = layer.b[o];
+            for (let j = 0; j < x.length; j++) s += row[j] * x[j];
+            out[o] = s;
+        }
+        return out;
+    }
+
+    function softmaxRow(logits) {
+        let m = -Infinity;
+        for (const v of logits) if (v > m) m = v;
+        const ex = new Array(logits.length);
+        let sum = 0;
+        for (let i = 0; i < logits.length; i++) {
+            const e = Math.exp(logits[i] - m);
+            ex[i] = e;
+            sum += e;
+        }
+        const inv = sum > 0 ? 1 / sum : 0;
+        for (let i = 0; i < ex.length; i++) ex[i] *= inv;
+        return ex;
+    }
+
+    /** Multi-head self-attention matching PyTorch MHA (batch_first, no mask). seq: L×d */
+    function multiHeadSelfAttn(seq, attn) {
+        if (!Array.isArray(seq) || !seq.length || !attn) return null;
+        const L = seq.length;
+        const d = Number(attn.dModel);
+        const nhead = Number(attn.nhead);
+        if (!finite(d) || !finite(nhead) || nhead < 1 || d % nhead !== 0) return null;
+        const dh = d / nhead;
+        const Wp = attn.inProjWeight;
+        const bp = attn.inProjBias;
+        const Wo = attn.outProjWeight;
+        const bo = attn.outProjBias;
+        if (!Array.isArray(Wp) || Wp.length !== 3 * d || !Array.isArray(bp) || bp.length !== 3 * d) return null;
+        if (!Array.isArray(Wo) || Wo.length !== d || !Array.isArray(bo) || bo.length !== d) return null;
+        const Q = new Array(L);
+        const K = new Array(L);
+        const V = new Array(L);
+        for (let t = 0; t < L; t++) {
+            const x = seq[t];
+            if (!Array.isArray(x) || x.length !== d) return null;
+            const q = new Array(d);
+            const k = new Array(d);
+            const v = new Array(d);
+            for (let o = 0; o < d; o++) {
+                let sq = bp[o], sk = bp[d + o], sv = bp[2 * d + o];
+                const wq = Wp[o], wk = Wp[d + o], wv = Wp[2 * d + o];
+                if (!Array.isArray(wq) || wq.length !== d) return null;
+                for (let j = 0; j < d; j++) {
+                    sq += wq[j] * x[j];
+                    sk += wk[j] * x[j];
+                    sv += wv[j] * x[j];
+                }
+                q[o] = sq;
+                k[o] = sk;
+                v[o] = sv;
+            }
+            Q[t] = q;
+            K[t] = k;
+            V[t] = v;
+        }
+        const scale = 1 / Math.sqrt(dh);
+        const heads = new Array(L);
+        for (let t = 0; t < L; t++) heads[t] = new Array(d);
+        for (let h = 0; h < nhead; h++) {
+            const off = h * dh;
+            for (let qi = 0; qi < L; qi++) {
+                const logits = new Array(L);
+                for (let kj = 0; kj < L; kj++) {
+                    let s = 0;
+                    for (let c = 0; c < dh; c++) s += Q[qi][off + c] * K[kj][off + c];
+                    logits[kj] = s * scale;
+                }
+                const w = softmaxRow(logits);
+                for (let c = 0; c < dh; c++) {
+                    let s = 0;
+                    for (let kj = 0; kj < L; kj++) s += w[kj] * V[kj][off + c];
+                    heads[qi][off + c] = s;
+                }
+            }
+        }
+        const out = new Array(L);
+        for (let t = 0; t < L; t++) {
+            const y = new Array(d);
+            for (let o = 0; o < d; o++) {
+                const row = Wo[o];
+                if (!Array.isArray(row) || row.length !== d) return null;
+                let s = bo[o];
+                for (let j = 0; j < d; j++) s += row[j] * heads[t][j];
+                y[o] = s;
+            }
+            out[t] = y;
+        }
+        return out;
+    }
+
+    function transformerForward(seqLC, tf) {
+        if (!Array.isArray(seqLC) || !seqLC.length || !tf) return null;
+        const L = seqLC.length;
+        const d = Number(tf.dModel);
+        const inProj = tf.inProj;
+        if (!finite(d) || !inProj || !Array.isArray(tf.pos) || !Array.isArray(tf.layers) || !tf.norm) return null;
+        if (tf.pos.length < L) return null;
+        let cur = new Array(L);
+        for (let t = 0; t < L; t++) {
+            const proj = linearVec(seqLC[t], inProj);
+            if (!proj || proj.length !== d) return null;
+            const pos = tf.pos[t];
+            if (!Array.isArray(pos) || pos.length !== d) return null;
+            const row = new Array(d);
+            for (let j = 0; j < d; j++) row[j] = proj[j] + pos[j];
+            cur[t] = row;
+        }
+        for (const layer of tf.layers) {
+            if (!layer?.attn || !layer.norm1 || !layer.norm2 || !layer.linear1 || !layer.linear2) return null;
+            const n1 = new Array(L);
+            for (let t = 0; t < L; t++) {
+                n1[t] = layerNormVec(cur[t], layer.norm1);
+                if (!n1[t]) return null;
+            }
+            const attnOut = multiHeadSelfAttn(n1, layer.attn);
+            if (!attnOut) return null;
+            const mid = new Array(L);
+            for (let t = 0; t < L; t++) {
+                const row = new Array(d);
+                for (let j = 0; j < d; j++) row[j] = cur[t][j] + attnOut[t][j];
+                mid[t] = row;
+            }
+            const n2 = new Array(L);
+            for (let t = 0; t < L; t++) {
+                n2[t] = layerNormVec(mid[t], layer.norm2);
+                if (!n2[t]) return null;
+            }
+            const next = new Array(L);
+            for (let t = 0; t < L; t++) {
+                const h1 = linearVec(n2[t], layer.linear1);
+                if (!h1) return null;
+                for (let j = 0; j < h1.length; j++) h1[j] = Math.max(0, h1[j]);
+                const h2 = linearVec(h1, layer.linear2);
+                if (!h2 || h2.length !== d) return null;
+                const row = new Array(d);
+                for (let j = 0; j < d; j++) row[j] = mid[t][j] + h2[j];
+                next[t] = row;
+            }
+            cur = next;
+        }
+        const last = layerNormVec(cur[L - 1], tf.norm);
+        return last;
+    }
+
     function seqDeltaForward(seqStd, block, kind) {
         if (!seqStd || !block) return null;
         if (kind === 'window_delta_gru') {
@@ -1402,12 +1691,18 @@
             if (!feat) return null;
             return mlpForward(feat, block.headLayers);
         }
+        if (kind === 'window_delta_transformer') {
+            if (!block.transformer || !Array.isArray(block.headLayers)) return null;
+            const feat = transformerForward(seqStd, block.transformer);
+            if (!feat) return null;
+            return mlpForward(feat, block.headLayers);
+        }
         return null;
     }
 
     function parseWindowSeqNode(node) {
         const kind = node?.kind;
-        if (kind !== 'window_delta_gru' && kind !== 'window_delta_cnn') return null;
+        if (kind !== 'window_delta_gru' && kind !== 'window_delta_cnn' && kind !== 'window_delta_transformer') return null;
         if (!Array.isArray(node.stations) || !Array.isArray(node.channelNames) || !node.horizons) return null;
         const lookbackSteps = Number(node.lookbackSteps);
         if (!finite(lookbackSteps) || lookbackSteps < 1) return null;
@@ -1418,11 +1713,13 @@
             if (block.mean.length !== nC || block.std.length !== nC) continue;
             if (kind === 'window_delta_gru' && (!block.gru || !Array.isArray(block.headLayers))) continue;
             if (kind === 'window_delta_cnn' && (!Array.isArray(block.convLayers) || !Array.isArray(block.headLayers))) continue;
+            if (kind === 'window_delta_transformer' && (!block.transformer || !Array.isArray(block.headLayers))) continue;
             horizons[key] = {
                 mean: block.mean,
                 std: block.std,
                 gru: block.gru || null,
                 convLayers: block.convLayers || null,
+                transformer: block.transformer || null,
                 headLayers: block.headLayers,
                 spreadLow: finite(Number(block.spreadLow)) ? Number(block.spreadLow) : null,
                 spreadHigh: finite(Number(block.spreadHigh)) ? Number(block.spreadHigh) : null,
@@ -1651,8 +1948,17 @@
             const x = standardizeWindowFeatures(raw, model.featureNames, block.mean, block.std);
             if (!x) continue;
             const layersMed = block.layersQ50 || block.layers;
-            const delta = mlpForward(x, layersMed);
-            if (!finite(delta)) continue;
+            const mlpOut = mlpForward(x, layersMed);
+            if (!finite(mlpOut)) continue;
+            // Residual modes: MLP predicts r̂; absolute Δ = baseline_delta + r̂ (ŷ = y0 + Δ).
+            const tMode = model.featureRecipe?.targetMode;
+            const residualMode = tMode === 'residual_lin3' || tMode === 'residual_poly2';
+            const downTag = safeFeatureName(model.downstream || model.stations[0] || 'Cento');
+            const baseFeat = tMode === 'residual_poly2'
+                ? `poly2_delta_${downTag}`
+                : `lin3_delta_${downTag}`;
+            const baseDelta = residualMode && finite(raw[baseFeat]) ? raw[baseFeat] : 0;
+            const delta = residualMode ? mlpOut + baseDelta : mlpOut;
             let value = smooth * previous + (1 - smooth) * (y0 + delta);
             if (finite(maxStep) && finite(previous)) {
                 const steps = Math.max(1, Math.round((target - (points.at(-1) ? +points.at(-1).time : nowMs)) / stepMs));
@@ -1673,8 +1979,10 @@
                 : block.spreadHigh;
             // M1: pinball q10/q90 band (+ optional conformal inflate on Δ)
             if (block.layersQ10 && block.layersQ90) {
-                const d10 = mlpForward(x, block.layersQ10);
-                const d90 = mlpForward(x, block.layersQ90);
+                const d10raw = mlpForward(x, block.layersQ10);
+                const d90raw = mlpForward(x, block.layersQ90);
+                const d10 = residualMode && finite(d10raw) ? d10raw + baseDelta : d10raw;
+                const d90 = residualMode && finite(d90raw) ? d90raw + baseDelta : d90raw;
                 const qhat = finite(block.conformalQhat) ? block.conformalQhat : 0;
                 if (finite(d10) && finite(d90)) {
                     const lo = y0 + Math.min(d10, d90) - qhat;
@@ -2121,7 +2429,9 @@
         if (node.kind === 'muskingum_gru') return parseMuskingumGruNode(node);
         if (node.kind === 'blend_gru_ridge') return parseBlendGruRidgeNode(node);
         if (node.kind === 'window_delta_mlp') return parseWindowMlpNode(node);
-        if (node.kind === 'window_delta_gru' || node.kind === 'window_delta_cnn') return parseWindowSeqNode(node);
+        if (node.kind === 'window_delta_gru' || node.kind === 'window_delta_cnn' || node.kind === 'window_delta_transformer') {
+            return parseWindowSeqNode(node);
+        }
         if (!Array.isArray(node.upstreams) || !Array.isArray(node.lagMinutes)) return null;
         if (node.upstreams.length !== upstreamIds.length) return null;
         if (!upstreamIds.every((id, i) => id === node.upstreams[i])) return null;
@@ -2636,6 +2946,7 @@
             offlineNode?.kind === 'window_delta_mlp'
             || offlineNode?.kind === 'window_delta_gru'
             || offlineNode?.kind === 'window_delta_cnn'
+            || offlineNode?.kind === 'window_delta_transformer'
         ) {
             if (offlineNode.reliable === false) {
                 return {
@@ -3214,10 +3525,10 @@
         edgeKey, buildGraph, rankNodes, alignSeries, estimateLag, fitAffine, fitMultiAffine, applyAffine, applyMulti,
         pickRegime, latestFinite, maxStepFromSeries, predictEdge, predictNode, forecastForward, forecastForwardMulti,
         forecastDirectHorizon, forecastWindowMlp, forecastWindowSeq, forecastBlendGruRidge, forecastMuskingumGru, forecastRcGru, parseOfflineNode,
-        parseWindowMlpNode, parseWindowSeqNode, parseBlendGruRidgeNode, parseMuskingumGruNode, parseRcGruNode, gruForward, conv1dForward, muskingumStep, muskingumCoeffs,
+        parseWindowMlpNode, parseWindowSeqNode, parseBlendGruRidgeNode, parseMuskingumGruNode, parseRcGruNode, gruForward, conv1dForward, transformerForward, muskingumStep, muskingumCoeffs,
         muskingumWarmup, decodeMuskingumTheta, decodeKX, decodeRcTheta, rcStep, softplus, mlpForward, mlpForwardVec, seqDeltaForward,
         sampleAt, sampleNormLevel, buildMuskingumSeq, buildRcSeq, buildSeqChannelMatrix, standardizeSeqMatrix,
-        buildWindowFeatureVector, localPolyDerivatives, standardizeWindowFeatures, nextHalfHourForks, forkAround, withFork, loadCoeffs,
+        buildWindowFeatureVector, lin3Extrapolate, poly2Extrapolate, localPolyDerivatives, standardizeWindowFeatures, nextHalfHourForks, forkAround, withFork, loadCoeffs,
         softMergeCentoBands, softMergeCentoCrossing, softApplySkillGates,
         seqGruUrl, pearson, residuals, estimateRecentBias, estimateMlpOnlineCorrection, applyMlpOnlineCorrection,
         driverIsHigh, basinRainAt, hindcastSeries,

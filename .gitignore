@@ -12,3 +12,11 @@ models/_fit*.log
 __pycache__/
 *.pyc
 .python-version
+
+# Local regenerable / experiment bulk
+storico/*.parquet
+logs/
+models/cento-dnn-leakfree-*.json
+models/ml-cento-compare-leakfree-*.json
+models/ab-*-eval.json
+models/ab-*-per-event.json

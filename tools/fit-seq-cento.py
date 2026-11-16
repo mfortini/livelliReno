@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Offline end-to-end sequence models (GRU / 1D-CNN) for a downstream station.
+"""Offline end-to-end sequence models (GRU / 1D-CNN / Transformer) for a station.
 
 Same data / month-block split / event skill@120 gate as fit-ml-cento (novalle).
 Input tensor [N, L=48, C]: per station (level, delta, miss) + rain6h/rain24h
@@ -47,6 +47,12 @@ WEAK_POINTS = 48
 GRU_HIDDEN = 64
 CNN_CHANNELS = (32, 64)
 CNN_KERNEL = 5
+TF_D_MODEL = 64
+TF_NHEAD = 4
+TF_LAYERS = 2
+TF_DIM_FF = 128
+TF_DROPOUT = 0.1
+TF_MAX_LEN = 64
 LR = 1e-3
 BATCH = 256
 EPOCHS = 60
@@ -255,6 +261,69 @@ class SeqCNN(nn.Module):
         return self.head(z[:, :, -1]).squeeze(-1)
 
 
+class _TfEncLayer(nn.Module):
+    """Pre-norm encoder block (MHA + ReLU FFN) — weights exported for JS parity."""
+
+    def __init__(self, d_model: int, nhead: int, dim_ff: int, dropout: float):
+        super().__init__()
+        self.n1 = nn.LayerNorm(d_model)
+        self.attn = nn.MultiheadAttention(
+            d_model, nhead, dropout=dropout, batch_first=True
+        )
+        self.n2 = nn.LayerNorm(d_model)
+        self.linear1 = nn.Linear(d_model, dim_ff)
+        self.linear2 = nn.Linear(dim_ff, d_model)
+        self.drop = nn.Dropout(dropout)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        h = self.n1(x)
+        a, _ = self.attn(h, h, h, need_weights=False)
+        x = x + self.drop(a)
+        h = self.n2(x)
+        ff = self.linear2(self.drop(torch.relu(self.linear1(h))))
+        return x + self.drop(ff)
+
+
+class SeqTransformer(nn.Module):
+    def __init__(
+        self,
+        n_in: int,
+        d_model: int = TF_D_MODEL,
+        nhead: int = TF_NHEAD,
+        nlayers: int = TF_LAYERS,
+        dim_ff: int = TF_DIM_FF,
+        dropout: float = TF_DROPOUT,
+        max_len: int = TF_MAX_LEN,
+    ):
+        super().__init__()
+        if d_model % nhead != 0:
+            raise ValueError(f"d_model={d_model} must be divisible by nhead={nhead}")
+        self.d_model = d_model
+        self.nhead = nhead
+        self.in_proj = nn.Linear(n_in, d_model)
+        self.pos = nn.Parameter(torch.zeros(1, max_len, d_model))
+        nn.init.normal_(self.pos, std=0.02)
+        self.layers = nn.ModuleList(
+            [_TfEncLayer(d_model, nhead, dim_ff, dropout) for _ in range(nlayers)]
+        )
+        self.norm = nn.LayerNorm(d_model)
+        self.head = nn.Sequential(
+            nn.Linear(d_model, d_model),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(d_model, 1),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # x: B × L × C
+        l = x.size(1)
+        z = self.in_proj(x) + self.pos[:, :l, :]
+        for layer in self.layers:
+            z = layer(z)
+        z = self.norm(z)
+        return self.head(z[:, -1, :]).squeeze(-1)
+
+
 def _round_matrix(arr: np.ndarray, nd: int = 8) -> list:
     return [[round(float(v), nd) for v in row] for row in arr]
 
@@ -309,6 +378,61 @@ def export_seq_cnn(model: SeqCNN) -> dict:
                 }
             )
     return {"convLayers": conv_layers, "headLayers": export_head_layers(model.head)}
+
+
+def _export_linear(linear: nn.Linear) -> dict:
+    w = linear.weight.detach().cpu().numpy()
+    b = linear.bias.detach().cpu().numpy()
+    return {
+        "W": _round_matrix(w),
+        "b": [round(float(v), 8) for v in b],
+    }
+
+
+def _export_layernorm(norm: nn.LayerNorm) -> dict:
+    return {
+        "weight": [round(float(v), 8) for v in norm.weight.detach().cpu().numpy()],
+        "bias": [round(float(v), 8) for v in norm.bias.detach().cpu().numpy()],
+        "eps": float(norm.eps),
+    }
+
+
+def export_seq_transformer(model: SeqTransformer) -> dict:
+    layers_out: list[dict] = []
+    for layer in model.layers:
+        attn = layer.attn
+        layers_out.append(
+            {
+                "norm1": _export_layernorm(layer.n1),
+                "attn": {
+                    "nhead": int(model.nhead),
+                    "dModel": int(model.d_model),
+                    "inProjWeight": _round_matrix(attn.in_proj_weight.detach().cpu().numpy()),
+                    "inProjBias": [
+                        round(float(v), 8) for v in attn.in_proj_bias.detach().cpu().numpy()
+                    ],
+                    "outProjWeight": _round_matrix(attn.out_proj.weight.detach().cpu().numpy()),
+                    "outProjBias": [
+                        round(float(v), 8) for v in attn.out_proj.bias.detach().cpu().numpy()
+                    ],
+                },
+                "norm2": _export_layernorm(layer.n2),
+                "linear1": _export_linear(layer.linear1),
+                "linear2": _export_linear(layer.linear2),
+            }
+        )
+    return {
+        "transformer": {
+            "dModel": int(model.d_model),
+            "nhead": int(model.nhead),
+            "nlayers": len(model.layers),
+            "inProj": _export_linear(model.in_proj),
+            "pos": _round_matrix(model.pos.detach().cpu().numpy()[0]),
+            "layers": layers_out,
+            "norm": _export_layernorm(model.norm),
+        },
+        "headLayers": export_head_layers(model.head),
+    }
 
 
 def train_seq(
@@ -435,7 +559,9 @@ def mlp_ref_skills(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Offline GRU / 1D-CNN end-to-end sequence fit")
+    parser = argparse.ArgumentParser(
+        description="Offline GRU / 1D-CNN / Transformer end-to-end sequence fit"
+    )
     parser.add_argument("--config", type=Path, default=ROOT / "config.json")
     parser.add_argument("--data", type=Path, default=ROOT / "storico")
     parser.add_argument(
@@ -459,15 +585,22 @@ def main() -> None:
     )
     parser.add_argument("--export-gru", type=Path, default=None)
     parser.add_argument("--export-cnn", type=Path, default=None)
+    parser.add_argument("--export-transformer", type=Path, default=None)
     parser.add_argument("--no-export-weights", action="store_true")
     parser.add_argument("--lookback", type=int, default=LOOKBACK)
     parser.add_argument("--spike-abs", type=float, default=ft.SPIKE_ABS)
     parser.add_argument("--no-rain", action="store_true")
     parser.add_argument(
         "--arch",
-        choices=("both", "gru", "cnn"),
+        choices=("both", "gru", "cnn", "transformer", "gru+transformer", "all"),
         default="both",
         help="Which sequence models to train",
+    )
+    parser.add_argument(
+        "--holdout-from",
+        type=str,
+        default=None,
+        help="Calendar cut YYYY-MM-DD: train/val before cut, holdout from cut (leakage-free)",
     )
     parser.add_argument(
         "--horizons",
@@ -491,6 +624,8 @@ def main() -> None:
         args.export_gru = ROOT / "models" / f"seq-{slug}-gru.json"
     if args.export_cnn is None:
         args.export_cnn = ROOT / "models" / f"seq-{slug}-cnn.json"
+    if args.export_transformer is None:
+        args.export_transformer = ROOT / "models" / f"seq-{slug}-transformer.json"
     if args.mlp_ref is None:
         args.mlp_ref = (
             ROOT / "models" / "ml-cento-compare-novalle.json"
@@ -498,8 +633,16 @@ def main() -> None:
             else args.prod_ref
         )
 
-    arches = ["gru", "cnn"] if args.arch == "both" else [args.arch]
+    if args.arch == "both":
+        arches = ["gru", "cnn"]
+    elif args.arch == "all":
+        arches = ["gru", "cnn", "transformer"]
+    elif args.arch == "gru+transformer":
+        arches = ["gru", "transformer"]
+    else:
+        arches = [args.arch]
     horizons = [int(h) for h in args.horizons]
+    holdout_from = args.holdout_from
 
     config = json.loads(args.config.read_text(encoding="utf-8"))
     if downstream not in (config.get("sensors") or {}):
@@ -517,6 +660,8 @@ def main() -> None:
     log_step(f"fit-seq  {downstream}  arch={'+'.join(arches)}  L={args.lookback}")
     log(f"upstreams={upstreams}")
     log(f"out={args.out}")
+    if holdout_from:
+        log(f"holdout-from={holdout_from} (calendar cut; train/val before cut)", level="ok")
 
     log_step("Caricamento storico")
     t_load = time.perf_counter()
@@ -577,7 +722,7 @@ def main() -> None:
         if len(y) < WEAK_POINTS * 3:
             log(f"skip: n={len(y)}", level="warn")
             continue
-        train_m, val_m, hold_m = ml.split_masks(index)
+        train_m, val_m, hold_m = ml.split_masks(index, holdout_from=holdout_from)
         if train_m.sum() < WEAK_POINTS or val_m.sum() < WEAK_POINTS:
             log(f"skip: train={train_m.sum()} val={val_m.sum()}", level="warn")
             continue
@@ -613,9 +758,25 @@ def main() -> None:
             if arch == "gru":
                 model = SeqGRU(n_in, hidden=GRU_HIDDEN)
                 arch_label = f"GRU(h={GRU_HIDDEN})"
-            else:
+                export_fn = export_seq_gru
+            elif arch == "cnn":
                 model = SeqCNN(n_in, channels=CNN_CHANNELS, kernel=CNN_KERNEL)
                 arch_label = f"CNN{list(CNN_CHANNELS)}/k{CNN_KERNEL}"
+                export_fn = export_seq_cnn
+            else:
+                model = SeqTransformer(
+                    n_in,
+                    d_model=TF_D_MODEL,
+                    nhead=TF_NHEAD,
+                    nlayers=TF_LAYERS,
+                    dim_ff=TF_DIM_FF,
+                    dropout=TF_DROPOUT,
+                    max_len=max(TF_MAX_LEN, args.lookback),
+                )
+                arch_label = (
+                    f"TF(d={TF_D_MODEL},h={TF_NHEAD},L={TF_LAYERS},ff={TF_DIM_FF})"
+                )
+                export_fn = export_seq_transformer
 
             model, pred, hist = train_seq(
                 model, X_std, y, train_m, val_m, label=arch_label
@@ -638,7 +799,7 @@ def main() -> None:
                 "architecture": arch_label,
                 "earlyStopping": hist,
             }
-            weights = export_seq_gru(model) if arch == "gru" else export_seq_cnn(model)
+            weights = export_fn(model)
             export_horizons[arch][str(minutes)] = {
                 "mean": [round(stats[c][0], 8) for c in channel_names],
                 "std": [round(stats[c][1], 8) for c in channel_names],
@@ -723,6 +884,7 @@ def main() -> None:
         "useRain": use_rain,
         "rainGauges": gauges if use_rain else [],
         "arches": arches,
+        "holdoutFrom": holdout_from,
         "disclaimer": "Sperimentale: non operativo, non allertistico. Offline only.",
         "mlpRef": str(args.mlp_ref),
         "gate": gate,
@@ -741,8 +903,16 @@ def main() -> None:
     log(f"Wrote {args.out}", level="ok")
 
     if not args.no_export_weights:
-        kind_map = {"gru": "window_delta_gru", "cnn": "window_delta_cnn"}
-        path_map = {"gru": args.export_gru, "cnn": args.export_cnn}
+        kind_map = {
+            "gru": "window_delta_gru",
+            "cnn": "window_delta_cnn",
+            "transformer": "window_delta_transformer",
+        }
+        path_map = {
+            "gru": args.export_gru,
+            "cnn": args.export_cnn,
+            "transformer": args.export_transformer,
+        }
         for arch in arches:
             g = gate[arch]
             skill120 = g["validateEventsSkill120"]

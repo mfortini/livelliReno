@@ -89,6 +89,7 @@ WEAK_POINTS = 48
 POLY_NAIVE_POINTS = 6
 POLY_NAIVE_DEGREE = 2
 POLY_NAIVE_MIN = 3
+LIN3_POINTS = 3  # residual-lin3 baseline: linear OLS on last 3 Cento samples
 LGBM_PARAMS = {
     "objective": "regression",
     "metric": "l2",
@@ -156,6 +157,27 @@ def load_soglia_levels(path: Path, prefer: str = "yellow") -> dict[str, float]:
     return out
 
 
+def tau_frac_lag_steps(tau_steps: int, n: int, phi_max: float) -> list[int]:
+    """Phase grid φ=k/n for k=0…n·φ_max → lag steps (dedup, non-negative)."""
+    n = max(1, int(n))
+    tau_steps = max(0, int(tau_steps))
+    phi_max = float(phi_max)
+    if phi_max < 0:
+        raise ValueError("phi_max must be ≥ 0")
+    k_max = int(round(n * phi_max))
+    out: list[int] = []
+    seen: set[int] = set()
+    for k in range(k_max + 1):
+        lag = int(round((k / n) * tau_steps))
+        if lag < 0 or lag in seen:
+            continue
+        seen.add(lag)
+        out.append(lag)
+    if not out:
+        out = [0]
+    return out
+
+
 def build_feature_matrix(
     wide: pd.DataFrame,
     rain: pd.DataFrame | None,
@@ -172,6 +194,10 @@ def build_feature_matrix(
     lag_align_h: int = 0,
     align_mode: str = "shift",
     align_window: int = 16,
+    station_lookback: dict[str, int] | None = None,
+    station_lag_steps: dict[str, list[int]] | None = None,
+    drop_level: bool = False,
+    drop_level_stations: set[str] | None = None,
 ) -> tuple[pd.DataFrame, list[str]]:
     """Flat window of level/delta/miss (+ optional soglia headroom/ratio / chain deltas) + rain.
 
@@ -181,12 +207,25 @@ def build_feature_matrix(
       x(t + h - tau_i - j·step) for j in [0, align_window).
     For h ≤ tau_i the wave reaching valle at t+h is already observed upstream.
     Shifts < 0 (h > tau_i) become NaN features with miss=1 — no future peeking.
+
+    ``station_lookback`` (optional): per-station window length in 30′ steps, capped
+    by ``lookback``. Used by ``--lookback-tau`` (L_i = τ_i + buffer); unrelated to
+    lag-align shift/augment.
+
+    ``station_lag_steps`` (optional): explicit lag indices per station (τ-fraction
+    grid). Feature names use the absolute step (``*_lag{s}``).
+
+    ``drop_level`` / ``drop_level_stations``: omit absolute level/headroom/ratio
+    (keep delta/d1/d2/miss) so the model stays in increments — no absolute state.
     """
     parts: dict[str, pd.Series] = {}
     feature_cols: list[str] = []
     station_order = list(stations) if stations is not None else list(wide.columns)
     soglia_levels = soglia_levels or {}
     upstream_tau = upstream_tau or {}
+    station_lookback = station_lookback or {}
+    station_lag_steps = station_lag_steps or {}
+    drop_level_stations = drop_level_stations or set()
     prefix = f"headroom_{soglia_kind}" if use_soglia_headroom else "level"
     ratio_prefix = f"ratio_{soglia_kind}"
     n_poly = max(POLY_NAIVE_MIN, int(poly_points))
@@ -203,18 +242,28 @@ def build_feature_matrix(
         if station not in wide.columns:
             raise SystemExit(f"Missing station column: {station}")
         level = wide[station]
-        is_aligned_up = station in upstream_tau
-        lag_off = (
-            int(upstream_tau[station]) - int(lag_align_h)
-            if is_aligned_up and align_mode == "shift"
-            else 0
-        )
+        sparse = station in station_lag_steps
+        if sparse:
+            lag_keys = [int(s) for s in station_lag_steps[station]]
+            lag_off = 0
+            is_aligned_up = False
+        else:
+            lb = int(station_lookback.get(station, lookback)) if station_lookback else int(lookback)
+            lb = max(1, min(lb, int(lookback)))
+            lag_keys = list(range(lb))
+            is_aligned_up = station in upstream_tau
+            lag_off = (
+                int(upstream_tau[station]) - int(lag_align_h)
+                if is_aligned_up and align_mode == "shift"
+                else 0
+            )
+        drop_level_st = bool(drop_level) or station in drop_level_stations
         prev = level.shift(1)
         miss = level.isna().astype(float)
         tag = safe_name(station)
         ref = soglia_levels.get(station)
-        use_head = use_soglia_headroom and ref is not None and ref > 0
-        use_ratio = use_soglia_ratio and ref is not None and ref > 0
+        use_head = use_soglia_headroom and ref is not None and ref > 0 and not drop_level_st
+        use_ratio = use_soglia_ratio and ref is not None and ref > 0 and not drop_level_st
         # Headroom below soglia: larger ⇒ farther from threshold exceedance.
         signal = (ref - level) if use_head else level
         signal_prev = (ref - prev) if use_head else prev
@@ -224,28 +273,30 @@ def build_feature_matrix(
         log(f"  poly d1/d2 for {station} (n={n_poly})…", level="debug")
         d1_s, d2_s = series_poly_derivatives(level, n_points=n_poly)
         feat_prefix = prefix if use_head else "level"
-        for k in range(lookback):
+        for k in lag_keys:
             s = k + lag_off
-            lv = shifted(signal, s)
             dv = shifted(signal_delta, s)
             mv = shifted(miss, s).fillna(1.0)
-            c_lv = f"{feat_prefix}_{tag}_lag{k}"
             c_dv = f"delta_{tag}_lag{k}"
             c_mv = f"miss_{tag}_lag{k}"
             c_d1 = f"d1_{tag}_lag{k}"
             c_d2 = f"d2_{tag}_lag{k}"
-            parts[c_lv] = lv
             parts[c_dv] = dv
             parts[c_mv] = mv
             parts[c_d1] = shifted(d1_s, s)
             parts[c_d2] = shifted(d2_s, s)
-            feature_cols.extend([c_lv, c_dv, c_mv, c_d1, c_d2])
+            if drop_level_st:
+                feature_cols.extend([c_dv, c_mv, c_d1, c_d2])
+            else:
+                c_lv = f"{feat_prefix}_{tag}_lag{k}"
+                parts[c_lv] = shifted(signal, s)
+                feature_cols.extend([c_lv, c_dv, c_mv, c_d1, c_d2])
         if use_ratio:
             # Fill fraction of soglia (0 ⇒ empty relative to yellow, 1 ⇒ at yellow).
             ratio = level / ref
             ratio_prev = prev / ref
             ratio_delta = (ratio - ratio_prev).where(level.notna() & prev.notna())
-            for k in range(lookback):
+            for k in lag_keys:
                 c_r = f"{ratio_prefix}_{tag}_lag{k}"
                 c_rd = f"ratio_delta_{tag}_lag{k}"
                 parts[c_r] = shifted(ratio, k + lag_off)
@@ -417,6 +468,40 @@ def build_poly2_baseline(
     return out
 
 
+def _lin_extrapolate_weights(n_points: int, h_steps: int) -> np.ndarray:
+    """Weights w such that w·y ≈ linear OLS(y) extrapolated h_steps past the last sample."""
+    x = np.arange(n_points, dtype=np.float64)
+    v = np.column_stack([np.ones(n_points), x])
+    pinv = np.linalg.pinv(v)  # 2 × n
+    xh = float((n_points - 1) + h_steps)
+    return (np.array([1.0, xh], dtype=np.float64) @ pinv).copy()
+
+
+def build_lin3_baseline(
+    level: pd.Series,
+    index: np.ndarray,
+    h_steps: int,
+    n_points: int = LIN3_POINTS,
+) -> np.ndarray:
+    """Per-row linear extrapolation of Cento to t+h from the last n_points levels.
+
+    Fallback: persistence (y0) when the window has any non-finite sample.
+    """
+    n_points = max(2, int(n_points))
+    idx = pd.DatetimeIndex(index)
+    cols = [
+        level.shift(k).reindex(idx).to_numpy(dtype=float)
+        for k in range(n_points - 1, -1, -1)
+    ]
+    window = np.column_stack(cols)
+    y0 = window[:, -1]
+    out = np.array(y0, dtype=float, copy=True)  # persist fallback
+    w_n = _lin_extrapolate_weights(n_points, h_steps)
+    ok = np.isfinite(window).all(axis=1)
+    out[ok] = window[ok] @ w_n
+    return out
+
+
 def metrics_block(
     y0: np.ndarray,
     delta_obs: np.ndarray,
@@ -461,9 +546,10 @@ def metrics_block(
 def split_masks(
     index: pd.DatetimeIndex | np.ndarray,
     mode: str | None = None,
+    holdout_from: str | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     idx = pd.DatetimeIndex(index)
-    blocks = ft.month_blocks(idx, mode=mode)
+    blocks = ft.month_blocks(idx, mode=mode, holdout_from=holdout_from)
     return blocks == 0, blocks == 1, blocks == 2
 
 
@@ -980,6 +1066,75 @@ def main() -> None:
         ),
     )
     parser.add_argument(
+        "--lookback-tau",
+        action="store_true",
+        help=(
+            "Per-station lookback L_i = τ_i + buffer (τ from train-month cross-corr); "
+            "downstream keeps --lookback. Distinct from --lag-align."
+        ),
+    )
+    parser.add_argument(
+        "--lookback-tau-buffer-hours",
+        type=float,
+        default=4.0,
+        help="Extra hours added to each upstream τ for --lookback-tau (default 4 h)",
+    )
+    parser.add_argument(
+        "--tau-frac",
+        action="store_true",
+        help=(
+            "Upstream features on phase grid φ=k/n up to --tau-frac-max·τ "
+            "(snap 30′); Cento/acceptors keep --tau-frac-local-lookback flat. "
+            "Distinct from --lag-align / --lookback-tau."
+        ),
+    )
+    parser.add_argument(
+        "--tau-frac-n",
+        type=int,
+        default=8,
+        help="Points per τ on the phase grid (default 8 → step φ=1/8)",
+    )
+    parser.add_argument(
+        "--tau-frac-max",
+        type=float,
+        default=2.0,
+        help="Max phase φ in units of τ (default 2 → cover up to 2τ)",
+    )
+    parser.add_argument(
+        "--tau-frac-local-lookback",
+        type=int,
+        default=24,
+        help="Flat lookback steps for Cento/acceptors when --tau-frac (default 24 = 12 h)",
+    )
+    parser.add_argument(
+        "--tau-frac-signal",
+        choices=("level", "delta"),
+        default="level",
+        help=(
+            "With --tau-frac only: delta=omit absolute level on τ-grid upstreams. "
+            "Prefer --feature-signal for flat and τ-grid alike."
+        ),
+    )
+    parser.add_argument(
+        "--feature-signal",
+        choices=("level", "delta"),
+        default="level",
+        help=(
+            "level=absolute stage + delta/d1/d2 (default); "
+            "delta=omit absolute level on all stations (increments only; "
+            "target stays Δy, no absolute-state features)"
+        ),
+    )
+    parser.add_argument(
+        "--holdout-from",
+        type=str,
+        default=None,
+        help=(
+            "ISO date (e.g. 2026-01-01): months ≥ cut → holdout; "
+            "train/validate only on earlier months (leakage-free calendar split)"
+        ),
+    )
+    parser.add_argument(
         "--quantile",
         type=float,
         default=None,
@@ -1020,6 +1175,17 @@ def main() -> None:
         help=(
             f"Punti OLS per d1/d2 e baseline holdout poly2 "
             f"(default {POLY_NAIVE_POINTS} = {(POLY_NAIVE_POINTS - 1) * 0.5:.1f} h)"
+        ),
+    )
+    parser.add_argument(
+        "--target-mode",
+        choices=("delta", "residual-lin3", "residual-poly2"),
+        default="delta",
+        help=(
+            "delta=predict y(t+h)-y(t) (default); "
+            "residual-lin3=predict y(t+h)-lin3(t+h) + lin3_delta_Cento; "
+            "residual-poly2=predict y(t+h)-poly2(t+h) + poly2_delta_Cento "
+            "(points from --poly-points, default 6)"
         ),
     )
     parser.add_argument(
@@ -1087,6 +1253,23 @@ def main() -> None:
         tag = f"{tag}-flood"
     if args.lag_align:
         tag = f"{tag}-lag{args.lag_align}"
+    if args.lookback_tau:
+        tag = f"{tag}-lbtau"
+    if args.tau_frac:
+        n_tf = max(1, int(args.tau_frac_n))
+        phi_tf = float(args.tau_frac_max)
+        sig_tf = "d" if (
+            args.feature_signal == "delta" or args.tau_frac_signal == "delta"
+        ) else ""
+        tag = f"{tag}-taufrac{n_tf}-m{phi_tf:g}{sig_tf}"
+    elif args.feature_signal == "delta":
+        tag = f"{tag}-fdelta"
+    if args.target_mode == "residual-lin3":
+        tag = f"{tag}-rlin3"
+    elif args.target_mode == "residual-poly2":
+        tag = f"{tag}-rpoly2"
+    if args.holdout_from:
+        tag = f"{tag}-hf{args.holdout_from[:7].replace('-', '')}"
     if args.quantile is not None:
         tag = f"{tag}-q{int(round(args.quantile * 100))}"
     if args.event_weight != 1.0:
@@ -1100,6 +1283,7 @@ def main() -> None:
     log(f"out={args.out}")
     log(f"export-dnn={args.export_dnn}")
     log(f"skip-lgbm={args.skip_lgbm}  verbose={_VERBOSE}")
+    log(f"target-mode={args.target_mode}")
     log(
         f"poly window={poly_points} pts "
         f"({(poly_points - 1) * 0.5:.1f} h)  degree={POLY_NAIVE_DEGREE}"
@@ -1130,6 +1314,10 @@ def main() -> None:
             raise SystemExit(f"No yellow/soglia for: {miss_soglia}")
         log(f"soglie yellow: { {k: soglia_levels[k] for k in needed if k in soglia_levels} }", level="debug")
 
+    holdout_from = args.holdout_from
+    if holdout_from:
+        log(f"holdout-from={holdout_from} (calendar cut; train/val before cut)", level="ok")
+
     log_step("Caricamento storico")
     t_load = time.perf_counter()
     log(f"Carico stazioni da {args.data}…")
@@ -1149,7 +1337,9 @@ def main() -> None:
         if args.weir_crest is not None:
             weir_crest_used = float(args.weir_crest)
         else:
-            train_m0, _, _ = split_masks(wide.index, mode=args.split)
+            train_m0, _, _ = split_masks(
+                wide.index, mode=args.split, holdout_from=holdout_from
+            )
             base = series.to_numpy(dtype=float)[train_m0]
             base = base[np.isfinite(base)]
             weir_crest_used = float(np.percentile(base, 10)) if len(base) else 0.0
@@ -1173,14 +1363,30 @@ def main() -> None:
     )
 
     upstream_tau: dict[str, int] = {}
-    if args.lag_align:
+    station_lookback: dict[str, int] = {}
+    station_lag_steps: dict[str, list[int]] = {}
+    drop_level_all = args.feature_signal == "delta"
+    drop_level_stations: set[str] = set()
+    need_tau = bool(args.lag_align) or bool(args.lookback_tau) or bool(args.tau_frac)
+    if args.tau_frac and args.lag_align:
+        raise SystemExit("--tau-frac and --lag-align are mutually exclusive")
+    if args.tau_frac and args.lookback_tau:
+        raise SystemExit("--tau-frac and --lookback-tau are mutually exclusive")
+    if need_tau:
         log_step("Stima ritardi monte→Cento (solo mesi di train)")
-        train_wide, _, _ = split_masks(wide.index)
+        train_wide, _, _ = split_masks(wide.index, mode=args.split, holdout_from=holdout_from)
         y_down = wide[DOWNSTREAM].to_numpy(dtype=float)
+        # τ-fraction may need 2τ beyond the default max-lag-steps (=lookback).
+        max_lag_est = int(args.max_lag_steps)
+        if args.tau_frac:
+            max_lag_est = max(
+                max_lag_est,
+                int(math.ceil(float(args.tau_frac_max) * int(args.lookback))),
+            )
         for up in ups:
             x_up = wide[up].to_numpy(dtype=float)
             lag, r = ft.estimate_lag(
-                x_up, y_down, args.max_lag_steps, train_mask=train_wide
+                x_up, y_down, max_lag_est, train_mask=train_wide
             )
             upstream_tau[up] = lag
             log(
@@ -1189,12 +1395,66 @@ def main() -> None:
                 level="ok",
             )
 
+    if args.lookback_tau:
+        buf_steps = max(0, int(round(float(args.lookback_tau_buffer_hours) * 60 / ft.STEP_MINUTES)))
+        min_lb = max(POLY_NAIVE_MIN, poly_points)
+        for st in needed:
+            if st == DOWNSTREAM or st in acceptors:
+                station_lookback[st] = int(args.lookback)
+            else:
+                tau = int(upstream_tau.get(st, args.lookback))
+                station_lookback[st] = max(min_lb, min(int(args.lookback), tau + buf_steps))
+        log(
+            f"lookback-tau buffer={buf_steps} step "
+            f"({args.lookback_tau_buffer_hours:g} h): "
+            + ", ".join(f"{s}={station_lookback[s]}" for s in needed),
+            level="ok",
+        )
+
+    if args.tau_frac:
+        n_tf = max(1, int(args.tau_frac_n))
+        phi_max = float(args.tau_frac_max)
+        local_lb = max(POLY_NAIVE_MIN, int(args.tau_frac_local_lookback))
+        if args.tau_frac_signal == "delta" and not drop_level_all:
+            # Legacy: drop level only on τ-grid upstreams.
+            drop_level_stations = set(ups)
+        for st in needed:
+            if st == DOWNSTREAM or st in acceptors:
+                station_lookback[st] = min(local_lb, int(args.lookback))
+            else:
+                tau = int(upstream_tau.get(st, 0))
+                lags = tau_frac_lag_steps(tau, n_tf, phi_max)
+                station_lag_steps[st] = lags
+        max_sparse = max((max(v) for v in station_lag_steps.values()), default=0)
+        # Ensure --lookback spans the deepest τ-grid sample for chain / warmth.
+        if max_sparse + 1 > int(args.lookback):
+            args.lookback = max_sparse + 1
+        sig_note = "delta-all" if drop_level_all else (
+            "delta-ups" if drop_level_stations else "level"
+        )
+        log(
+            f"tau-frac n={n_tf} φ_max={phi_max:g} signal={sig_note} "
+            f"local_lb={local_lb}: "
+            + ", ".join(
+                f"{s}={station_lag_steps[s]}" if s in station_lag_steps
+                else f"{s}=flat{station_lookback.get(s, args.lookback)}"
+                for s in needed
+            ),
+            level="ok",
+        )
+    elif drop_level_all:
+        log("feature-signal=delta: omit absolute level on all stations", level="ok")
+
+    # Lag-align uses upstream_tau for shift/augment; lookback-tau / tau-frac alone must not.
+    lag_align_tau = upstream_tau if args.lag_align else {}
+
     log_step("Feature matrix")
     t_feat = time.perf_counter()
     log(
         f"Building features: lookback={args.lookback} yellow={use_yellow} "
         f"ratio={use_yellow} chain={bool(chain_pairs)} d1/d2=poly{poly_points} "
-        f"lag-align={bool(upstream_tau)}"
+        f"lag-align={bool(lag_align_tau)} lookback-tau={bool(station_lookback) and not station_lag_steps} "
+        f"tau-frac={bool(station_lag_steps)}"
     )
 
     def make_feats(h_steps: int) -> tuple[pd.DataFrame, list[str]]:
@@ -1206,10 +1466,14 @@ def main() -> None:
             soglia_kind="yellow",
             chain_pairs=chain_pairs,
             poly_points=poly_points,
-            upstream_tau=upstream_tau,
+            upstream_tau=lag_align_tau,
             lag_align_h=h_steps,
             align_mode=args.lag_align or "shift",
             align_window=args.align_window,
+            station_lookback=station_lookback or None,
+            station_lag_steps=station_lag_steps or None,
+            drop_level=drop_level_all,
+            drop_level_stations=drop_level_stations or None,
         )
 
     feats, feature_cols = make_feats(0)
@@ -1230,17 +1494,42 @@ def main() -> None:
 
     horizons_out: dict[str, dict] = {}
     export_horizons: dict[str, dict] = {}
+    export_feature_cols = list(feature_cols)
     n_h = len(horizons)
 
     for hi, h in enumerate(horizons, start=1):
         minutes = h * ft.STEP_MINUTES
         log_step(f"Orizzonte {minutes}′  ({hi}/{n_h})")
         t_h = time.perf_counter()
-        if upstream_tau:
+        if lag_align_tau:
             feats, feature_cols = make_feats(h)
         targets = build_targets(wide, h)
         X, y, y0, index = align_xy(feats, feature_cols, targets)
-        train_m, val_m, hold_m = split_masks(index, mode=args.split)
+        feat_cols_h = list(feature_cols)
+        y_delta = y
+        baseline_delta = None
+        if args.target_mode == "residual-lin3":
+            base = build_lin3_baseline(
+                wide[DOWNSTREAM], index, h, n_points=LIN3_POINTS
+            )
+            baseline_delta = base - y0
+            # Train residual r = y(t+h) − baseline; metrics use absolute Δ.
+            y = y_delta - baseline_delta
+            X = X.copy()
+            X["lin3_delta_Cento"] = baseline_delta
+            feat_cols_h.append("lin3_delta_Cento")
+        elif args.target_mode == "residual-poly2":
+            base = build_poly2_baseline(
+                wide[DOWNSTREAM], index, h, n_points=poly_points
+            )
+            baseline_delta = base - y0
+            y = y_delta - baseline_delta
+            X = X.copy()
+            X["poly2_delta_Cento"] = baseline_delta
+            feat_cols_h.append("poly2_delta_Cento")
+        train_m, val_m, hold_m = split_masks(
+            index, mode=args.split, holdout_from=holdout_from
+        )
         if args.flood_only and flood_events:
             flood_m = flood_window_mask(index, flood_events)
             # Calm out of train loss; keep val/hold full for FAR / calm checks in eval.
@@ -1287,9 +1576,12 @@ def main() -> None:
         lgbm_metrics = None
         best_iteration = 0
         if not args.skip_lgbm:
-            booster, lgbm_pred = train_lgbm(X, y, fit_train, fit_val)
+            booster, lgbm_pred = train_lgbm(X[feat_cols_h], y, fit_train, fit_val)
+            lgbm_pred_m = (
+                lgbm_pred + baseline_delta if baseline_delta is not None else lgbm_pred
+            )
             lgbm_metrics = eval_splits(
-                y0, y, lgbm_pred, train_m, val_m, hold_m, poly_baseline=poly_base
+                y0, y_delta, lgbm_pred_m, train_m, val_m, hold_m, poly_baseline=poly_base
             )
             best_iteration = int(booster.best_iteration or 0)
             he_l = lgbm_metrics["holdoutEvents"]
@@ -1304,15 +1596,18 @@ def main() -> None:
             log("skip LightGBM (--skip-lgbm)")
 
         log("Standardize features on train…")
-        X_std, stats = standardize_features(X, feature_cols, train_m)
+        X_std, stats = standardize_features(X, feat_cols_h, train_m)
         model, dnn_pred, dnn_hist = train_dnn(
             X_std, y, fit_train, fit_val, quantile=args.quantile, event_weight=args.event_weight
         )
+        dnn_pred_m = (
+            dnn_pred + baseline_delta if baseline_delta is not None else dnn_pred
+        )
         log("Eval splits (train/val/hold + events)…")
         dnn_metrics = eval_splits(
-            y0, y, dnn_pred, train_m, val_m, hold_m, poly_baseline=poly_base
+            y0, y_delta, dnn_pred_m, train_m, val_m, hold_m, poly_baseline=poly_base
         )
-        spreads = pack_spreads(y0, y, dnn_pred, val_m)
+        spreads = pack_spreads(y0, y_delta, dnn_pred_m, val_m)
         he = dnn_metrics["holdoutEvents"]
         log(
             f"DNN summary +{minutes}′: val={dnn_metrics['validate']['skill']} "
@@ -1326,8 +1621,8 @@ def main() -> None:
 
         key = str(h * ft.STEP_MINUTES)
         export_horizons[key] = {
-            "mean": [round(stats[c][0], 8) for c in feature_cols],
-            "std": [round(stats[c][1], 8) for c in feature_cols],
+            "mean": [round(stats[c][0], 8) for c in feat_cols_h],
+            "std": [round(stats[c][1], 8) for c in feat_cols_h],
             "layers": export_mlp_layers(model),
             **spreads,
             "train": dnn_metrics["train"],
@@ -1341,7 +1636,7 @@ def main() -> None:
         ridge = ridge_side_by_side(args.coeffs, h * ft.STEP_MINUTES)
         block = {
             "horizonMinutes": h * ft.STEP_MINUTES,
-            "nFeatures": len(feature_cols),
+            "nFeatures": len(feat_cols_h),
             "nSamples": {
                 "train": int(train_m.sum()),
                 "validate": int(val_m.sum()),
@@ -1357,6 +1652,7 @@ def main() -> None:
         if lgbm_metrics is not None:
             block["lightgbm"] = {**lgbm_metrics, "bestIteration": best_iteration}
         horizons_out[key] = block
+        export_feature_cols = feat_cols_h
 
     skill120 = (export_horizons.get("120") or {}).get("validateEvents", {}).get("skill")
     reliable = skill120 is not None and skill120 >= ft.SKILL_KEEP
@@ -1372,16 +1668,44 @@ def main() -> None:
         "sogliaKind": "yellow" if use_yellow else None,
         "sogliaLevels": {k: soglia_levels[k] for k in needed if k in soglia_levels} if use_yellow else {},
         "chainPairs": [list(p) for p in chain_pairs],
-        "upstreamLagAlign": bool(upstream_tau),
-        "upstreamLagMode": args.lag_align if upstream_tau else None,
-        "upstreamLagAlignWindow": args.align_window if upstream_tau else None,
+        "upstreamLagAlign": bool(lag_align_tau),
+        "upstreamLagMode": args.lag_align if lag_align_tau else None,
+        "upstreamLagAlignWindow": args.align_window if lag_align_tau else None,
         "upstreamLagMinutes": {
             up: upstream_tau[up] * ft.STEP_MINUTES for up in upstream_tau
         },
+        "lookbackTau": bool(args.lookback_tau),
+        "lookbackTauBufferHours": (
+            float(args.lookback_tau_buffer_hours) if args.lookback_tau else None
+        ),
+        "stationLookbackSteps": dict(station_lookback) if station_lookback else {},
+        "tauFrac": bool(station_lag_steps),
+        "tauFracN": int(args.tau_frac_n) if station_lag_steps else None,
+        "tauFracMax": float(args.tau_frac_max) if station_lag_steps else None,
+        "tauFracSignal": (
+            ("delta" if (drop_level_all or drop_level_stations) else "level")
+            if station_lag_steps else None
+        ),
+        "tauFracLocalLookback": (
+            int(args.tau_frac_local_lookback) if station_lag_steps else None
+        ),
+        "stationLagSteps": (
+            {k: list(v) for k, v in station_lag_steps.items()} if station_lag_steps else {}
+        ),
+        "featureSignal": args.feature_signal,
+        "dropLevelStations": sorted(drop_level_stations) if drop_level_stations else [],
+        "holdoutFrom": holdout_from,
         "quantile": args.quantile,
         "eventWeight": args.event_weight,
         "chiusaWeir": bool(args.chiusa_weir) and not bool(args.no_chiusa),
         "weirCrest": weir_crest_used,
+        "targetMode": (
+            "residual_lin3" if args.target_mode == "residual-lin3"
+            else "residual_poly2" if args.target_mode == "residual-poly2"
+            else "delta"
+        ),
+        "lin3Points": LIN3_POINTS if args.target_mode == "residual-lin3" else None,
+        "poly2Points": poly_points if args.target_mode == "residual-poly2" else None,
     }
     dnn_node = {
         "kind": "window_delta_mlp",
@@ -1391,7 +1715,7 @@ def main() -> None:
         "stations": needed,
         "lookbackSteps": args.lookback,
         "stepMinutes": ft.STEP_MINUTES,
-        "featureNames": feature_cols,
+        "featureNames": export_feature_cols,
         "featureRecipe": feature_recipe,
         "useRain": use_rain,
         "rainGauges": gauges if use_rain else [],
@@ -1428,7 +1752,7 @@ def main() -> None:
         "lookbackMinutes": args.lookback * ft.STEP_MINUTES,
         "stepMinutes": ft.STEP_MINUTES,
         "horizonsMinutes": [h * ft.STEP_MINUTES for h in horizons],
-        "features": feature_cols,
+        "features": export_feature_cols,
         "useRain": use_rain,
         "disclaimer": "Sperimentale: non operativo, non allertistico.",
         "holdoutBaseline": {

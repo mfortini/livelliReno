@@ -356,6 +356,84 @@ test('mlpForward applies ReLU then linear', () => {
     assert.equal(P.mlpForward([0, 0], layers), 0.5);
 });
 
+test('window_delta_transformer forecast from sequence tensor', () => {
+    const start = new Date('2026-11-10T00:00:00Z');
+    const now = new Date('2026-11-11T12:00:00Z');
+    const n = 60;
+    const values = Array.from({ length: n }, (_, i) => 1 + 0.01 * i);
+    const cento = sensor('Cento', values, start);
+    const forcelli = sensor('Forcelli', values.map(v => v + 0.2), start);
+    const stations = ['Cento', 'Forcelli'];
+    const channelNames = [];
+    for (const station of stations) {
+        const tag = station.replace(/ /g, '_');
+        channelNames.push(`level_${tag}`, `delta_${tag}`, `miss_${tag}`);
+    }
+    const nC = channelNames.length;
+    const d = 4;
+    const nhead = 2;
+    const L = 4;
+    const mean = Array(nC).fill(0);
+    const std = Array(nC).fill(1);
+    // Zero in_proj / attn / FFN → residual path carries zeros from input proj; head bias → constant delta.
+    const zeroMat = (rows, cols) => Array.from({ length: rows }, () => Array(cols).fill(0));
+    const ln = {
+        weight: Array(d).fill(1),
+        bias: Array(d).fill(0),
+        eps: 1e-5
+    };
+    const layer = {
+        norm1: ln,
+        attn: {
+            nhead,
+            dModel: d,
+            inProjWeight: zeroMat(3 * d, d),
+            inProjBias: Array(3 * d).fill(0),
+            outProjWeight: zeroMat(d, d),
+            outProjBias: Array(d).fill(0)
+        },
+        norm2: ln,
+        linear1: { W: zeroMat(8, d), b: Array(8).fill(0) },
+        linear2: { W: zeroMat(d, 8), b: Array(d).fill(0) }
+    };
+    const transformer = {
+        dModel: d,
+        nhead,
+        nlayers: 1,
+        inProj: { W: zeroMat(d, nC), b: Array(d).fill(0) },
+        pos: Array.from({ length: L }, () => Array(d).fill(0)),
+        layers: [layer],
+        norm: ln
+    };
+    const headLayers = [{ W: [Array(d).fill(0)], b: [0.05], activation: 'linear' }];
+    const tfNode = {
+        kind: 'window_delta_transformer',
+        stations,
+        upstreams: ['Forcelli'],
+        channelNames,
+        lookbackSteps: L,
+        stepMinutes: 30,
+        useRain: false,
+        reliable: true,
+        skill120: 0.4,
+        horizons: {
+            '30': { mean, std, transformer, headLayers, spreadLow: 0.01, spreadHigh: 0.02 },
+            '60': { mean, std, transformer, headLayers, spreadLow: 0.01, spreadHigh: 0.02 },
+            '90': { mean, std, transformer, headLayers, spreadLow: 0.01, spreadHigh: 0.02 },
+            '120': { mean, std, transformer, headLayers, spreadLow: 0.01, spreadHigh: 0.02, validate: { skill: 0.4 } }
+        }
+    };
+    const sensorMap = { Cento: cento, Forcelli: forcelli };
+    const result = P.predictNode(cento, [forcelli], {
+        hours: 24, now, coeffs: { nodes: { Cento: tfNode } },
+        horizonHours: 2, downstreamId: 'Cento', sensorMap, rainSensors: []
+    });
+    assert.equal(result.ok, true);
+    assert.equal(result.kind, 'window_delta_transformer');
+    const y0 = cento.timeSeries.at(-1).value;
+    assert.ok(Math.abs(result.next[0].med - (y0 + 0.05)) < 1e-6);
+});
+
 test('window_delta_gru / cnn forecast from sequence tensor', () => {
     const start = new Date('2026-11-10T00:00:00Z');
     const now = new Date('2026-11-11T12:00:00Z');
@@ -547,6 +625,146 @@ test('window_delta_mlp forecasts Cento from feature window', () => {
         maxStep: null
     });
     assert.ok(Math.abs(ema[1].value - (y0 + 0.35 * 0.05)) < 1e-6);
+});
+
+test('residual_lin3 decode is lin3 + MLP residual', () => {
+    const start = new Date('2026-11-10T00:00:00Z');
+    const n = 60;
+    // Anchor now on the last sample so lin3 sees a complete 3-point window.
+    const now = new Date(+start + (n - 1) * STEP);
+    // Rising limb: +0.02 per 30′ step → lin3(h=1) = y0 + 0.02, lin3_delta = 0.02.
+    const values = Array.from({ length: n }, (_, i) => 1 + 0.02 * i);
+    const cento = sensor('Cento', values, start);
+    const forcelli = sensor('Forcelli', values.map(v => v + 0.2), start);
+    const y0 = values[n - 1];
+    const lin3_30 = P.lin3Extrapolate(cento.timeSeries, +now, STEP, 1, 3);
+    assert.ok(Math.abs(lin3_30 - (y0 + 0.02)) < 1e-9);
+
+    const featureNames = [];
+    const mean = [];
+    const std = [];
+    for (const station of ['Cento', 'Forcelli']) {
+        const tag = station.replace(/ /g, '_');
+        for (let k = 0; k < 4; k++) {
+            featureNames.push(`level_${tag}_lag${k}`, `delta_${tag}_lag${k}`, `miss_${tag}_lag${k}`);
+            mean.push(0, 0, 0);
+            std.push(1, 1, 1);
+        }
+    }
+    featureNames.push('lin3_delta_Cento');
+    mean.push(0);
+    std.push(1);
+    const nIn = featureNames.length;
+    // Constant residual +0.03 regardless of inputs.
+    const layers = [
+        {
+            W: Array.from({ length: 2 }, () => Array.from({ length: nIn }, () => 0)),
+            b: [0, 0],
+            activation: 'relu'
+        },
+        { W: [[0, 0]], b: [0.03], activation: 'linear' }
+    ];
+    const block = {
+        mean, std, layers,
+        spreadLow: 0.02, spreadHigh: 0.03
+    };
+    const model = P.parseWindowMlpNode({
+        kind: 'window_delta_mlp',
+        downstream: 'Cento',
+        stations: ['Cento', 'Forcelli'],
+        upstreams: ['Forcelli'],
+        lookbackSteps: 4,
+        stepMinutes: 30,
+        featureNames,
+        featureRecipe: { targetMode: 'residual_lin3', lin3Points: 3 },
+        useRain: false,
+        reliable: true,
+        skill120: 0.4,
+        horizons: { '30': block, '60': block }
+    });
+    const raw = P.buildWindowFeatureVector(
+        { Cento: cento, Forcelli: forcelli },
+        model.stations, model.lookbackSteps, +now, STEP, [], false,
+        model.featureRecipe, 30
+    );
+    assert.ok(Math.abs(raw.lin3_delta_Cento - 0.02) < 1e-9);
+
+    const pts = P.forecastWindowMlp(model, { Cento: cento, Forcelli: forcelli }, [], 1, now, STEP, {
+        anchor: P.latestFinite(cento.timeSeries),
+        downstream: cento,
+        smooth: 0,
+        maxStep: null
+    });
+    // ŷ = lin3 + r̂ = (y0 + 0.02) + 0.03
+    assert.ok(pts.length >= 2);
+    assert.ok(Math.abs(pts[1].value - (y0 + 0.02 + 0.03)) < 1e-6);
+});
+
+test('residual_poly2 decode is poly2 + MLP residual', () => {
+    const start = new Date('2026-11-10T00:00:00Z');
+    const n = 60;
+    const now = new Date(+start + (n - 1) * STEP);
+    // Linear rise → poly2(6) matches lin3 slope (+0.02 / step).
+    const values = Array.from({ length: n }, (_, i) => 1 + 0.02 * i);
+    const cento = sensor('Cento', values, start);
+    const forcelli = sensor('Forcelli', values.map(v => v + 0.2), start);
+    const y0 = values[n - 1];
+    const poly2_30 = P.poly2Extrapolate(cento.timeSeries, +now, STEP, 1, 6);
+    assert.ok(Math.abs(poly2_30 - (y0 + 0.02)) < 1e-9);
+
+    const featureNames = [];
+    const mean = [];
+    const std = [];
+    for (const station of ['Cento', 'Forcelli']) {
+        const tag = station.replace(/ /g, '_');
+        for (let k = 0; k < 4; k++) {
+            featureNames.push(`level_${tag}_lag${k}`, `delta_${tag}_lag${k}`, `miss_${tag}_lag${k}`);
+            mean.push(0, 0, 0);
+            std.push(1, 1, 1);
+        }
+    }
+    featureNames.push('poly2_delta_Cento');
+    mean.push(0);
+    std.push(1);
+    const nIn = featureNames.length;
+    const layers = [
+        {
+            W: Array.from({ length: 2 }, () => Array.from({ length: nIn }, () => 0)),
+            b: [0, 0],
+            activation: 'relu'
+        },
+        { W: [[0, 0]], b: [0.03], activation: 'linear' }
+    ];
+    const block = { mean, std, layers, spreadLow: 0.02, spreadHigh: 0.03 };
+    const model = P.parseWindowMlpNode({
+        kind: 'window_delta_mlp',
+        downstream: 'Cento',
+        stations: ['Cento', 'Forcelli'],
+        upstreams: ['Forcelli'],
+        lookbackSteps: 4,
+        stepMinutes: 30,
+        featureNames,
+        featureRecipe: { targetMode: 'residual_poly2', poly2Points: 6 },
+        useRain: false,
+        reliable: true,
+        skill120: 0.4,
+        horizons: { '30': block, '60': block }
+    });
+    const raw = P.buildWindowFeatureVector(
+        { Cento: cento, Forcelli: forcelli },
+        model.stations, model.lookbackSteps, +now, STEP, [], false,
+        model.featureRecipe, 30
+    );
+    assert.ok(Math.abs(raw.poly2_delta_Cento - 0.02) < 1e-9);
+
+    const pts = P.forecastWindowMlp(model, { Cento: cento, Forcelli: forcelli }, [], 1, now, STEP, {
+        anchor: P.latestFinite(cento.timeSeries),
+        downstream: cento,
+        smooth: 0,
+        maxStep: null
+    });
+    assert.ok(pts.length >= 2);
+    assert.ok(Math.abs(pts[1].value - (y0 + 0.02 + 0.03)) < 1e-6);
 });
 
 test('muskingum stable decode keeps non-negative coeffs and rising-step response', () => {
@@ -991,6 +1209,52 @@ test('buildWindowFeatureVector adds yellow fill ratio beside headroom', () => {
     assert.ok(Math.abs(values.headroom_yellow_Cento_lag0 - (5.5 - 1.1)) < 1e-9);
     assert.ok(Math.abs(values.ratio_yellow_Cento_lag0 - (1.1 / 5.5)) < 1e-9);
     assert.ok(Math.abs(values.ratio_delta_Cento_lag0 - 0) < 1e-9);
+});
+
+test('buildWindowFeatureVector featureSignal=delta drops level on flat window', () => {
+    const start = new Date('2026-11-11T00:00:00Z');
+    const levels = Array.from({ length: 10 }, (_, i) => 1 + 0.1 * i);
+    const cento = sensor('Cento', levels, start);
+    const now = new Date(+start + 9 * STEP);
+    const v = P.buildWindowFeatureVector(
+        { Cento: cento }, ['Cento'], 2, +now, STEP, [], false,
+        { featureSignal: 'delta', usePolyDerivatives: false }, 0
+    );
+    assert.equal(v.level_Cento_lag0, undefined);
+    assert.ok(Number.isFinite(v.delta_Cento_lag0));
+    assert.equal(v.miss_Cento_lag0, 0);
+});
+
+test('buildWindowFeatureVector tauFrac samples sparse lags and can drop level', () => {
+    const start = new Date('2026-11-11T00:00:00Z');
+    const levels = Array.from({ length: 40 }, (_, i) => 1 + 0.1 * i);
+    const up = sensor('Forcelli', levels, start);
+    const cento = sensor('Cento', levels.map((v) => v + 2), start);
+    const now = new Date(+start + 39 * STEP);
+    const recipe = {
+        tauFrac: true,
+        tauFracSignal: 'level',
+        stationLagSteps: { Forcelli: [0, 4, 8] },
+        stationLookbackSteps: { Cento: 2 },
+        usePolyDerivatives: false
+    };
+    const v = P.buildWindowFeatureVector(
+        { Cento: cento, Forcelli: up }, ['Cento', 'Forcelli'], 48, +now, STEP, [], false, recipe, 0
+    );
+    assert.ok(Math.abs(v.level_Forcelli_lag0 - (1 + 0.1 * 39)) < 1e-9);
+    assert.ok(Math.abs(v.level_Forcelli_lag4 - (1 + 0.1 * 35)) < 1e-9);
+    assert.ok(Math.abs(v.level_Forcelli_lag8 - (1 + 0.1 * 31)) < 1e-9);
+    assert.equal(v.level_Forcelli_lag1, undefined);
+    assert.ok(Math.abs(v.level_Cento_lag0 - (3 + 0.1 * 39)) < 1e-9);
+    assert.ok(Math.abs(v.level_Cento_lag1 - (3 + 0.1 * 38)) < 1e-9);
+    assert.equal(v.level_Cento_lag2, undefined);
+    const recipeD = { ...recipe, tauFracSignal: 'delta' };
+    const vd = P.buildWindowFeatureVector(
+        { Cento: cento, Forcelli: up }, ['Cento', 'Forcelli'], 48, +now, STEP, [], false, recipeD, 0
+    );
+    assert.equal(vd.level_Forcelli_lag0, undefined);
+    assert.ok(Number.isFinite(vd.delta_Forcelli_lag0));
+    assert.ok(Math.abs(vd.level_Cento_lag0 - (3 + 0.1 * 39)) < 1e-9);
 });
 
 test('buildWindowFeatureVector aligns upstream window to horizon via tau', () => {

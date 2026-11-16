@@ -123,6 +123,8 @@ test('formatEvalMarkdown includes station and model rows', () => {
     assert.match(md, /prod/);
     assert.match(md, /0\.50/);
     assert.match(md, /CSI/);
+    assert.match(md, /NSE evt/);
+    assert.match(md, /KGE evt/);
 });
 
 test('fitArx recovers a linear relation', () => {
@@ -153,6 +155,26 @@ test('csiFromCounts and pinballScore basics', () => {
         { tau: 0.9, q: 1.2 }
     ]);
     assert.ok(Number.isFinite(mp));
+});
+
+test('nseFromPairStats and kgeFromPairStats on perfect / scaled series', () => {
+    const perfect = EP.emptyPairStats();
+    const scaled = EP.emptyPairStats();
+    for (let i = 0; i < 20; i++) {
+        const o = i * 0.5;
+        EP.accumulatePair(perfect, o, o);
+        EP.accumulatePair(scaled, 2 * o, o);
+    }
+    assert.ok(Math.abs(EP.nseFromPairStats(perfect) - 1) < 1e-9);
+    assert.ok(Math.abs(EP.kgeFromPairStats(perfect).kge - 1) < 1e-9);
+    const kgeScaled = EP.kgeFromPairStats(scaled);
+    assert.ok(Number.isFinite(kgeScaled.kge));
+    assert.ok(Math.abs(kgeScaled.r - 1) < 1e-9);
+    assert.ok(Math.abs(kgeScaled.alpha - 2) < 1e-9);
+    assert.ok(Math.abs(kgeScaled.beta - 2) < 1e-9);
+    const nseCi = EP.bootstrapHydroCI([perfect, scaled], 'nse', { seed: 1, draws: 100 });
+    assert.ok(Number.isFinite(nseCi.value));
+    assert.ok(nseCi.lo <= nseCi.value && nseCi.value <= nseCi.hi);
 });
 
 test('firstCrossingTime and crossingTimeErrorMin', () => {

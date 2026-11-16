@@ -100,6 +100,7 @@ function emptyHorizonAcc() {
     return {
         all: { n: 0, seModel: 0, sePersist: 0, sePoly2: 0, seRidge: 0, seArx: 0 },
         event: { n: 0, seModel: 0, sePersist: 0, sePoly2: 0, seRidge: 0, seArx: 0 },
+        eventPairs: EP.emptyPairStats(),
         rising: { n: 0, se: 0 },
         falling: { n: 0, se: 0 },
         seShift: Object.fromEntries(PHASE_SHIFTS.map(s => [s, { n: 0, se: 0 }])),
@@ -117,6 +118,7 @@ function ensureEvent(acc, key) {
             n: 0, seModel: 0, sePersist: 0, sePoly2: 0, seRidge: 0, seArx: 0,
             rising: { n: 0, se: 0 }, falling: { n: 0, se: 0 },
             pinball: { n: 0, sum: 0 },
+            pairs: EP.emptyPairStats(),
             crossingTimeErrs: []
         });
     }
@@ -307,6 +309,20 @@ function buildCandidatesForNode(node, ctx) {
         if (seqCnn) {
             out.seq_cnn = { coeffs: { nodes: { [node]: force(seqCnn) } } };
         }
+        const seqGruAb = loadJson(path.join(ctx.root, 'models/seq-cento-gru-ab-tf.json'));
+        if (seqGruAb && (seqGruAb.downstream === node || !seqGruAb.downstream)) {
+            out.seq_gru_ab = {
+                coeffs: { nodes: { [node]: force(seqGruAb) } },
+                note: 'leakfree GRU twin for Transformer A/B'
+            };
+        }
+        const seqTf = loadJson(path.join(ctx.root, 'models/seq-cento-transformer.json'));
+        if (seqTf && (seqTf.downstream === node || !seqTf.downstream)) {
+            out.seq_transformer = {
+                coeffs: { nodes: { [node]: force(seqTf) } },
+                note: 'A/B Transformer; forced reliable for protocol compare'
+            };
+        }
         const musk = loadJson(path.join(ctx.root, 'models/hybrid-muskingum-cento.json'));
         if (musk) {
             out.muskingum_gru = { coeffs: { nodes: { [node]: force(musk) } } };
@@ -367,6 +383,11 @@ function finalizeModel(accByH, seed) {
             crossErrs.map(v => ({ value: v })),
             { seed: seed + 1, draws: 1000 }
         );
+        const eventPairList = eventList.map(e => e.pairs).filter(Boolean);
+        const nseEvent = EP.nseFromPairStats(acc.eventPairs);
+        const kgeBlock = EP.kgeFromPairStats(acc.eventPairs);
+        const nseCi = EP.bootstrapHydroCI(eventPairList, 'nse', { seed: seed + 2, draws: 1000 });
+        const kgeCi = EP.bootstrapHydroCI(eventPairList, 'kge', { seed: seed + 3, draws: 1000 });
         out[hMin] = {
             nAll: acc.all.n,
             nEvent: acc.event.n,
@@ -387,6 +408,13 @@ function finalizeModel(accByH, seed) {
             fallingN: acc.falling?.n || 0,
             phaseLagMin: lag.phaseLagMin,
             phaseLagMinDiscrete: lag.phaseLagMinDiscrete,
+            nseEvent,
+            nseEventCI: nseCi,
+            kgeEvent: kgeBlock?.kge ?? null,
+            kgeEventR: kgeBlock?.r ?? null,
+            kgeEventAlpha: kgeBlock?.alpha ?? null,
+            kgeEventBeta: kgeBlock?.beta ?? null,
+            kgeEventCI: kgeCi,
             crossingTimeErrMed: EP.median(crossErrs),
             crossingTimeErrCI: crossCi,
             crossingTimeN: crossErrs.length,
@@ -421,6 +449,8 @@ function exportPerEvent(accByH, node, model) {
                 skillPersist: EP.skillFromRmse(EP.rmseOf(ev.seModel, ev.n), EP.rmseOf(ev.sePersist, ev.n)),
                 risingRmse: ev.rising?.n ? Math.sqrt(ev.rising.se / ev.rising.n) : null,
                 fallingRmse: ev.falling?.n ? Math.sqrt(ev.falling.se / ev.falling.n) : null,
+                nse: EP.nseFromPairStats(ev.pairs),
+                kge: EP.kgeFromPairStats(ev.pairs)?.kge ?? null,
                 pinball: ev.pinball?.n ? ev.pinball.sum / ev.pinball.n : null,
                 crossingTimeErrMed: EP.median(ev.crossingTimeErrs || [])
             });
@@ -448,7 +478,8 @@ function run(options = {}) {
     const stationFilter = opt('stations', null); // comma-separated optional
     const publishLagMin = Number(opt('publish-lag-min', 0));
     const dropUpstream = opt('drop-upstream', null);
-    const doYearFolds = args.includes('--year-folds') || opt('year-folds', '1') !== '0';
+    // Default on; pass `--year-folds 0` to skip (presence of the flag alone is not enough).
+    const doYearFolds = opt('year-folds', '1') !== '0';
     // --extra-mlp label=path (repeatable): add MLP candidates for A/B
     const extraMlp = {};
     for (let i = 0; i < args.length; i++) {
@@ -733,8 +764,10 @@ function run(options = {}) {
                     }
                     if (activeEvent) {
                         accumulate(acc.event, pred, actual, persist, poly2, ridge, arx);
+                        EP.accumulatePair(acc.eventPairs, pred, actual);
                         const pev = ensureEvent(acc, activeEvent.key);
                         accumulate(pev, pred, actual, persist, poly2, ridge, arx);
+                        EP.accumulatePair(pev.pairs, pred, actual);
                         const limb = now < activeEvent.peakTime ? 'rising' : 'falling';
                         const err2 = (pred - actual) ** 2;
                         acc[limb].n++;
@@ -1008,9 +1041,11 @@ function runCentoYearFolds(ctx) {
                         const acc = stats[key][h];
                         accumulate(acc.all, pred, actual, persist, poly2, ridge, arx);
                         accumulate(acc.event, pred, actual, persist, poly2, ridge, arx);
+                        EP.accumulatePair(acc.eventPairs, pred, actual);
                         accumulateCsi(acc.csi, thresholds, pred, actual);
                         const pev = ensureEvent(acc, evKey);
                         accumulate(pev, pred, actual, persist, poly2, ridge, arx);
+                        EP.accumulatePair(pev.pairs, pred, actual);
                         const err2 = (pred - actual) ** 2;
                         acc[limb].n++;
                         acc[limb].se += err2;

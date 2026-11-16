@@ -6,8 +6,9 @@ Variabili:
   - B13215 livello idrometrico istantaneo, timerange [254,0,0]
   - B13011 precipitazione cumulata 15′, timerange [1,0,900] (pluviometri in config.rainfall)
 
-Scrive CSV `time,value` in --out (livelli) e --out/rain (pioggia).
+Scrive CSV e/o Parquet `time,value` in --out (livelli) e --out/rain (pioggia).
 I file .json.gz grezzi restano in --cache (default ./storico/raw) per riuso.
+Il CSV resta per i tool JS (backtest); il Parquet è preferito dai fit Python via DuckDB.
 """
 
 from __future__ import annotations
@@ -21,6 +22,11 @@ import urllib.error
 import urllib.request
 from datetime import date, datetime, timezone
 from pathlib import Path
+
+try:
+    import duckdb
+except ImportError:  # pragma: no cover
+    duckdb = None  # type: ignore
 
 BASE_URL = "https://dati-simc.arpae.it/opendata/osservati/meteo/storico"
 LEVEL_CODE = "B13215"
@@ -68,16 +74,23 @@ def download_month(year: int, month: int, cache_dir: Path, force: bool) -> Path:
     return dest
 
 
-def extract_var(
+def extract_month(
     gz_path: Path,
-    station_names: set[str],
-    var_code: str,
-    timerange: list[int],
-) -> dict[str, list[tuple[str, float]]]:
-    """Return {station: [(iso_utc, value), ...]} for a BUFR variable/timerange."""
-    out: dict[str, list[tuple[str, float]]] = {n: [] for n in station_names}
-    if not station_names:
-        return out
+    level_names: set[str],
+    rain_names: set[str],
+    level_code: str = LEVEL_CODE,
+    level_tr: list[int] | None = None,
+    rain_code: str = RAIN_CODE,
+    rain_tr: list[int] | None = None,
+) -> tuple[dict[str, list[tuple[str, float]]], dict[str, list[tuple[str, float]]]]:
+    """One pass over the monthly file for levels and rainfall."""
+    level_tr = INSTANT_TR if level_tr is None else level_tr
+    rain_tr = RAIN_TR if rain_tr is None else rain_tr
+    levels: dict[str, list[tuple[str, float]]] = {n: [] for n in level_names}
+    rains: dict[str, list[tuple[str, float]]] = {n: [] for n in rain_names}
+    wanted = level_names | rain_names
+    if not wanted:
+        return levels, rains
     with gzip.open(gz_path, "rt", encoding="utf-8", errors="replace") as handle:
         for line in handle:
             line = line.strip()
@@ -92,21 +105,25 @@ def extract_var(
                 continue
             meta = (data[0].get("vars") or {})
             name = (meta.get("B01019") or {}).get("v")
-            if name not in station_names:
+            if name not in wanted:
                 continue
             stamp = obj.get("date")
             if not stamp:
                 continue
+            want_level = name in level_names
+            want_rain = name in rain_names
             for block in data[1:]:
-                if block.get("timerange") != timerange:
-                    continue
-                payload = (block.get("vars") or {}).get(var_code)
-                if not payload:
-                    continue
-                value = payload.get("v")
-                if isinstance(value, (int, float)):
-                    out[name].append((stamp, float(value)))
-    return out
+                tr = block.get("timerange")
+                payload_vars = block.get("vars") or {}
+                if want_level and tr == level_tr:
+                    payload = payload_vars.get(level_code)
+                    if payload and isinstance(payload.get("v"), (int, float)):
+                        levels[name].append((stamp, float(payload["v"])))
+                if want_rain and tr == rain_tr:
+                    payload = payload_vars.get(rain_code)
+                    if payload and isinstance(payload.get("v"), (int, float)):
+                        rains[name].append((stamp, float(payload["v"])))
+    return levels, rains
 
 
 def merge_series(
@@ -130,11 +147,50 @@ def write_csv(path: Path, series: dict[str, float]) -> int:
     return len(rows)
 
 
+def write_parquet(path: Path, series: dict[str, float]) -> int:
+    """Compact columnar store; preferred by Python loaders that use DuckDB."""
+    if duckdb is None:
+        raise SystemExit("duckdb non disponibile: uv sync, oppure --format csv")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    rows = sorted(series.items(), key=lambda p: p[0])
+    con = duckdb.connect()
+    dest = str(path).replace("'", "''")
+    if not rows:
+        con.execute(
+            "COPY (SELECT CAST(NULL AS VARCHAR) AS time, CAST(NULL AS DOUBLE) AS value "
+            f"WHERE FALSE) TO '{dest}' (FORMAT PARQUET, COMPRESSION ZSTD)"
+        )
+        return 0
+    # Keep time as ISO VARCHAR (same as CSV) so loaders can CAST without pytz.
+    times = [t for t, _ in rows]
+    values = [v for _, v in rows]
+    con.execute(
+        """
+        CREATE TEMP TABLE series AS
+        SELECT time, CAST(value AS DOUBLE) AS value
+        FROM (SELECT UNNEST(?::VARCHAR[]) AS time, UNNEST(?::DOUBLE[]) AS value)
+        ORDER BY 1
+        """,
+        [times, values],
+    )
+    con.execute(f"COPY series TO '{dest}' (FORMAT PARQUET, COMPRESSION ZSTD)")
+    return len(rows)
+
+
+def write_series(out_dir: Path, name: str, series: dict[str, float], fmt: str) -> int:
+    n = 0
+    if fmt in ("csv", "both"):
+        n = write_csv(out_dir / f"{name}.csv", series)
+    if fmt in ("parquet", "both"):
+        n = write_parquet(out_dir / f"{name}.parquet", series)
+    return n
+
+
 def main() -> int:
     root = Path(__file__).resolve().parents[1]
     parser = argparse.ArgumentParser(description="Scarica storico livelli/pioggia ARPAE per il dashboard")
     parser.add_argument("--config", type=Path, default=root / "config.json")
-    parser.add_argument("--out", type=Path, default=root / "storico", help="Directory CSV per stazione")
+    parser.add_argument("--out", type=Path, default=root / "storico", help="Directory CSV/Parquet per stazione")
     parser.add_argument("--cache", type=Path, default=root / "storico" / "raw", help="Cache file .json.gz mensili")
     parser.add_argument("--from", dest="date_from", type=str, default=None, help="YYYY-MM (incluso)")
     parser.add_argument("--to", dest="date_to", type=str, default=None, help="YYYY-MM (incluso)")
@@ -146,7 +202,16 @@ def main() -> int:
     )
     parser.add_argument("--force", action="store_true", help="Riscarica i .json.gz anche se in cache")
     parser.add_argument("--no-rain", action="store_true", help="Non estrarre i pluviometri")
+    parser.add_argument(
+        "--format",
+        choices=("csv", "parquet", "both"),
+        default="both",
+        help="Formato di scrittura (default both: CSV per JS + Parquet per fit Python)",
+    )
     args = parser.parse_args()
+    if args.format in ("parquet", "both") and duckdb is None:
+        print("duckdb richiesto per --format parquet/both", file=sys.stderr)
+        return 1
 
     config = json.loads(args.config.read_text(encoding="utf-8"))
     stations = set(config.get("sensors", {}).keys())
@@ -182,36 +247,36 @@ def main() -> int:
 
     level_buckets: dict[str, dict[str, float]] = {n: {} for n in stations}
     rain_buckets: dict[str, dict[str, float]] = {n: {} for n in rain_gauges}
-    for year, month in months:
+    n_months = len(months)
+    for idx, (year, month) in enumerate(months, start=1):
         try:
             gz_path = download_month(year, month, args.cache, force=args.force)
         except FileNotFoundError as exc:
             print(f"  skip: {exc}", flush=True)
             continue
-        print(f"  extract {gz_path.name} …", flush=True)
-        chunk = extract_var(gz_path, stations, LEVEL_CODE, INSTANT_TR)
+        print(f"  [{idx}/{n_months}] extract {gz_path.name} …", flush=True)
+        chunk, rain_chunk = extract_month(gz_path, stations, rain_gauges)
         counts = {k: len(v) for k, v in chunk.items() if v}
         print(f"  livelli: {sum(counts.values())} punti su {len(counts)} stazioni", flush=True)
         merge_series(level_buckets, chunk)
         if rain_gauges:
-            rain_chunk = extract_var(gz_path, rain_gauges, RAIN_CODE, RAIN_TR)
             rcounts = {k: len(v) for k, v in rain_chunk.items() if v}
             print(f"  pioggia: {sum(rcounts.values())} punti su {len(rcounts)} pluviometri", flush=True)
             merge_series(rain_buckets, rain_chunk)
 
-    print("Scrittura CSV livelli…", flush=True)
+    print(f"Scrittura livelli ({args.format})…", flush=True)
     total = 0
     for name in sorted(stations):
-        n = write_csv(args.out / f"{name}.csv", level_buckets.get(name, {}))
+        n = write_series(args.out, name, level_buckets.get(name, {}), args.format)
         total += n
         print(f"  {name}: {n} punti")
 
     rain_total = 0
     rain_dir = args.out / "rain"
     if rain_gauges:
-        print("Scrittura CSV pioggia…", flush=True)
+        print(f"Scrittura pioggia ({args.format})…", flush=True)
         for name in sorted(rain_gauges):
-            n = write_csv(rain_dir / f"{name}.csv", rain_buckets.get(name, {}))
+            n = write_series(rain_dir, name, rain_buckets.get(name, {}), args.format)
             rain_total += n
             print(f"  rain/{name}: {n} punti")
 
@@ -227,11 +292,12 @@ def main() -> int:
         "rainfallGauges": sorted(rain_gauges),
         "points": total,
         "rainfallPoints": rain_total,
+        "format": args.format,
         "fetchedAt": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
     }
     (args.out / "manifest.json").write_text(json.dumps(meta, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"Totale livelli {total} + pioggia {rain_total} → {args.out}")
-    print("Poi: uv run python tools/fit-transfer.py --data ./storico --out models/transfer-coeffs.json")
+    print("Poi: node tools/build-event-catalog.js && uv run python tools/fit-ml-cento.py …")
     return 0
 
 

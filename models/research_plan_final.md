@@ -51,6 +51,17 @@ Nessun work package ha battuto la MLP di produzione su rising RMSE / skill event
 - `tools/fit-ml-cento.py` (`--extra-upstreams`, `--acceptors`, `--chiusa-weir`)
 - `predict-transfer.js` (hazard + `decodeGateP`; soft-load se il JSON esiste)
 
+## Ciclo post-WP6 (2026-11-16)
+
+| Voce | Esito |
+|---|---|
+| Protocollo NSE/KGE su eventi | fatto (`eval-protocol.js` / `protocol-mode.js`) |
+| Retrain leakage-free (`--holdout-from 2026-01-01`) | fatto — flat ≈ prod |
+| Lookback-τ (`--lookback-tau`, L_i=τ_i+4 h) | **no adopt** — pari a flat; CI skill/rising sovrapposti (`ab-lookback-tau.md`) |
+| Griglia φ≤2τ (`--tau-frac`, n=8/16, signal level/delta) | **no adopt** — ≈ flat; densità e delta-only irrilevanti (`ab-tau-fraction.md`) |
+| Feature solo-delta flat (`--feature-signal delta`) | **no adopt** — ≤ flat level+Δ; rising/lag non migliorano (`ab-feature-delta.md`) |
+| Soft-adopt / `reliable` | invariato |
+
 ## Raccomandazione
 
-Tenere la MLP di produzione. Per un prossimo ciclo: rating Q(h) ufficiale se disponibile; lookback monte scalato sul travel time; routing open-loop che batta ARX prima di EnKF/ibridi.
+Tenere la MLP di produzione. Per un prossimo ciclo: **rating Q(h) ufficiale se disponibile**; routing open-loop che batta ARX prima di EnKF/ibridi. Lookback-τ, griglia φ/τ e retrain calendar cut già chiusi senza promote.

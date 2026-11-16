@@ -43,27 +43,39 @@ RAIN24_STEPS = 48  # 24 h
 SPLIT_MODE = "alt"  # "alt" | "block"; overridden by --split
 
 
+def _station_series_path(data_dir: Path, name: str) -> Path | None:
+    """Prefer Parquet (compact); fall back to CSV for JS-era caches."""
+    parquet = data_dir / f"{name}.parquet"
+    if parquet.exists():
+        return parquet
+    csv_path = data_dir / f"{name}.csv"
+    if csv_path.exists():
+        return csv_path
+    return None
+
+
 def load_wide(data_dir: Path, stations: list[str]) -> pd.DataFrame:
     con = duckdb.connect()
     frames: list[pd.DataFrame] = []
     for name in stations:
-        path = data_dir / f"{name}.csv"
-        if not path.exists():
+        path = _station_series_path(data_dir, name)
+        if path is None:
             continue
+        reader = "read_parquet(?)" if path.suffix == ".parquet" else "read_csv_auto(?, header=true)"
         df = con.execute(
-            """
+            f"""
             SELECT
               ?::VARCHAR AS station,
               CAST(time AS TIMESTAMPTZ) AS ts,
               CAST(value AS DOUBLE) AS value
-            FROM read_csv_auto(?, header=true)
+            FROM {reader}
             WHERE value IS NOT NULL AND isfinite(value)
             """,
             [name, str(path)],
         ).df()
         frames.append(df)
     if not frames:
-        raise SystemExit(f"Nessun CSV trovato in {data_dir}")
+        raise SystemExit(f"Nessun CSV/Parquet trovato in {data_dir}")
 
     all_long = pd.concat(frames, ignore_index=True)
     con.register("levels_long", all_long)
@@ -220,8 +232,15 @@ def residual_spreads(
     return max(low, floor * 0.5), max(high, floor * 0.5)
 
 
-def month_blocks(index: pd.DatetimeIndex, mode: str | None = None) -> np.ndarray:
-    """0 = train, 1 = validate, 2 = final holdout (last HOLDOUT_MONTHS).
+def month_blocks(
+    index: pd.DatetimeIndex,
+    mode: str | None = None,
+    holdout_from: str | pd.Timestamp | None = None,
+) -> np.ndarray:
+    """0 = train, 1 = validate, 2 = final holdout.
+
+    Holdout is the last ``HOLDOUT_MONTHS`` calendar months, or every month whose
+    start is ≥ ``holdout_from`` when that cut is set (leakage-free calendar split).
 
     mode:
       - ``alt``: alternating months on the non-holdout span (legacy)
@@ -232,7 +251,13 @@ def month_blocks(index: pd.DatetimeIndex, mode: str | None = None) -> np.ndarray
     naive = index.tz_convert("UTC").tz_localize(None) if index.tz is not None else index
     months = naive.to_period("M")
     uniq = months.unique().sort_values()
-    holdout = set(uniq[-HOLDOUT_MONTHS:]) if len(uniq) > HOLDOUT_MONTHS else set()
+    if holdout_from is not None:
+        cut = pd.Timestamp(holdout_from)
+        if cut.tzinfo is not None:
+            cut = cut.tz_convert("UTC").tz_localize(None)
+        holdout = {m for m in uniq if m.to_timestamp() >= cut}
+    else:
+        holdout = set(uniq[-HOLDOUT_MONTHS:]) if len(uniq) > HOLDOUT_MONTHS else set()
     remaining = [m for m in uniq if m not in holdout]
     mapping: dict = {}
     if mode == "block":
