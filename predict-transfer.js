@@ -1,5 +1,8 @@
 (function(root) {
     'use strict';
+    const TemporalSampling = typeof require === 'function'
+        ? require('./temporal-sampling.js')
+        : (root.TemporalSampling || globalThis.TemporalSampling);
     const HOUR = 3600000;
     const MINUTE = 60000;
     const DEFAULT_STEP_MS = 30 * MINUTE;
@@ -847,15 +850,16 @@
         return finite(y0) ? y0 : null;
     }
 
-    function localPolyDerivatives(series, endMs, stepMs, nPoints = 4) {
+    function localPolyDerivatives(series, endMs, stepMs, nPoints = 4, options = {}) {
         // OLS y ≈ a0 + a1 x + a2 x² with x = -(n-1)..0 → d1=a1, d2=2 a2 (per step).
+        const sampleFn = options.sampleFn || ((s, t) => sampleAt(s, t));
         const tryN = [nPoints, 3];
         for (const n of tryN) {
             if (n < 3) continue;
             const y = [];
             let complete = true;
             for (let i = 0; i < n; i++) {
-                const v = sampleAt(series, endMs - (n - 1 - i) * stepMs);
+                const v = sampleFn(series, endMs - (n - 1 - i) * stepMs);
                 if (!finite(v)) { complete = false; break; }
                 y.push(v);
             }
@@ -927,6 +931,28 @@
         const levelPrefix = useHeadroom ? `headroom_${sogliaKind}` : 'level';
         const ratioPrefix = `ratio_${sogliaKind}`;
         const stepMinutes = stepMs / MINUTE;
+        const temporal = TemporalSampling?.temporalContract
+            ? TemporalSampling.temporalContract(recipe)
+            : { inputStepMinutes: stepMinutes, method: 'raw', maxGapMinutes: 60, derivWindowMinutes: 150 };
+        const temporalOn = temporal.inputStepMinutes !== stepMinutes || temporal.method !== 'raw';
+        const featureStepMs = temporalOn ? temporal.inputStepMinutes * MINUTE : stepMs;
+        const featureStepMinutes = featureStepMs / MINUTE;
+        const derivativeStepMs = temporalOn ? DEFAULT_STEP_MS : stepMs;
+        const temporalViews = new Map();
+        const temporalViewFor = (series) => {
+            let view = temporalViews.get(series);
+            if (!view) {
+                view = TemporalSampling.createTemporalView(series, nowMs, {
+                    maxGapMinutes: temporal.maxGapMinutes,
+                    method: temporal.method
+                });
+                temporalViews.set(series, view);
+            }
+            return view;
+        };
+        const sampleFeature = temporalOn
+            ? (series, t) => temporalViewFor(series).sample(t)
+            : (series, t) => sampleAt(series, t);
         const tauFrac = recipe?.tauFrac === true;
         const dropLevelAll = recipe?.featureSignal === 'delta';
         const dropLevelSet = new Set(
@@ -945,17 +971,17 @@
             const ratioOn = !dropLevel && useRatio && finite(ref) && ref > 0;
             const lagMode = recipe?.upstreamLagAlign === true ? (recipe?.upstreamLagMode || 'shift') : null;
             const lagOff = lagMode === 'shift'
-                ? upstreamLagOffsetSteps(recipe, station, horizonMinutes, stepMinutes)
+                ? upstreamLagOffsetSteps(recipe, station, horizonMinutes, featureStepMinutes)
                 : 0;
             const augmentSteps = lagMode === 'augment'
-                ? upstreamLagOffsetSteps(recipe, station, horizonMinutes, stepMinutes)
+                ? upstreamLagOffsetSteps(recipe, station, horizonMinutes, featureStepMinutes)
                 : null;
             const lagKeys = stationWindowLagKeys(recipe, station, lookback);
             for (const k of lagKeys) {
                 const kEff = k + lagOff;
-                const t = kEff >= 0 ? nowMs - kEff * stepMs : null;
-                const level = t === null ? null : sampleAt(series, t);
-                const prev = t === null ? null : sampleAt(series, t - stepMs);
+                const t = kEff >= 0 ? nowMs - kEff * featureStepMs : null;
+                const level = t === null ? null : sampleFeature(series, t);
+                const prev = t === null ? null : sampleFeature(series, t - featureStepMs);
                 const miss = finite(level) ? 0 : 1;
                 const signal = head && finite(level) ? ref - level : level;
                 const signalPrev = head && finite(prev) ? ref - prev : prev;
@@ -968,7 +994,7 @@
                 if (usePolyD) {
                     const { d1, d2 } = t === null
                         ? { d1: null, d2: null }
-                        : localPolyDerivatives(series, t, stepMs, polyPoints);
+                        : localPolyDerivatives(series, t, derivativeStepMs, polyPoints, { sampleFn: sampleFeature });
                     values[`d1_${tag}_lag${k}`] = d1;
                     values[`d2_${tag}_lag${k}`] = d2;
                 }
@@ -979,12 +1005,27 @@
                     values[`ratio_delta_${tag}_lag${k}`] = finite(r) && finite(rp) ? r - rp : null;
                 }
             }
+            const spectral = recipe?.spectral;
+            if (spectral && spectral.enabled !== false && TemporalSampling?.spectralFeatures) {
+                const W = Math.max(4, Math.min(lookback,
+                    Math.round(Number(spectral.windowSteps) || lookback)));
+                const fftBins = Math.max(0, Math.round(Number(spectral.fftBins ?? 12)));
+                const waveletScales = Math.max(0, Math.round(Number(spectral.waveletScales ?? 5)));
+                const win = new Array(W);
+                for (let k = 0; k < W; k++) {
+                    const v = sampleFeature(series, nowMs - k * featureStepMs);
+                    win[k] = finite(v) ? v : NaN;
+                }
+                const feats = TemporalSampling.spectralFeatures(win, fftBins, waveletScales);
+                const names = TemporalSampling.spectralFeatureNames(tag, fftBins, waveletScales);
+                for (let i = 0; i < names.length; i++) values[names[i]] = feats[i];
+            }
             const alignWindow = Math.max(1, Math.round(Number(recipe?.upstreamLagAlignWindow) || 16));
             for (let j = 0; j < (augmentSteps === null ? 0 : alignWindow); j++) {
                 const s = augmentSteps + j;
-                const t = s >= 0 ? nowMs - s * stepMs : null;
-                const level = t === null ? null : sampleAt(series, t);
-                const prev = t === null ? null : sampleAt(series, t - stepMs);
+                const t = s >= 0 ? nowMs - s * featureStepMs : null;
+                const level = t === null ? null : sampleFeature(series, t);
+                const prev = t === null ? null : sampleFeature(series, t - featureStepMs);
                 const miss = finite(level) ? 0 : 1;
                 const signal = head && finite(level) ? ref - level : level;
                 const signalPrev = head && finite(prev) ? ref - prev : prev;
@@ -995,7 +1036,7 @@
                 if (usePolyD) {
                     const { d1, d2 } = t === null
                         ? { d1: null, d2: null }
-                        : localPolyDerivatives(series, t, stepMs, polyPoints);
+                        : localPolyDerivatives(series, t, derivativeStepMs, polyPoints, { sampleFn: sampleFeature });
                     values[`ad1_${tag}_lag${j}`] = d1;
                     values[`ad2_${tag}_lag${j}`] = d2;
                 }
@@ -1009,16 +1050,16 @@
             const seriesA = sensorMap?.[a]?.timeSeries;
             const seriesB = sensorMap?.[b]?.timeSeries;
             for (let k = 0; k < lookback; k++) {
-                const t = nowMs - k * stepMs;
-                const va = sampleAt(seriesA, t);
-                const vb = sampleAt(seriesB, t);
+                const t = nowMs - k * featureStepMs;
+                const va = sampleFeature(seriesA, t);
+                const vb = sampleFeature(seriesB, t);
                 const miss = (finite(va) && finite(vb)) ? 0 : 1;
                 values[`chain_${tag}_lag${k}`] = miss ? null : va - vb;
                 values[`chain_miss_${tag}_lag${k}`] = miss;
             }
         }
         if (useRain) {
-            const rain = basinRainAt(rainSensors, nowMs, stepMs);
+            const rain = basinRainAt(rainSensors, nowMs, DEFAULT_STEP_MS);
             values.rain6h = rain.rain6h;
             values.rain24h = rain.rain24h;
         }
@@ -1027,15 +1068,17 @@
             const down = stations[0];
             const tag = safeFeatureName(down);
             const series = sensorMap?.[down]?.timeSeries;
-            const hSteps = Math.round((finite(Number(horizonMinutes)) ? Number(horizonMinutes) : 0) / stepMinutes);
-            const y0 = sampleAt(series, nowMs);
+            const residualStepMs = temporalOn ? DEFAULT_STEP_MS : stepMs;
+            const residualStepMinutes = residualStepMs / MINUTE;
+            const hSteps = Math.round((finite(Number(horizonMinutes)) ? Number(horizonMinutes) : 0) / residualStepMinutes);
+            const y0 = sampleFeature(series, nowMs);
             if (recipe.targetMode === 'residual_lin3') {
                 const nPts = Math.max(2, Math.round(Number(recipe.lin3Points) || 3));
-                const lin3 = lin3Extrapolate(series, nowMs, stepMs, hSteps, nPts);
+                const lin3 = lin3Extrapolate(series, nowMs, residualStepMs, hSteps, nPts);
                 values[`lin3_delta_${tag}`] = finite(lin3) && finite(y0) ? lin3 - y0 : 0;
             } else {
                 const nPts = Math.max(3, Math.round(Number(recipe.poly2Points) || 6));
-                const poly2 = poly2Extrapolate(series, nowMs, stepMs, hSteps, nPts);
+                const poly2 = poly2Extrapolate(series, nowMs, residualStepMs, hSteps, nPts);
                 values[`poly2_delta_${tag}`] = finite(poly2) && finite(y0) ? poly2 - y0 : 0;
             }
         }
@@ -1925,6 +1968,15 @@
             });
         }
         let previous = y0;
+        const temporalRecipe = TemporalSampling?.temporalContract
+            ? TemporalSampling.temporalContract(model.featureRecipe)
+            : null;
+        const reuseTemporalFeatures = temporalRecipe
+            && (temporalRecipe.inputStepMinutes !== 30 || temporalRecipe.method !== 'raw')
+            && model.featureRecipe?.upstreamLagAlign !== true
+            && model.featureRecipe?.targetMode !== 'residual_lin3'
+            && model.featureRecipe?.targetMode !== 'residual_poly2';
+        let sharedRaw = null;
         // Floor maxStep with the last observed 30′ move so quiet lookback p95 cannot
         // cancel an already-rising limb (causal; does not invent peaks).
         let maxStep = options.maxStep;
@@ -1941,10 +1993,15 @@
             if (!block) continue;
             const target = Math.ceil((nowMs + blockMinutes * MINUTE) / stepMs) * stepMs;
             if (target > end + 1) continue;
-            const raw = buildWindowFeatureVector(
-                sensorMap, model.stations, model.lookbackSteps, nowMs, stepMs, rainSensors, model.useRain,
-                model.featureRecipe, blockMinutes
-            );
+            const raw = reuseTemporalFeatures && sharedRaw
+                ? sharedRaw
+                : buildWindowFeatureVector(
+                    sensorMap, model.stations, model.lookbackSteps, nowMs,
+                    (finite(Number(model.stepMinutes)) ? Number(model.stepMinutes) : 30) * MINUTE,
+                    rainSensors, model.useRain,
+                    model.featureRecipe, reuseTemporalFeatures ? 0 : blockMinutes
+                );
+            if (reuseTemporalFeatures && !sharedRaw) sharedRaw = raw;
             const x = standardizeWindowFeatures(raw, model.featureNames, block.mean, block.std);
             if (!x) continue;
             const layersMed = block.layersQ50 || block.layers;
@@ -3535,6 +3592,7 @@
         truncateSensor, seriesUntil, maxReliableHorizonMinutes, maxHorizonMinutesAvailable, estimatePredictedLag,
         reliableFromSkill, skillLoOf, mergeQuantileBands, mergeCrossingTime, predictCrossingTau, warpForecastByCrossing,
         applySkillGates, missingUpstreams, widenForecastBand,
+        TemporalSampling,
         DEFAULT_STEP_MS, FORK_K, SKILL_KEEP, SKILL_ENTER, SKILL_EXIT
     };
     if (typeof module !== 'undefined' && module.exports) module.exports = api;
