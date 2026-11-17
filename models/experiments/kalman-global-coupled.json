@@ -1,0 +1,1914 @@
+{
+ "version": 1,
+ "kind": "cento_kalman_global_experiment",
+ "trainedAt": "2026-11-17T15:06:45Z",
+ "stations": [
+  "Cento",
+  "Forcelli",
+  "Sostegno Reno",
+  "Bonconvento",
+  "Casalecchio tiro a volo"
+ ],
+ "stateDim": 10,
+ "note": "Joint state, block-diagonal dynamics, FULL process-noise covariance (cross-station residual covariances). Lagged cross-station coupling v_i+ += c_e*dz_src(t-tau) learned on train residuals.",
+ "transitions": [
+  {
+   "rho": 0.7997743641845513,
+   "gamma": -0.1048699246302237,
+   "ymin": -2.05,
+   "q_v": 0.0010013255218777506
+  },
+  {
+   "rho": -0.2837775461539312,
+   "gamma": -0.020632856423794716,
+   "ymin": 5.75,
+   "q_v": 0.01005256733944426
+  },
+  {
+   "rho": 0.1636389571090192,
+   "gamma": -0.08071476269301432,
+   "ymin": 19.87,
+   "q_v": 0.0026723615876187395
+  },
+  {
+   "rho": 0.5603364777625371,
+   "gamma": 0.05377215743547754,
+   "ymin": 1.01,
+   "q_v": 0.0005614241526944401
+  },
+  {
+   "rho": -0.18557209880154862,
+   "gamma": -0.09847239130536652,
+   "ymin": -0.93,
+   "q_v": 0.009217892423503144
+  }
+ ],
+ "coupling": {
+  "Cento": [
+   {
+    "src": "Sostegno Reno",
+    "tauSteps": 17,
+    "coef": 0.043499551153210254
+   },
+   {
+    "src": "Forcelli",
+    "tauSteps": 16,
+    "coef": 0.012572513373347373
+   }
+  ],
+  "Sostegno Reno": [
+   {
+    "src": "Bonconvento",
+    "tauSteps": 7,
+    "coef": 0.43836589236397777
+   }
+  ],
+  "Bonconvento": [
+   {
+    "src": "Casalecchio tiro a volo",
+    "tauSteps": 9,
+    "coef": -0.0003049563912360868
+   }
+  ]
+ },
+ "Q_velocity_crosscov": [
+  [
+   0.0010013359331561423,
+   0.00013510687507570964,
+   0.00037211305679782575,
+   -3.9479539570127714e-06,
+   -3.9927923917451666e-05
+  ],
+  [
+   0.00013510687507570964,
+   0.010052672305167756,
+   0.00024525431809738825,
+   7.430982226519807e-05,
+   0.00012624199244992067
+  ],
+  [
+   0.00037211305679782575,
+   0.00024525431809738825,
+   0.0026723900754883805,
+   9.277108602495653e-06,
+   -3.324053631907045e-05
+  ],
+  [
+   -3.9479539570127714e-06,
+   7.430982226519807e-05,
+   9.277108602495653e-06,
+   0.0005614299834312239,
+   4.2243598736158074e-05
+  ],
+  [
+   -3.9927923917451666e-05,
+   0.00012624199244992067,
+   -3.324053631907045e-05,
+   4.2243598736158074e-05,
+   0.009217988282452447
+  ]
+ ],
+ "origins": {
+  "from": "2020-01-01 01:00:00+01:00",
+  "to": "2026-11-15 07:00:00+01:00",
+  "n": 10038
+ },
+ "holdoutFrom": "2026-01-01",
+ "results": {
+  "kf_GC": {
+   "R": 0.0001,
+   "qScale": 1.0,
+   "horizons": {
+    "30": {
+     "horizonMinutes": 30,
+     "dnn": {
+      "train": {
+       "rmse": 0.019002,
+       "skill": 0.274641,
+       "mae": 0.010566,
+       "n": 4380,
+       "baseline": "persist",
+       "rmseBaseline": 0.026196
+      },
+      "validate": {
+       "rmse": 0.026063,
+       "skill": 0.264375,
+       "mae": 0.013062,
+       "n": 4375,
+       "baseline": "persist",
+       "rmseBaseline": 0.035429
+      },
+      "validateEvents": {
+       "rmse": 0.154943,
+       "skill": 0.306713,
+       "mae": 0.137206,
+       "n": 78,
+       "baseline": "persist",
+       "rmseBaseline": 0.223491
+      },
+      "holdout": {
+       "rmse": 0.020273,
+       "skill": -1.229697,
+       "mae": 0.007181,
+       "n": 1273,
+       "baseline": "poly2",
+       "rmseBaseline": 0.009092,
+       "skillPersist": 0.334907,
+       "rmsePersist": 0.030481
+      },
+      "holdoutEvents": {
+       "rmse": 0.169276,
+       "skill": -1.535294,
+       "mae": 0.155103,
+       "n": 13,
+       "baseline": "poly2",
+       "rmseBaseline": 0.066768,
+       "skillPersist": 0.367386,
+       "rmsePersist": 0.267582
+      }
+     }
+    },
+    "60": {
+     "horizonMinutes": 60,
+     "dnn": {
+      "train": {
+       "rmse": 0.03784,
+       "skill": 0.250758,
+       "mae": 0.018727,
+       "n": 4380,
+       "baseline": "persist",
+       "rmseBaseline": 0.050505
+      },
+      "validate": {
+       "rmse": 0.05361,
+       "skill": 0.228384,
+       "mae": 0.024421,
+       "n": 4375,
+       "baseline": "persist",
+       "rmseBaseline": 0.069477
+      },
+      "validateEvents": {
+       "rmse": 0.222673,
+       "skill": 0.243715,
+       "mae": 0.17772,
+       "n": 203,
+       "baseline": "persist",
+       "rmseBaseline": 0.29443
+      },
+      "holdout": {
+       "rmse": 0.041905,
+       "skill": -1.516995,
+       "mae": 0.013731,
+       "n": 1273,
+       "baseline": "poly2",
+       "rmseBaseline": 0.016649,
+       "skillPersist": 0.287246,
+       "rmsePersist": 0.058793
+      },
+      "holdoutEvents": {
+       "rmse": 0.219371,
+       "skill": -2.017929,
+       "mae": 0.170825,
+       "n": 40,
+       "baseline": "poly2",
+       "rmseBaseline": 0.072689,
+       "skillPersist": 0.298456,
+       "rmsePersist": 0.312698
+      }
+     }
+    },
+    "90": {
+     "horizonMinutes": 90,
+     "dnn": {
+      "train": {
+       "rmse": 0.058046,
+       "skill": 0.215589,
+       "mae": 0.027127,
+       "n": 4380,
+       "baseline": "persist",
+       "rmseBaseline": 0.074
+      },
+      "validate": {
+       "rmse": 0.085427,
+       "skill": 0.167364,
+       "mae": 0.036236,
+       "n": 4374,
+       "baseline": "persist",
+       "rmseBaseline": 0.102599
+      },
+      "validateEvents": {
+       "rmse": 0.2484,
+       "skill": 0.196327,
+       "mae": 0.182298,
+       "n": 442,
+       "baseline": "persist",
+       "rmseBaseline": 0.309081
+      },
+      "holdout": {
+       "rmse": 0.064854,
+       "skill": -1.273934,
+       "mae": 0.020776,
+       "n": 1274,
+       "baseline": "poly2",
+       "rmseBaseline": 0.02852,
+       "skillPersist": 0.241651,
+       "rmsePersist": 0.085519
+      },
+      "holdoutEvents": {
+       "rmse": 0.25565,
+       "skill": -1.661286,
+       "mae": 0.187411,
+       "n": 77,
+       "baseline": "poly2",
+       "rmseBaseline": 0.096063,
+       "skillPersist": 0.243403,
+       "rmsePersist": 0.337895
+      }
+     }
+    },
+    "120": {
+     "horizonMinutes": 120,
+     "dnn": {
+      "train": {
+       "rmse": 0.078415,
+       "skill": 0.185707,
+       "mae": 0.035594,
+       "n": 4380,
+       "baseline": "persist",
+       "rmseBaseline": 0.096299
+      },
+      "validate": {
+       "rmse": 0.114189,
+       "skill": 0.155471,
+       "mae": 0.048002,
+       "n": 4374,
+       "baseline": "persist",
+       "rmseBaseline": 0.13521
+      },
+      "validateEvents": {
+       "rmse": 0.289439,
+       "skill": 0.164595,
+       "mae": 0.202481,
+       "n": 634,
+       "baseline": "persist",
+       "rmseBaseline": 0.346466
+      },
+      "holdout": {
+       "rmse": 0.087548,
+       "skill": -0.85306,
+       "mae": 0.027982,
+       "n": 1274,
+       "baseline": "poly2",
+       "rmseBaseline": 0.047245,
+       "skillPersist": 0.20668,
+       "rmsePersist": 0.110357
+      },
+      "holdoutEvents": {
+       "rmse": 0.307977,
+       "skill": -1.070655,
+       "mae": 0.220807,
+       "n": 99,
+       "baseline": "poly2",
+       "rmseBaseline": 0.148734,
+       "skillPersist": 0.206179,
+       "rmsePersist": 0.387967
+      }
+     }
+    },
+    "150": {
+     "horizonMinutes": 150,
+     "dnn": {
+      "train": {
+       "rmse": 0.099269,
+       "skill": 0.161164,
+       "mae": 0.044031,
+       "n": 4380,
+       "baseline": "persist",
+       "rmseBaseline": 0.118342
+      },
+      "validate": {
+       "rmse": 0.144298,
+       "skill": 0.137964,
+       "mae": 0.059763,
+       "n": 4374,
+       "baseline": "persist",
+       "rmseBaseline": 0.167392
+      },
+      "validateEvents": {
+       "rmse": 0.337178,
+       "skill": 0.141692,
+       "mae": 0.228151,
+       "n": 768,
+       "baseline": "persist",
+       "rmseBaseline": 0.39284
+      },
+      "holdout": {
+       "rmse": 0.109766,
+       "skill": -0.511464,
+       "mae": 0.035293,
+       "n": 1273,
+       "baseline": "poly2",
+       "rmseBaseline": 0.072623,
+       "skillPersist": 0.179514,
+       "rmsePersist": 0.133782
+      },
+      "holdoutEvents": {
+       "rmse": 0.356517,
+       "skill": -0.638002,
+       "mae": 0.250339,
+       "n": 117,
+       "baseline": "poly2",
+       "rmseBaseline": 0.217653,
+       "skillPersist": 0.178911,
+       "rmsePersist": 0.4342
+      }
+     }
+    },
+    "180": {
+     "horizonMinutes": 180,
+     "dnn": {
+      "train": {
+       "rmse": 0.120122,
+       "skill": 0.141017,
+       "mae": 0.052768,
+       "n": 4379,
+       "baseline": "persist",
+       "rmseBaseline": 0.139843
+      },
+      "validate": {
+       "rmse": 0.174829,
+       "skill": 0.122094,
+       "mae": 0.072003,
+       "n": 4372,
+       "baseline": "persist",
+       "rmseBaseline": 0.199143
+      },
+      "validateEvents": {
+       "rmse": 0.38254,
+       "skill": 0.124783,
+       "mae": 0.252388,
+       "n": 885,
+       "baseline": "persist",
+       "rmseBaseline": 0.43708
+      },
+      "holdout": {
+       "rmse": 0.131779,
+       "skill": -0.259107,
+       "mae": 0.042633,
+       "n": 1273,
+       "baseline": "poly2",
+       "rmseBaseline": 0.104661,
+       "skillPersist": 0.157472,
+       "rmsePersist": 0.156409
+      },
+      "holdoutEvents": {
+       "rmse": 0.395387,
+       "skill": -0.342057,
+       "mae": 0.270462,
+       "n": 138,
+       "baseline": "poly2",
+       "rmseBaseline": 0.294612,
+       "skillPersist": 0.156833,
+       "rmsePersist": 0.46893
+      }
+     }
+    },
+    "210": {
+     "horizonMinutes": 210,
+     "dnn": {
+      "train": {
+       "rmse": 0.1408,
+       "skill": 0.125372,
+       "mae": 0.062096,
+       "n": 4379,
+       "baseline": "persist",
+       "rmseBaseline": 0.160982
+      },
+      "validate": {
+       "rmse": 0.205016,
+       "skill": 0.10934,
+       "mae": 0.084684,
+       "n": 4374,
+       "baseline": "persist",
+       "rmseBaseline": 0.230184
+      },
+      "validateEvents": {
+       "rmse": 0.42237,
+       "skill": 0.111916,
+       "mae": 0.272743,
+       "n": 1005,
+       "baseline": "persist",
+       "rmseBaseline": 0.475597
+      },
+      "holdout": {
+       "rmse": 0.15351,
+       "skill": -0.072102,
+       "mae": 0.050113,
+       "n": 1273,
+       "baseline": "poly2",
+       "rmseBaseline": 0.143186,
+       "skillPersist": 0.139924,
+       "rmsePersist": 0.178484
+      },
+      "holdoutEvents": {
+       "rmse": 0.429915,
+       "skill": -0.130222,
+       "mae": 0.287542,
+       "n": 159,
+       "baseline": "poly2",
+       "rmseBaseline": 0.380381,
+       "skillPersist": 0.139663,
+       "rmsePersist": 0.499706
+      }
+     }
+    },
+    "240": {
+     "horizonMinutes": 240,
+     "dnn": {
+      "train": {
+       "rmse": 0.16171,
+       "skill": 0.11225,
+       "mae": 0.071658,
+       "n": 4378,
+       "baseline": "persist",
+       "rmseBaseline": 0.182157
+      },
+      "validate": {
+       "rmse": 0.23443,
+       "skill": 0.099263,
+       "mae": 0.0975,
+       "n": 4373,
+       "baseline": "persist",
+       "rmseBaseline": 0.260264
+      },
+      "validateEvents": {
+       "rmse": 0.464337,
+       "skill": 0.101849,
+       "mae": 0.296199,
+       "n": 1090,
+       "baseline": "persist",
+       "rmseBaseline": 0.516992
+      },
+      "holdout": {
+       "rmse": 0.175154,
+       "skill": 0.067881,
+       "mae": 0.057798,
+       "n": 1273,
+       "baseline": "poly2",
+       "rmseBaseline": 0.187909,
+       "skillPersist": 0.124889,
+       "rmsePersist": 0.20015
+      },
+      "holdoutEvents": {
+       "rmse": 0.47349,
+       "skill": 0.026132,
+       "mae": 0.315153,
+       "n": 171,
+       "baseline": "poly2",
+       "rmseBaseline": 0.486195,
+       "skillPersist": 0.12467,
+       "rmsePersist": 0.540927
+      }
+     }
+    },
+    "270": {
+     "horizonMinutes": 270,
+     "dnn": {
+      "train": {
+       "rmse": 0.182142,
+       "skill": 0.101839,
+       "mae": 0.080405,
+       "n": 4380,
+       "baseline": "persist",
+       "rmseBaseline": 0.202795
+      },
+      "validate": {
+       "rmse": 0.263672,
+       "skill": 0.091253,
+       "mae": 0.109879,
+       "n": 4373,
+       "baseline": "persist",
+       "rmseBaseline": 0.290149
+      },
+      "validateEvents": {
+       "rmse": 0.504722,
+       "skill": 0.093429,
+       "mae": 0.318896,
+       "n": 1171,
+       "baseline": "persist",
+       "rmseBaseline": 0.556738
+      },
+      "holdout": {
+       "rmse": 0.196219,
+       "skill": 0.177818,
+       "mae": 0.065084,
+       "n": 1272,
+       "baseline": "poly2",
+       "rmseBaseline": 0.238657,
+       "skillPersist": 0.112727,
+       "rmsePersist": 0.221149
+      },
+      "holdoutEvents": {
+       "rmse": 0.499847,
+       "skill": 0.144198,
+       "mae": 0.324189,
+       "n": 193,
+       "baseline": "poly2",
+       "rmseBaseline": 0.584069,
+       "skillPersist": 0.112926,
+       "rmsePersist": 0.563479
+      }
+     }
+    },
+    "300": {
+     "horizonMinutes": 300,
+     "dnn": {
+      "train": {
+       "rmse": 0.202448,
+       "skill": 0.092965,
+       "mae": 0.088735,
+       "n": 4380,
+       "baseline": "persist",
+       "rmseBaseline": 0.223198
+      },
+      "validate": {
+       "rmse": 0.292213,
+       "skill": 0.084659,
+       "mae": 0.121965,
+       "n": 4373,
+       "baseline": "persist",
+       "rmseBaseline": 0.31924
+      },
+      "validateEvents": {
+       "rmse": 0.539085,
+       "skill": 0.086768,
+       "mae": 0.335844,
+       "n": 1264,
+       "baseline": "persist",
+       "rmseBaseline": 0.590305
+      },
+      "holdout": {
+       "rmse": 0.217762,
+       "skill": 0.261813,
+       "mae": 0.072671,
+       "n": 1273,
+       "baseline": "poly2",
+       "rmseBaseline": 0.294995,
+       "skillPersist": 0.101766,
+       "rmsePersist": 0.242433
+      },
+      "holdoutEvents": {
+       "rmse": 0.534985,
+       "skill": 0.235435,
+       "mae": 0.342669,
+       "n": 208,
+       "baseline": "poly2",
+       "rmseBaseline": 0.699724,
+       "skillPersist": 0.101955,
+       "rmsePersist": 0.595721
+      }
+     }
+    },
+    "330": {
+     "horizonMinutes": 330,
+     "dnn": {
+      "train": {
+       "rmse": 0.222146,
+       "skill": 0.085711,
+       "mae": 0.096818,
+       "n": 4379,
+       "baseline": "persist",
+       "rmseBaseline": 0.242972
+      },
+      "validate": {
+       "rmse": 0.320455,
+       "skill": 0.07928,
+       "mae": 0.133944,
+       "n": 4372,
+       "baseline": "persist",
+       "rmseBaseline": 0.348048
+      },
+      "validateEvents": {
+       "rmse": 0.577827,
+       "skill": 0.081295,
+       "mae": 0.357529,
+       "n": 1325,
+       "baseline": "persist",
+       "rmseBaseline": 0.628958
+      },
+      "holdout": {
+       "rmse": 0.23959,
+       "skill": 0.327892,
+       "mae": 0.080332,
+       "n": 1273,
+       "baseline": "poly2",
+       "rmseBaseline": 0.356475,
+       "skillPersist": 0.092287,
+       "rmsePersist": 0.263949
+      },
+      "holdoutEvents": {
+       "rmse": 0.575142,
+       "skill": 0.304878,
+       "mae": 0.366463,
+       "n": 218,
+       "baseline": "poly2",
+       "rmseBaseline": 0.827397,
+       "skillPersist": 0.09266,
+       "rmsePersist": 0.633876
+      }
+     }
+    },
+    "360": {
+     "horizonMinutes": 360,
+     "dnn": {
+      "train": {
+       "rmse": 0.24201,
+       "skill": 0.079084,
+       "mae": 0.104815,
+       "n": 4380,
+       "baseline": "persist",
+       "rmseBaseline": 0.262793
+      },
+      "validate": {
+       "rmse": 0.348203,
+       "skill": 0.074967,
+       "mae": 0.145665,
+       "n": 4370,
+       "baseline": "persist",
+       "rmseBaseline": 0.376422
+      },
+      "validateEvents": {
+       "rmse": 0.609797,
+       "skill": 0.076828,
+       "mae": 0.373363,
+       "n": 1407,
+       "baseline": "persist",
+       "rmseBaseline": 0.660545
+      },
+      "holdout": {
+       "rmse": 0.261373,
+       "skill": 0.382665,
+       "mae": 0.088411,
+       "n": 1273,
+       "baseline": "poly2",
+       "rmseBaseline": 0.423389,
+       "skillPersist": 0.08467,
+       "rmsePersist": 0.285551
+      },
+      "holdoutEvents": {
+       "rmse": 0.60499,
+       "skill": 0.364139,
+       "mae": 0.381644,
+       "n": 235,
+       "baseline": "poly2",
+       "rmseBaseline": 0.95145,
+       "skillPersist": 0.084839,
+       "rmsePersist": 0.661075
+      }
+     }
+    }
+   },
+   "medianForecastVar": {
+    "120": 0.0164460130880471,
+    "360": 0.10408152653476635
+   }
+  },
+  "ukf_GC": {
+   "R": 0.0001,
+   "qScale": 1.0,
+   "horizons": {
+    "30": {
+     "horizonMinutes": 30,
+     "dnn": {
+      "train": {
+       "rmse": 0.019002,
+       "skill": 0.274635,
+       "mae": 0.010566,
+       "n": 4380,
+       "baseline": "persist",
+       "rmseBaseline": 0.026196
+      },
+      "validate": {
+       "rmse": 0.026061,
+       "skill": 0.264432,
+       "mae": 0.013061,
+       "n": 4375,
+       "baseline": "persist",
+       "rmseBaseline": 0.035429
+      },
+      "validateEvents": {
+       "rmse": 0.154941,
+       "skill": 0.306723,
+       "mae": 0.137202,
+       "n": 78,
+       "baseline": "persist",
+       "rmseBaseline": 0.223491
+      },
+      "holdout": {
+       "rmse": 0.020268,
+       "skill": -1.229217,
+       "mae": 0.007178,
+       "n": 1273,
+       "baseline": "poly2",
+       "rmseBaseline": 0.009092,
+       "skillPersist": 0.33505,
+       "rmsePersist": 0.030481
+      },
+      "holdoutEvents": {
+       "rmse": 0.169287,
+       "skill": -1.535455,
+       "mae": 0.155113,
+       "n": 13,
+       "baseline": "poly2",
+       "rmseBaseline": 0.066768,
+       "skillPersist": 0.367346,
+       "rmsePersist": 0.267582
+      }
+     }
+    },
+    "60": {
+     "horizonMinutes": 60,
+     "dnn": {
+      "train": {
+       "rmse": 0.037841,
+       "skill": 0.250754,
+       "mae": 0.018726,
+       "n": 4380,
+       "baseline": "persist",
+       "rmseBaseline": 0.050505
+      },
+      "validate": {
+       "rmse": 0.053607,
+       "skill": 0.228432,
+       "mae": 0.024418,
+       "n": 4375,
+       "baseline": "persist",
+       "rmseBaseline": 0.069477
+      },
+      "validateEvents": {
+       "rmse": 0.222664,
+       "skill": 0.243744,
+       "mae": 0.177708,
+       "n": 203,
+       "baseline": "persist",
+       "rmseBaseline": 0.29443
+      },
+      "holdout": {
+       "rmse": 0.041899,
+       "skill": -1.516626,
+       "mae": 0.013723,
+       "n": 1273,
+       "baseline": "poly2",
+       "rmseBaseline": 0.016649,
+       "skillPersist": 0.287351,
+       "rmsePersist": 0.058793
+      },
+      "holdoutEvents": {
+       "rmse": 0.219369,
+       "skill": -2.017891,
+       "mae": 0.170814,
+       "n": 40,
+       "baseline": "poly2",
+       "rmseBaseline": 0.072689,
+       "skillPersist": 0.298465,
+       "rmsePersist": 0.312698
+      }
+     }
+    },
+    "90": {
+     "horizonMinutes": 90,
+     "dnn": {
+      "train": {
+       "rmse": 0.058048,
+       "skill": 0.21557,
+       "mae": 0.027118,
+       "n": 4380,
+       "baseline": "persist",
+       "rmseBaseline": 0.074
+      },
+      "validate": {
+       "rmse": 0.085423,
+       "skill": 0.167405,
+       "mae": 0.036224,
+       "n": 4374,
+       "baseline": "persist",
+       "rmseBaseline": 0.102599
+      },
+      "validateEvents": {
+       "rmse": 0.2484,
+       "skill": 0.196328,
+       "mae": 0.182283,
+       "n": 442,
+       "baseline": "persist",
+       "rmseBaseline": 0.309081
+      },
+      "holdout": {
+       "rmse": 0.064845,
+       "skill": -1.273627,
+       "mae": 0.020755,
+       "n": 1274,
+       "baseline": "poly2",
+       "rmseBaseline": 0.02852,
+       "skillPersist": 0.241753,
+       "rmsePersist": 0.085519
+      },
+      "holdoutEvents": {
+       "rmse": 0.255641,
+       "skill": -1.661187,
+       "mae": 0.18736,
+       "n": 77,
+       "baseline": "poly2",
+       "rmseBaseline": 0.096063,
+       "skillPersist": 0.243431,
+       "rmsePersist": 0.337895
+      }
+     }
+    },
+    "120": {
+     "horizonMinutes": 120,
+     "dnn": {
+      "train": {
+       "rmse": 0.07842,
+       "skill": 0.185664,
+       "mae": 0.035563,
+       "n": 4380,
+       "baseline": "persist",
+       "rmseBaseline": 0.096299
+      },
+      "validate": {
+       "rmse": 0.114188,
+       "skill": 0.155478,
+       "mae": 0.04796,
+       "n": 4374,
+       "baseline": "persist",
+       "rmseBaseline": 0.13521
+      },
+      "validateEvents": {
+       "rmse": 0.289461,
+       "skill": 0.164531,
+       "mae": 0.202466,
+       "n": 634,
+       "baseline": "persist",
+       "rmseBaseline": 0.346466
+      },
+      "holdout": {
+       "rmse": 0.08754,
+       "skill": -0.852874,
+       "mae": 0.027929,
+       "n": 1274,
+       "baseline": "poly2",
+       "rmseBaseline": 0.047245,
+       "skillPersist": 0.20676,
+       "rmsePersist": 0.110357
+      },
+      "holdoutEvents": {
+       "rmse": 0.307981,
+       "skill": -1.070685,
+       "mae": 0.220718,
+       "n": 99,
+       "baseline": "poly2",
+       "rmseBaseline": 0.148734,
+       "skillPersist": 0.206168,
+       "rmsePersist": 0.387967
+      }
+     }
+    },
+    "150": {
+     "horizonMinutes": 150,
+     "dnn": {
+      "train": {
+       "rmse": 0.099277,
+       "skill": 0.161099,
+       "mae": 0.043927,
+       "n": 4380,
+       "baseline": "persist",
+       "rmseBaseline": 0.118342
+      },
+      "validate": {
+       "rmse": 0.1443,
+       "skill": 0.137948,
+       "mae": 0.059654,
+       "n": 4374,
+       "baseline": "persist",
+       "rmseBaseline": 0.167392
+      },
+      "validateEvents": {
+       "rmse": 0.33723,
+       "skill": 0.14156,
+       "mae": 0.228126,
+       "n": 768,
+       "baseline": "persist",
+       "rmseBaseline": 0.39284
+      },
+      "holdout": {
+       "rmse": 0.109763,
+       "skill": -0.511416,
+       "mae": 0.035194,
+       "n": 1273,
+       "baseline": "poly2",
+       "rmseBaseline": 0.072623,
+       "skillPersist": 0.17954,
+       "rmsePersist": 0.133782
+      },
+      "holdoutEvents": {
+       "rmse": 0.356559,
+       "skill": -0.638197,
+       "mae": 0.250266,
+       "n": 117,
+       "baseline": "poly2",
+       "rmseBaseline": 0.217653,
+       "skillPersist": 0.178813,
+       "rmsePersist": 0.4342
+      }
+     }
+    },
+    "180": {
+     "horizonMinutes": 180,
+     "dnn": {
+      "train": {
+       "rmse": 0.12013,
+       "skill": 0.14096,
+       "mae": 0.052543,
+       "n": 4379,
+       "baseline": "persist",
+       "rmseBaseline": 0.139843
+      },
+      "validate": {
+       "rmse": 0.174833,
+       "skill": 0.122074,
+       "mae": 0.071781,
+       "n": 4372,
+       "baseline": "persist",
+       "rmseBaseline": 0.199143
+      },
+      "validateEvents": {
+       "rmse": 0.382629,
+       "skill": 0.124578,
+       "mae": 0.252335,
+       "n": 885,
+       "baseline": "persist",
+       "rmseBaseline": 0.43708
+      },
+      "holdout": {
+       "rmse": 0.131787,
+       "skill": -0.259187,
+       "mae": 0.042493,
+       "n": 1273,
+       "baseline": "poly2",
+       "rmseBaseline": 0.104661,
+       "skillPersist": 0.157418,
+       "rmsePersist": 0.156409
+      },
+      "holdoutEvents": {
+       "rmse": 0.395497,
+       "skill": -0.342432,
+       "mae": 0.270473,
+       "n": 138,
+       "baseline": "poly2",
+       "rmseBaseline": 0.294612,
+       "skillPersist": 0.156597,
+       "rmsePersist": 0.46893
+      }
+     }
+    },
+    "210": {
+     "horizonMinutes": 210,
+     "dnn": {
+      "train": {
+       "rmse": 0.140807,
+       "skill": 0.125323,
+       "mae": 0.06174,
+       "n": 4379,
+       "baseline": "persist",
+       "rmseBaseline": 0.160982
+      },
+      "validate": {
+       "rmse": 0.205021,
+       "skill": 0.109315,
+       "mae": 0.084292,
+       "n": 4374,
+       "baseline": "persist",
+       "rmseBaseline": 0.230184
+      },
+      "validateEvents": {
+       "rmse": 0.42251,
+       "skill": 0.111623,
+       "mae": 0.27265,
+       "n": 1005,
+       "baseline": "persist",
+       "rmseBaseline": 0.475597
+      },
+      "holdout": {
+       "rmse": 0.15354,
+       "skill": -0.072316,
+       "mae": 0.049887,
+       "n": 1273,
+       "baseline": "poly2",
+       "rmseBaseline": 0.143186,
+       "skillPersist": 0.139752,
+       "rmsePersist": 0.178484
+      },
+      "holdoutEvents": {
+       "rmse": 0.430096,
+       "skill": -0.130698,
+       "mae": 0.287533,
+       "n": 159,
+       "baseline": "poly2",
+       "rmseBaseline": 0.380381,
+       "skillPersist": 0.139301,
+       "rmsePersist": 0.499706
+      }
+     }
+    },
+    "240": {
+     "horizonMinutes": 240,
+     "dnn": {
+      "train": {
+       "rmse": 0.161726,
+       "skill": 0.112163,
+       "mae": 0.071179,
+       "n": 4378,
+       "baseline": "persist",
+       "rmseBaseline": 0.182157
+      },
+      "validate": {
+       "rmse": 0.234439,
+       "skill": 0.099226,
+       "mae": 0.096931,
+       "n": 4373,
+       "baseline": "persist",
+       "rmseBaseline": 0.260264
+      },
+      "validateEvents": {
+       "rmse": 0.46454,
+       "skill": 0.101457,
+       "mae": 0.296053,
+       "n": 1090,
+       "baseline": "persist",
+       "rmseBaseline": 0.516992
+      },
+      "holdout": {
+       "rmse": 0.175218,
+       "skill": 0.067538,
+       "mae": 0.057583,
+       "n": 1273,
+       "baseline": "poly2",
+       "rmseBaseline": 0.187909,
+       "skillPersist": 0.124568,
+       "rmsePersist": 0.20015
+      },
+      "holdoutEvents": {
+       "rmse": 0.473784,
+       "skill": 0.025527,
+       "mae": 0.315208,
+       "n": 171,
+       "baseline": "poly2",
+       "rmseBaseline": 0.486195,
+       "skillPersist": 0.124126,
+       "rmsePersist": 0.540927
+      }
+     }
+    },
+    "270": {
+     "horizonMinutes": 270,
+     "dnn": {
+      "train": {
+       "rmse": 0.182194,
+       "skill": 0.101584,
+       "mae": 0.07984,
+       "n": 4380,
+       "baseline": "persist",
+       "rmseBaseline": 0.202795
+      },
+      "validate": {
+       "rmse": 0.263703,
+       "skill": 0.091145,
+       "mae": 0.109188,
+       "n": 4373,
+       "baseline": "persist",
+       "rmseBaseline": 0.290149
+      },
+      "validateEvents": {
+       "rmse": 0.504998,
+       "skill": 0.092934,
+       "mae": 0.318678,
+       "n": 1171,
+       "baseline": "persist",
+       "rmseBaseline": 0.556738
+      },
+      "holdout": {
+       "rmse": 0.196333,
+       "skill": 0.177342,
+       "mae": 0.064921,
+       "n": 1272,
+       "baseline": "poly2",
+       "rmseBaseline": 0.238657,
+       "skillPersist": 0.112213,
+       "rmsePersist": 0.221149
+      },
+      "holdoutEvents": {
+       "rmse": 0.500232,
+       "skill": 0.143538,
+       "mae": 0.324163,
+       "n": 193,
+       "baseline": "poly2",
+       "rmseBaseline": 0.584069,
+       "skillPersist": 0.112243,
+       "rmsePersist": 0.563479
+      }
+     }
+    },
+    "300": {
+     "horizonMinutes": 300,
+     "dnn": {
+      "train": {
+       "rmse": 0.202577,
+       "skill": 0.092388,
+       "mae": 0.088213,
+       "n": 4380,
+       "baseline": "persist",
+       "rmseBaseline": 0.223198
+      },
+      "validate": {
+       "rmse": 0.292304,
+       "skill": 0.084374,
+       "mae": 0.121251,
+       "n": 4373,
+       "baseline": "persist",
+       "rmseBaseline": 0.31924
+      },
+      "validateEvents": {
+       "rmse": 0.539448,
+       "skill": 0.086155,
+       "mae": 0.335543,
+       "n": 1264,
+       "baseline": "persist",
+       "rmseBaseline": 0.590305
+      },
+      "holdout": {
+       "rmse": 0.217941,
+       "skill": 0.261204,
+       "mae": 0.072577,
+       "n": 1273,
+       "baseline": "poly2",
+       "rmseBaseline": 0.294995,
+       "skillPersist": 0.101025,
+       "rmsePersist": 0.242433
+      },
+      "holdoutEvents": {
+       "rmse": 0.535493,
+       "skill": 0.234709,
+       "mae": 0.342572,
+       "n": 208,
+       "baseline": "poly2",
+       "rmseBaseline": 0.699724,
+       "skillPersist": 0.101102,
+       "rmsePersist": 0.595721
+      }
+     }
+    },
+    "330": {
+     "horizonMinutes": 330,
+     "dnn": {
+      "train": {
+       "rmse": 0.222376,
+       "skill": 0.084766,
+       "mae": 0.09638,
+       "n": 4379,
+       "baseline": "persist",
+       "rmseBaseline": 0.242972
+      },
+      "validate": {
+       "rmse": 0.320626,
+       "skill": 0.078788,
+       "mae": 0.133309,
+       "n": 4372,
+       "baseline": "persist",
+       "rmseBaseline": 0.348048
+      },
+      "validateEvents": {
+       "rmse": 0.578311,
+       "skill": 0.080526,
+       "mae": 0.357236,
+       "n": 1325,
+       "baseline": "persist",
+       "rmseBaseline": 0.628958
+      },
+      "holdout": {
+       "rmse": 0.239842,
+       "skill": 0.327186,
+       "mae": 0.080457,
+       "n": 1273,
+       "baseline": "poly2",
+       "rmseBaseline": 0.356475,
+       "skillPersist": 0.091333,
+       "rmsePersist": 0.263949
+      },
+      "holdoutEvents": {
+       "rmse": 0.575786,
+       "skill": 0.304099,
+       "mae": 0.366288,
+       "n": 218,
+       "baseline": "poly2",
+       "rmseBaseline": 0.827397,
+       "skillPersist": 0.091643,
+       "rmsePersist": 0.633876
+      }
+     }
+    },
+    "360": {
+     "horizonMinutes": 360,
+     "dnn": {
+      "train": {
+       "rmse": 0.242402,
+       "skill": 0.077593,
+       "mae": 0.104691,
+       "n": 4380,
+       "baseline": "persist",
+       "rmseBaseline": 0.262793
+      },
+      "validate": {
+       "rmse": 0.34848,
+       "skill": 0.074232,
+       "mae": 0.145252,
+       "n": 4370,
+       "baseline": "persist",
+       "rmseBaseline": 0.376422
+      },
+      "validateEvents": {
+       "rmse": 0.610408,
+       "skill": 0.075903,
+       "mae": 0.372998,
+       "n": 1407,
+       "baseline": "persist",
+       "rmseBaseline": 0.660545
+      },
+      "holdout": {
+       "rmse": 0.261742,
+       "skill": 0.381794,
+       "mae": 0.088876,
+       "n": 1273,
+       "baseline": "poly2",
+       "rmseBaseline": 0.423389,
+       "skillPersist": 0.083379,
+       "rmsePersist": 0.285551
+      },
+      "holdoutEvents": {
+       "rmse": 0.60582,
+       "skill": 0.363266,
+       "mae": 0.381448,
+       "n": 235,
+       "baseline": "poly2",
+       "rmseBaseline": 0.95145,
+       "skillPersist": 0.083583,
+       "rmsePersist": 0.661075
+      }
+     }
+    }
+   },
+   "medianForecastVar": {
+    "120": 0.016446402563382874,
+    "360": 0.10439039725161851
+   }
+  },
+  "enkf_GC": {
+   "R": 0.0001,
+   "qScale": 1.0,
+   "horizons": {
+    "30": {
+     "horizonMinutes": 30,
+     "dnn": {
+      "train": {
+       "rmse": 0.02017,
+       "skill": 0.230046,
+       "mae": 0.011274,
+       "n": 4380,
+       "baseline": "persist",
+       "rmseBaseline": 0.026196
+      },
+      "validate": {
+       "rmse": 0.028403,
+       "skill": 0.198328,
+       "mae": 0.014086,
+       "n": 4375,
+       "baseline": "persist",
+       "rmseBaseline": 0.035429
+      },
+      "validateEvents": {
+       "rmse": 0.153334,
+       "skill": 0.313913,
+       "mae": 0.136571,
+       "n": 78,
+       "baseline": "persist",
+       "rmseBaseline": 0.223491
+      },
+      "holdout": {
+       "rmse": 0.021684,
+       "skill": -1.384875,
+       "mae": 0.008524,
+       "n": 1273,
+       "baseline": "poly2",
+       "rmseBaseline": 0.009092,
+       "skillPersist": 0.288619,
+       "rmsePersist": 0.030481
+      },
+      "holdoutEvents": {
+       "rmse": 0.180486,
+       "skill": -1.703181,
+       "mae": 0.162677,
+       "n": 13,
+       "baseline": "poly2",
+       "rmseBaseline": 0.066768,
+       "skillPersist": 0.325494,
+       "rmsePersist": 0.267582
+      }
+     }
+    },
+    "60": {
+     "horizonMinutes": 60,
+     "dnn": {
+      "train": {
+       "rmse": 0.039309,
+       "skill": 0.221678,
+       "mae": 0.020051,
+       "n": 4380,
+       "baseline": "persist",
+       "rmseBaseline": 0.050505
+      },
+      "validate": {
+       "rmse": 0.054428,
+       "skill": 0.216604,
+       "mae": 0.025766,
+       "n": 4375,
+       "baseline": "persist",
+       "rmseBaseline": 0.069477
+      },
+      "validateEvents": {
+       "rmse": 0.219618,
+       "skill": 0.254089,
+       "mae": 0.176748,
+       "n": 203,
+       "baseline": "persist",
+       "rmseBaseline": 0.29443
+      },
+      "holdout": {
+       "rmse": 0.043987,
+       "skill": -1.642025,
+       "mae": 0.016057,
+       "n": 1273,
+       "baseline": "poly2",
+       "rmseBaseline": 0.016649,
+       "skillPersist": 0.251841,
+       "rmsePersist": 0.058793
+      },
+      "holdoutEvents": {
+       "rmse": 0.228372,
+       "skill": -2.141746,
+       "mae": 0.173881,
+       "n": 40,
+       "baseline": "poly2",
+       "rmseBaseline": 0.072689,
+       "skillPersist": 0.269674,
+       "rmsePersist": 0.312698
+      }
+     }
+    },
+    "90": {
+     "horizonMinutes": 90,
+     "dnn": {
+      "train": {
+       "rmse": 0.059739,
+       "skill": 0.192708,
+       "mae": 0.028896,
+       "n": 4380,
+       "baseline": "persist",
+       "rmseBaseline": 0.074
+      },
+      "validate": {
+       "rmse": 0.085818,
+       "skill": 0.163554,
+       "mae": 0.037993,
+       "n": 4374,
+       "baseline": "persist",
+       "rmseBaseline": 0.102599
+      },
+      "validateEvents": {
+       "rmse": 0.247385,
+       "skill": 0.19961,
+       "mae": 0.182316,
+       "n": 442,
+       "baseline": "persist",
+       "rmseBaseline": 0.309081
+      },
+      "holdout": {
+       "rmse": 0.067395,
+       "skill": -1.363036,
+       "mae": 0.023961,
+       "n": 1274,
+       "baseline": "poly2",
+       "rmseBaseline": 0.02852,
+       "skillPersist": 0.211935,
+       "rmsePersist": 0.085519
+      },
+      "holdoutEvents": {
+       "rmse": 0.263311,
+       "skill": -1.74104,
+       "mae": 0.188684,
+       "n": 77,
+       "baseline": "poly2",
+       "rmseBaseline": 0.096063,
+       "skillPersist": 0.220729,
+       "rmsePersist": 0.337895
+      }
+     }
+    },
+    "120": {
+     "horizonMinutes": 120,
+     "dnn": {
+      "train": {
+       "rmse": 0.08033,
+       "skill": 0.165831,
+       "mae": 0.037629,
+       "n": 4380,
+       "baseline": "persist",
+       "rmseBaseline": 0.096299
+      },
+      "validate": {
+       "rmse": 0.114395,
+       "skill": 0.153945,
+       "mae": 0.050074,
+       "n": 4374,
+       "baseline": "persist",
+       "rmseBaseline": 0.13521
+      },
+      "validateEvents": {
+       "rmse": 0.288226,
+       "skill": 0.168098,
+       "mae": 0.202124,
+       "n": 634,
+       "baseline": "persist",
+       "rmseBaseline": 0.346466
+      },
+      "holdout": {
+       "rmse": 0.090142,
+       "skill": -0.90796,
+       "mae": 0.031887,
+       "n": 1274,
+       "baseline": "poly2",
+       "rmseBaseline": 0.047245,
+       "skillPersist": 0.183176,
+       "rmsePersist": 0.110357
+      },
+      "holdoutEvents": {
+       "rmse": 0.314581,
+       "skill": -1.115059,
+       "mae": 0.2215,
+       "n": 99,
+       "baseline": "poly2",
+       "rmseBaseline": 0.148734,
+       "skillPersist": 0.189156,
+       "rmsePersist": 0.387967
+      }
+     }
+    },
+    "150": {
+     "horizonMinutes": 150,
+     "dnn": {
+      "train": {
+       "rmse": 0.101411,
+       "skill": 0.143069,
+       "mae": 0.046415,
+       "n": 4380,
+       "baseline": "persist",
+       "rmseBaseline": 0.118342
+      },
+      "validate": {
+       "rmse": 0.144381,
+       "skill": 0.137468,
+       "mae": 0.061989,
+       "n": 4374,
+       "baseline": "persist",
+       "rmseBaseline": 0.167392
+      },
+      "validateEvents": {
+       "rmse": 0.335838,
+       "skill": 0.145101,
+       "mae": 0.227568,
+       "n": 768,
+       "baseline": "persist",
+       "rmseBaseline": 0.39284
+      },
+      "holdout": {
+       "rmse": 0.112125,
+       "skill": -0.543941,
+       "mae": 0.039807,
+       "n": 1273,
+       "baseline": "poly2",
+       "rmseBaseline": 0.072623,
+       "skillPersist": 0.161884,
+       "rmsePersist": 0.133782
+      },
+      "holdoutEvents": {
+       "rmse": 0.361477,
+       "skill": -0.660793,
+       "mae": 0.250799,
+       "n": 117,
+       "baseline": "poly2",
+       "rmseBaseline": 0.217653,
+       "skillPersist": 0.167486,
+       "rmsePersist": 0.4342
+      }
+     }
+    },
+    "180": {
+     "horizonMinutes": 180,
+     "dnn": {
+      "train": {
+       "rmse": 0.122441,
+       "skill": 0.124434,
+       "mae": 0.055249,
+       "n": 4379,
+       "baseline": "persist",
+       "rmseBaseline": 0.139843
+      },
+      "validate": {
+       "rmse": 0.174965,
+       "skill": 0.121414,
+       "mae": 0.07445,
+       "n": 4372,
+       "baseline": "persist",
+       "rmseBaseline": 0.199143
+      },
+      "validateEvents": {
+       "rmse": 0.381501,
+       "skill": 0.127159,
+       "mae": 0.252103,
+       "n": 885,
+       "baseline": "persist",
+       "rmseBaseline": 0.43708
+      },
+      "holdout": {
+       "rmse": 0.133823,
+       "skill": -0.278635,
+       "mae": 0.047913,
+       "n": 1273,
+       "baseline": "poly2",
+       "rmseBaseline": 0.104661,
+       "skillPersist": 0.144404,
+       "rmsePersist": 0.156409
+      },
+      "holdoutEvents": {
+       "rmse": 0.39841,
+       "skill": -0.35232,
+       "mae": 0.269928,
+       "n": 138,
+       "baseline": "poly2",
+       "rmseBaseline": 0.294612,
+       "skillPersist": 0.150384,
+       "rmsePersist": 0.46893
+      }
+     }
+    },
+    "210": {
+     "horizonMinutes": 210,
+     "dnn": {
+      "train": {
+       "rmse": 0.143273,
+       "skill": 0.110006,
+       "mae": 0.064732,
+       "n": 4379,
+       "baseline": "persist",
+       "rmseBaseline": 0.160982
+      },
+      "validate": {
+       "rmse": 0.205156,
+       "skill": 0.108731,
+       "mae": 0.087159,
+       "n": 4374,
+       "baseline": "persist",
+       "rmseBaseline": 0.230184
+      },
+      "validateEvents": {
+       "rmse": 0.421488,
+       "skill": 0.113771,
+       "mae": 0.27256,
+       "n": 1005,
+       "baseline": "persist",
+       "rmseBaseline": 0.475597
+      },
+      "holdout": {
+       "rmse": 0.155544,
+       "skill": -0.086305,
+       "mae": 0.055932,
+       "n": 1273,
+       "baseline": "poly2",
+       "rmseBaseline": 0.143186,
+       "skillPersist": 0.128529,
+       "rmsePersist": 0.178484
+      },
+      "holdoutEvents": {
+       "rmse": 0.431999,
+       "skill": -0.1357,
+       "mae": 0.286219,
+       "n": 159,
+       "baseline": "poly2",
+       "rmseBaseline": 0.380381,
+       "skillPersist": 0.135494,
+       "rmsePersist": 0.499706
+      }
+     }
+    },
+    "240": {
+     "horizonMinutes": 240,
+     "dnn": {
+      "train": {
+       "rmse": 0.164272,
+       "skill": 0.098187,
+       "mae": 0.074193,
+       "n": 4378,
+       "baseline": "persist",
+       "rmseBaseline": 0.182157
+      },
+      "validate": {
+       "rmse": 0.234541,
+       "skill": 0.098835,
+       "mae": 0.100037,
+       "n": 4373,
+       "baseline": "persist",
+       "rmseBaseline": 0.260264
+      },
+      "validateEvents": {
+       "rmse": 0.463518,
+       "skill": 0.103433,
+       "mae": 0.296081,
+       "n": 1090,
+       "baseline": "persist",
+       "rmseBaseline": 0.516992
+      },
+      "holdout": {
+       "rmse": 0.177396,
+       "skill": 0.055949,
+       "mae": 0.064129,
+       "n": 1273,
+       "baseline": "poly2",
+       "rmseBaseline": 0.187909,
+       "skillPersist": 0.113688,
+       "rmsePersist": 0.20015
+      },
+      "holdoutEvents": {
+       "rmse": 0.476021,
+       "skill": 0.020925,
+       "mae": 0.315226,
+       "n": 171,
+       "baseline": "poly2",
+       "rmseBaseline": 0.486195,
+       "skillPersist": 0.11999,
+       "rmsePersist": 0.540927
+      }
+     }
+    },
+    "270": {
+     "horizonMinutes": 270,
+     "dnn": {
+      "train": {
+       "rmse": 0.184835,
+       "skill": 0.088559,
+       "mae": 0.083017,
+       "n": 4380,
+       "baseline": "persist",
+       "rmseBaseline": 0.202795
+      },
+      "validate": {
+       "rmse": 0.263691,
+       "skill": 0.091187,
+       "mae": 0.112201,
+       "n": 4373,
+       "baseline": "persist",
+       "rmseBaseline": 0.290149
+      },
+      "validateEvents": {
+       "rmse": 0.503764,
+       "skill": 0.095152,
+       "mae": 0.318148,
+       "n": 1171,
+       "baseline": "persist",
+       "rmseBaseline": 0.556738
+      },
+      "holdout": {
+       "rmse": 0.198393,
+       "skill": 0.168709,
+       "mae": 0.071952,
+       "n": 1272,
+       "baseline": "poly2",
+       "rmseBaseline": 0.238657,
+       "skillPersist": 0.102896,
+       "rmsePersist": 0.221149
+      },
+      "holdoutEvents": {
+       "rmse": 0.501789,
+       "skill": 0.140874,
+       "mae": 0.324167,
+       "n": 193,
+       "baseline": "poly2",
+       "rmseBaseline": 0.584069,
+       "skillPersist": 0.109481,
+       "rmsePersist": 0.563479
+      }
+     }
+    },
+    "300": {
+     "horizonMinutes": 300,
+     "dnn": {
+      "train": {
+       "rmse": 0.20527,
+       "skill": 0.080321,
+       "mae": 0.091555,
+       "n": 4380,
+       "baseline": "persist",
+       "rmseBaseline": 0.223198
+      },
+      "validate": {
+       "rmse": 0.292107,
+       "skill": 0.084993,
+       "mae": 0.124282,
+       "n": 4373,
+       "baseline": "persist",
+       "rmseBaseline": 0.31924
+      },
+      "validateEvents": {
+       "rmse": 0.537934,
+       "skill": 0.088719,
+       "mae": 0.334769,
+       "n": 1264,
+       "baseline": "persist",
+       "rmseBaseline": 0.590305
+      },
+      "holdout": {
+       "rmse": 0.22001,
+       "skill": 0.254192,
+       "mae": 0.080037,
+       "n": 1273,
+       "baseline": "poly2",
+       "rmseBaseline": 0.294995,
+       "skillPersist": 0.092493,
+       "rmsePersist": 0.242433
+      },
+      "holdoutEvents": {
+       "rmse": 0.536925,
+       "skill": 0.232662,
+       "mae": 0.343176,
+       "n": 208,
+       "baseline": "poly2",
+       "rmseBaseline": 0.699724,
+       "skillPersist": 0.098698,
+       "rmsePersist": 0.595721
+      }
+     }
+    },
+    "330": {
+     "horizonMinutes": 330,
+     "dnn": {
+      "train": {
+       "rmse": 0.225165,
+       "skill": 0.073285,
+       "mae": 0.099857,
+       "n": 4379,
+       "baseline": "persist",
+       "rmseBaseline": 0.242972
+      },
+      "validate": {
+       "rmse": 0.320275,
+       "skill": 0.079795,
+       "mae": 0.136475,
+       "n": 4372,
+       "baseline": "persist",
+       "rmseBaseline": 0.348048
+      },
+      "validateEvents": {
+       "rmse": 0.57653,
+       "skill": 0.083358,
+       "mae": 0.35636,
+       "n": 1325,
+       "baseline": "persist",
+       "rmseBaseline": 0.628958
+      },
+      "holdout": {
+       "rmse": 0.242139,
+       "skill": 0.320741,
+       "mae": 0.088461,
+       "n": 1273,
+       "baseline": "poly2",
+       "rmseBaseline": 0.356475,
+       "skillPersist": 0.082629,
+       "rmsePersist": 0.263949
+      },
+      "holdoutEvents": {
+       "rmse": 0.577741,
+       "skill": 0.301736,
+       "mae": 0.368604,
+       "n": 218,
+       "baseline": "poly2",
+       "rmseBaseline": 0.827397,
+       "skillPersist": 0.088558,
+       "rmsePersist": 0.633876
+      }
+     }
+    },
+    "360": {
+     "horizonMinutes": 360,
+     "dnn": {
+      "train": {
+       "rmse": 0.245216,
+       "skill": 0.066884,
+       "mae": 0.108403,
+       "n": 4380,
+       "baseline": "persist",
+       "rmseBaseline": 0.262793
+      },
+      "validate": {
+       "rmse": 0.347966,
+       "skill": 0.075596,
+       "mae": 0.148458,
+       "n": 4370,
+       "baseline": "persist",
+       "rmseBaseline": 0.376422
+      },
+      "validateEvents": {
+       "rmse": 0.608393,
+       "skill": 0.078953,
+       "mae": 0.371983,
+       "n": 1407,
+       "baseline": "persist",
+       "rmseBaseline": 0.660545
+      },
+      "holdout": {
+       "rmse": 0.264041,
+       "skill": 0.376363,
+       "mae": 0.096748,
+       "n": 1273,
+       "baseline": "poly2",
+       "rmseBaseline": 0.423389,
+       "skillPersist": 0.075327,
+       "rmsePersist": 0.285551
+      },
+      "holdoutEvents": {
+       "rmse": 0.607677,
+       "skill": 0.361314,
+       "mae": 0.382301,
+       "n": 235,
+       "baseline": "poly2",
+       "rmseBaseline": 0.95145,
+       "skillPersist": 0.080774,
+       "rmsePersist": 0.661075
+      }
+     }
+    }
+   },
+   "medianForecastVar": {
+    "120": 0.015750088277191564,
+    "360": 0.10278989668561853
+   }
+  }
+ },
+ "disclaimer": "Sperimentale: non operativo, non allertistico."
+}

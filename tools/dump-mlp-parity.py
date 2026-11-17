@@ -3,7 +3,7 @@
 
 Uso:
   uv run python tools/dump-mlp-parity.py \\
-    --model models/cento-dnn-novalle-6h.json \\
+    --model models/cento-dnn-novalle.json \\
     --data ./storico \\
     --out tests/fixtures/cento-mlp-parity.json \\
     --from 2026-01-01 --n 64 --horizon 120
@@ -73,7 +73,7 @@ def standardize_with_export(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Dump Cento MLP Python/JS parity fixture")
-    parser.add_argument("--model", type=Path, default=ROOT / "models" / "cento-dnn-novalle-6h.json")
+    parser.add_argument("--model", type=Path, default=ROOT / "models" / "cento-dnn-novalle.json")
     parser.add_argument("--data", type=Path, default=ROOT / "storico")
     parser.add_argument("--out", type=Path, default=ROOT / "tests" / "fixtures" / "cento-mlp-parity.json")
     parser.add_argument("--from", dest="from_ts", default="2026-01-01")

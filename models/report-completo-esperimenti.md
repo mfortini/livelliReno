@@ -1,10 +1,10 @@
 # Report completo — esperimenti di previsione livelli Reno / Cento
 
-**Data:** 2026-11-16  
+**Data:** 2026-11-17  
 **Ambito:** dashboard sperimentale `livelliReno` (Comune di Cento)  
 **Disclaimer:** previsioni **non** operative né allertistiche; non sostituiscono bollettini o soglie territoriali ufficiali.
 
-Questo documento consolida tutto ciò che è stato provato sul problema della previsione del livello idrometrico a Cento (e, dove rilevante, Gallo e altre stazioni), con spiegazione delle tecniche e dei risultati. Fonti: A/B in `models/ab-*.md`, fasi 0–3, `research_plan_reno.md` / `research_plan_final.md`, `report-esperto-modelli.md`, `cento-metodi-report.md`, `wp1-diagnosis.md`.
+Questo documento consolida tutto ciò che è stato provato sul problema della previsione del livello idrometrico a Cento (e, dove rilevante, Gallo e altre stazioni), con spiegazione delle tecniche e dei risultati. Fonti: A/B in `models/ab-*.md`, fasi 0–3, `research_plan_reno.md` / `research_plan_final.md`, `report-esperto-modelli.md`, `cento-metodi-report.md`, `wp1-diagnosis.md`, `models/experiments/` (campagna temporale/spettrale/Kalman — **work-in-progress non ancora committata**, vedi §12.5).
 
 ---
 
@@ -19,6 +19,8 @@ Nessuna variante ha battuto in modo chiaro e promuovibile la **MLP di produzione
 | Modello prod Cento | **window_delta_mlp** — Forcelli, Sostegno Reno, Bonconvento, Casalecchio tiro a volo |
 | Gallo | ridge @6 h (GRU soft-adopt OFF) |
 | Banda Cento q10/q90 | soft-merge da `cento-dnn-bands.json` (mediana prod invariata) |
+
+**Aggiornamento 17 nov:** nemmeno la campagna `models/experiments/` (ricampionamento 5′/10′/PCHIP, feature spettrali FFT+wavelet, filtri KF/UKF/EnKF, target residuo lin3/poly2) ha cambiato il quadro: tutto **no-adopt**, a conferma che il segnale a passo 30′ è già al limite informativo del passato disponibile (vedi §12.4–12.5).
 
 ---
 
@@ -110,6 +112,7 @@ node tools/backtest.js --protocol --from 2026-01-01 --seed 1
 - Baseline persist / poly2(6) / ridge / ARX
 - Skill all + in-evento, phase lag (anche sub-step), rising/falling RMSE, CSI soglie, bootstrap CI 90%
 - Test congelato: **2026-01-01 → fine storico**
+- Metriche idrologiche (aggiornamento protocollo): la tabella riporta anche **NSE** e **KGE** pooled sugli eventi con bootstrap CI 90% (`nseFromPairStats` / `kgeFromPairStats` in `eval-protocol.js`), per non valutare i modelli solo con skill relativo alla baseline.
 
 **Non mescolare** skill di fit Python (mesi alterni, spesso ottimistici) con skill di protocollo.
 
@@ -427,6 +430,80 @@ CI sovrapposti → **no adopt**. Accorciare la finestra non aiuta: il rumore rem
 
 File: `ab-lookback-tau.md`, `ab-tau-fraction.md`, `ab-feature-delta.md`.
 
+### 12.4 Target residuo (lin3 / poly2)
+
+**Idea:** invece di predire `Δy` direttamente, la MLP stima il **residuo** rispetto a un predittore locale semplice: OLS lineare sugli ultimi 3 campioni (`lin3`) oppure OLS quadratico sugli ultimi 6 (`poly2`, 2.5 h). Decode: `ŷ = ŷ_base + r̂`; la base entra anche come feature.
+
+**Setup:** `--holdout-from 2026-01-01`, orizzonti 1…12, stessi vicini monte della MLP prod.
+
+**Risultati @120′ (eventi test, n=10):**
+
+| Modello | skill evt | CI90 | rising RMSE | phaseLag′ |
+|---|---:|---|---:|---:|
+| prod | 0.68 | [0.63, 0.76] | 0.11 | 25.8 |
+| leakfree_flat | 0.68 | [0.63, 0.76] | 0.11 | 26.0 |
+| rlin3 | 0.69 | [0.63, 0.76] | 0.11 | 24.5 |
+| rpoly2 | 0.69 | [0.64, 0.76] | 0.11 | 22.4 |
+| ridge | 0.01 | — | 0.37 | 87.2 |
+
+**Decisione: no adopt.** Skill e rising invariati (CI sovrapposti); phase lag solo marginalmente migliore (−1.3′/−3.4′). Cambiare il target non sblocca il timing.
+
+File: `ab-residual-lin3.md`, `ab-residual-poly2.md` (+ `-eval.md`/`-per-event.json`).
+
+### 12.5 Campagna temporale / spettrale / Kalman (`models/experiments/`)
+
+**Stato:** work-in-progress **non committata** (`temporal-sampling.js`, `tools/experiment-temporal.py`, `tools/experiment-kalman*.py`, `models/experiments/`). I candidati sono riaddestrabili con i comandi nei report; i pesi `*-dnn.json` sono stati eliminati per spazio (~1.2 GB di cache).
+
+**Idea generale:** il passo 30′ delle serie ARPAE è l'unico passo nativo del target; le ipotesi provate sono (a) densificare il passato interpolato, (b) arricchire le feature con contenuto spettrale, (c) sostituire/affiancare la MLP con filtri di Kalman, (d) diagnosticare la deformazione d'onda con DTW.
+
+#### Ricampionamento temporale del passato
+
+Stesso contratto feature della produzione, ma input ricampionato causalmente: 5′ lineare, 5′ PCHIP (monotona, no overshoot), 10′ lineare; target e orizzonti invariati. Gap > 60′ restano mancanti, niente estrapolazione.
+
+Backtest candidati gen–mar 2026, skill vs poly2:
+
+| Candidato | skill@120′ | skill@240′ | skill@360′ | rmse@120′ |
+|---|---:|---:|---:|---:|
+| mlp_prod (30′ baseline) | **0.769** | **0.682** | **0.612** | 0.0472 |
+| mlp_temporal_10m | 0.663 | 0.574 | 0.532 | 0.0479 |
+| mlp_temporal_lin (5′) | 0.655 | 0.614 | 0.543 | 0.0707 |
+| mlp_temporal_pchip (5′) | 0.576 | 0.570 | 0.534 | 0.0867 |
+| seq_cnn | 0.770 | – | – | 0.0471 |
+| seq_gru | 0.736 | – | – | 0.0541 |
+| poly2 | 0.643 | 0.368 | 0.055 | 0.0730 |
+
+Pattern monotono **30′ > 10′ > 5′**: più punti interpolati → più varianza, stessa informazione. L'ipotesi «il modello salta perché vede step» è **smentita**: la MLP impara già la regolarità temporale dai target a 30′. Le **emissioni a passo 10′** (non il passo input) sono neutre: skill 0.765 vs 0.769 — le previsioni ravvicinate sono correlate, non indipendenti.
+
+#### Feature spettrali (FFT + wavelet Haar à trous)
+
+140 feature causali per stazione (bin DFT j=1..12, centroide, bande di potenza, RMS/ultimo dettaglio wavelet a 5 scale) calcolate sulla finestra 24 h; parità JS↔Py verificata. Backtest: **mlp_spectral skill@120 0.611** vs 0.769 prod (holdout evento debole: 0.242 @120′). Con 48 campioni il contenuto spettrale è rumoroso e non porta segnale nuovo.
+
+#### Diagnosi DTW (`wave-warp.md`, oracolo non predittiva)
+
+Allineamento di eventi conclusi monte→valle: lag mediano coerente col cross-corr (Forcelli→Cento 480′, Casalecchio→Bonconvento 270′, Bonconvento→Sostegno 210′, ORP→Gallo 420′); **scala affine sempre 1.00** — nessuna dilatazione uniforme sistematica dopo il lag costante; `tauP90` ~120′ (metà del bordo ±2 h). Da leggere come diagnosi: non esiste un'unica "curva tipo" deformabile che spieghi la propagazione.
+
+#### Filtri di Kalman (KF / UKF / EnKF)
+
+Stato `[livello, velocità]` per stazione; transizione `v⁺ = v·(rho + gamma·(y−ymin))` stimata sui mesi di train. Varianti: **A** filtri indipendenti; **B** + ingressi upstream filtrati e `rain6h`/`rain24h` con varianza di input propagata; **G** stato congiunto con Q incrociata; **GC** + coppiamento ritardato con τ dai lag DTW.
+
+Skill evento di validazione @120′ (vs poly2):
+
+| Modello | valEvt@120 | holdEvt@120 | valEvt@360 | holdEvt@360 |
+|---|---:|---:|---:|---:|
+| MLP prod (riferimento) | ~0.66* | ~0.6* | ~0.62* | ~0.7* |
+| KF/UKF/EnKF-A | 0.144 / 0.145 / 0.142 | −1.11 | ~0.05 | 0.35 |
+| KF/UKF/EnKF-B | 0.271 | −0.83 | 0.182 | 0.43 |
+| KF/UKF/EnKF-G | 0.148 | −1.10 | 0.053 | 0.35 |
+| KF/UKF/EnKF-GC | 0.165–0.168 | −1.07 | 0.077–0.079 | 0.36 |
+
+\* stime dal trainer/backtest precedente, stesse split/origini.
+
+**Lettura:** KF ≈ UKF ≈ EnKF (la non linearità è troppo debole per distinguerli); gli ingressi upstream aggiungono +0.13 di skill ma servono alla MLP per essere sfruttati; la propagazione con lag fisso (GC) aiuta poco; la varianza di previsione è onesta ma larga (σ≈0.13 m @120′, ~0.32 m @360′). Come **previsore** la famiglia resta molto sotto la MLP; come **stimatore di stato con incertezza attribuita** (R/Q/Γ) la fase B è corretta e può essere punto di partenza per bande future.
+
+**Decisione: no adopt ovunque.** Conclusione trasversale della campagna: a passo 30′ il passato contiene già quasi tutta l'informazione sfruttabile; aumentare risoluzione temporale, contenuto spettrale o cambiare formulazione di stato non la recuperano.
+
+File: `models/experiments/{STATUS,wave-warp,temporal-5min-report,temporal-10min-report,spectral-report,kalman-report}.md`, `temporal-sampling.js`, `tools/experiment-temporal.py`, `tools/experiment-kalman{,-global}.py`, `tools/temporal_sampling.py`, `tools/spectral_features.py`.
+
 ---
 
 ## 13. Mappa tecnica → esito
@@ -448,6 +525,11 @@ File: `ab-lookback-tau.md`, `ab-tau-fraction.md`, `ab-feature-delta.md`.
 | Lookback-τ / φ-grid / delta-feat | meglio usare τ | indistinguibili da flat | no |
 | Banda quantili | incertezza | copertura utile | **sì (banda only)** |
 | Ridge Gallo @6 h | copertura temporale | trade-off vs GRU corto | **sì (Gallo)** |
+| Target residuo lin3/poly2 | cambiare formulazione Δy | skill/phase invariati | no |
+| Ricampionamento 5′/10′/PCHIP | più risoluzione temporale | pattern 30′>10′>5′, varianza senza informazione | no |
+| Feature spettrali FFT+wavelet | catturare oscillazioni di piena | skill 0.611 vs 0.769, più rumore che segnale | no |
+| Kalman KF/UKF/EnKF (A/B/G/GC) | fisica di stato + incertezza | skill ≤0.17, KF≈UKF≈EnKF, GC +0.02 solo | no (utile come stimatore incertezza) |
+| DTW wave-warp (diagnosi) | curva tipo deformabile | scala affine sempre 1.00, lag coerente col cross-corr | n/a (oracolo) |
 
 ---
 
@@ -470,6 +552,8 @@ File: `ab-lookback-tau.md`, `ab-tau-fraction.md`, `ab-feature-delta.md`.
 3. **Pioggia prevista (NWP)** per Casalecchio / orizzonti &gt; tempo di viaggio minimo.
 4. **Manovre Cavo Napoleonico** se si vuole modellare le stazioni di valle.
 5. Metriche che non doppio-puniscono il timing (CSI, crossing-time error, curve “most probable”) **accanto** alla mediana MSE — già in protocollo WP0; non usarle da sole per promuovere curve overshooting.
+6. **Stimatore di incertezza stile Kalman fase B** (varianza attribuita a R/Q/Γ) se servissero bande alternative alla pinball+conformal — corretto ma non predittivo.
+7. **DTW causale predittivo**: unica idea della campagna temporale non ancora testata in forma predittiva; la diagnosi oracolo (scala affine 1.00, nessuna dilatazione sistematica) ne scoraggia la promessa.
 
 ---
 
@@ -492,6 +576,14 @@ File: `ab-lookback-tau.md`, `ab-tau-fraction.md`, `ab-feature-delta.md`.
 | `ab-lookback-tau.md` | Lookback scalato su τ — no |
 | `ab-tau-fraction.md` | Griglia φ/τ — no |
 | `ab-feature-delta.md` | Feature solo-delta — no |
+| `ab-residual-lin3.md` | Target residuo vs lin3 — no |
+| `ab-residual-poly2.md` | Target residuo vs poly2 — no |
+| `experiments/STATUS.md` | Stato live campagna temporale/spettrale/Kalman (WIP) |
+| `experiments/wave-warp.md` | Diagnosi DTW oracolo sugli archi monte→valle |
+| `experiments/temporal-5min-report.md` | Input 5′ lineare/PCHIP — negativo |
+| `experiments/temporal-10min-report.md` | Input 10′ + emissioni 10′ — negativo/neutro |
+| `experiments/spectral-report.md` | Feature FFT+wavelet — negativo |
+| `experiments/kalman-report.md` | KF/UKF/EnKF fasi A/B/G/GC — non predittivo |
 | `research_plan_reno.md` | Piano WP0–WP6 |
 | `research_plan_final.md` | Riassunto WP + post-ciclo |
 | `wp1-diagnosis.md` | H1–H11 |
@@ -503,4 +595,4 @@ File: `ab-lookback-tau.md`, `ab-tau-fraction.md`, `ab-feature-delta.md`.
 
 ---
 
-*Report consolidato 2026-11-16. Allineare decisioni successive aggiornando questo file e i singoli A/B.*
+*Report consolidato 2026-11-17. Allineare decisioni successive aggiornando questo file e i singoli A/B.*

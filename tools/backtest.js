@@ -279,6 +279,16 @@ if (compareNode) {
     const mlpQ75 = fs.existsSync(mlpQ75Path) ? JSON.parse(fs.readFileSync(mlpQ75Path, 'utf8')) : null;
     const mlpEw4Path = path.resolve(root, opt('mlp-ew4', 'models/cento-dnn-ew4.json'));
     const mlpEw4 = fs.existsSync(mlpEw4Path) ? JSON.parse(fs.readFileSync(mlpEw4Path, 'utf8')) : null;
+    const mlpTemporalLinPath = path.resolve(root, opt('mlp-temporal-lin', 'models/experiments/cento-temporal-linear-5min-dnn.json'));
+    const mlpTemporalPchipPath = path.resolve(root, opt('mlp-temporal-pchip', 'models/experiments/cento-temporal-pchip-5min-dnn.json'));
+    const mlpTemporalLin = fs.existsSync(mlpTemporalLinPath) ? JSON.parse(fs.readFileSync(mlpTemporalLinPath, 'utf8')) : null;
+    const mlpTemporalPchip = fs.existsSync(mlpTemporalPchipPath) ? JSON.parse(fs.readFileSync(mlpTemporalPchipPath, 'utf8')) : null;
+    const mlpSpectralPath = path.resolve(root, opt('mlp-spectral', 'models/experiments/cento-spectral-30min-dnn.json'));
+    const mlpSpectral = fs.existsSync(mlpSpectralPath) ? JSON.parse(fs.readFileSync(mlpSpectralPath, 'utf8')) : null;
+    const mlpTemporal10Path = path.resolve(root, opt('mlp-temporal-10m', 'models/experiments/cento-temporal-linear-10min-dnn.json'));
+    const mlpTemporal10 = fs.existsSync(mlpTemporal10Path) ? JSON.parse(fs.readFileSync(mlpTemporal10Path, 'utf8')) : null;
+    const onlyOpt = opt('only', null);
+    const onlySet = onlyOpt ? new Set(onlyOpt.split(',').map(s => s.trim()).filter(Boolean)) : null;
     const prodNode = useCoeffs && fs.existsSync(coeffsPath)
         ? (JSON.parse(fs.readFileSync(coeffsPath, 'utf8')).nodes || {})[compareNode]
         : null;
@@ -306,6 +316,14 @@ if (compareNode) {
             note: 'pinball q75: timing-oriented upper quantile, biased high in calm'
         } : null,
         mlp_ew4: mlpEw4 ? { coeffs: { nodes: { [compareNode]: force(mlpEw4) } }, smooth: 0 } : null,
+        mlp_temporal_lin: mlpTemporalLin ? { coeffs: { nodes: { [compareNode]: force(mlpTemporalLin) } }, smooth: 0,
+            note: 'experimental causal linear 5min input; not promoted' } : null,
+        mlp_temporal_pchip: mlpTemporalPchip ? { coeffs: { nodes: { [compareNode]: force(mlpTemporalPchip) } }, smooth: 0,
+            note: 'experimental causal pchip 5min input; not promoted' } : null,
+        mlp_spectral: mlpSpectral ? { coeffs: { nodes: { [compareNode]: force(mlpSpectral) } }, smooth: 0,
+            note: 'experimental 30min input + FFT/wavelet spectral features; not promoted' } : null,
+        mlp_temporal_10m: mlpTemporal10 ? { coeffs: { nodes: { [compareNode]: force(mlpTemporal10) } }, smooth: 0,
+            note: 'experimental causal linear 10min input; not promoted' } : null,
         mlp_online: prodNode ? {
             coeffs: { nodes: { [compareNode]: force(prodNode) } },
             smooth: 0,
@@ -348,6 +366,11 @@ if (compareNode) {
             highAcceptor: emptyCandidateStats(horizons),
             lowAcceptor: emptyCandidateStats(horizons)
         };
+    }
+    if (onlySet) {
+        for (const k of Object.keys(candidates)) {
+            if (!onlySet.has(k)) candidates[k] = null;
+        }
     }
     const stats = {};
     for (const [key, cfg] of Object.entries(candidates)) {
