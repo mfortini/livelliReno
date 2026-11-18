@@ -71,11 +71,8 @@ def gauge_names(config: dict) -> list[str]:
 def load_rain_max(rain_dir: Path, gauges: list[str], index: pd.DatetimeIndex) -> np.ndarray:
     series = []
     for name in gauges:
-        path = rain_dir / f"{name}.csv"
-        if not path.exists():
-            continue
-        df = pd.read_csv(path, parse_dates=["time"])
-        if df.empty:
+        df = ft.rain_gauge_frame(rain_dir, name)
+        if df is None:
             continue
         s = df.set_index("time")["value"].astype(float).sort_index()
         s = s[~s.index.duplicated(keep="last")].resample(f"{ft.STEP_MINUTES}min").sum()

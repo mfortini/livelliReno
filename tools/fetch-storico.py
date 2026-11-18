@@ -6,9 +6,11 @@ Variabili:
   - B13215 livello idrometrico istantaneo, timerange [254,0,0]
   - B13011 precipitazione cumulata 15′, timerange [1,0,900] (pluviometri in config.rainfall)
 
-Scrive CSV e/o Parquet `time,value` in --out (livelli) e --out/rain (pioggia).
-I file .json.gz grezzi restano in --cache (default ./storico/raw) per riuso.
-Il CSV resta per i tool JS (backtest); il Parquet è preferito dai fit Python via DuckDB.
+Scrive Parquet `time,value` (zstd, ordinato per tempo) in --out (livelli) e
+--out/rain (pioggia); `--format csv|both` resta disponibile per compatibilità.
+La cache in --cache (default ./storico/raw) è Parquet flatten mensile: i .json.gz
+scaricati vengono convertiti al volo e rimossi. Per migrare una cache già presente
+senza perdere i gz finché non c'è parità: tools/verify-storico-cache.py.
 """
 
 from __future__ import annotations
@@ -17,6 +19,7 @@ import argparse
 import csv
 import gzip
 import json
+import math
 import sys
 import urllib.error
 import urllib.request
@@ -34,7 +37,42 @@ INSTANT_TR = [254, 0, 0]
 RAIN_CODE = "B13011"
 RAIN_TR = [1, 0, 900]
 USER_AGENT = "livelliReno-fetch-storico/1.0 (+https://github.com/ComuneDiCento/livelliReno)"
+ROW_GROUP_SIZE = 1_000_000
 
+# Decodifica Bufr usata in code_desc (ignoti → NULL in SQL).
+CODE_DESC: dict[str, str] = {
+    "B01019": "nome stazione",
+    "B01194": "rete",
+    "B04001": "anno",
+    "B04002": "mese",
+    "B04003": "giorno",
+    "B04004": "ora",
+    "B04005": "minuto",
+    "B04006": "secondo",
+    "B05001": "latitudine",
+    "B06001": "longitudine",
+    "B07030": "altezza stazione",
+    "B10004": "pressione",
+    "B11001": "direzione vento",
+    "B11002": "velocità vento",
+    "B12101": "temperatura",
+    "B13003": "umidità relativa",
+    "B13011": "precipitazione",
+    "B13215": "livello idrometrico",
+    "B22001": "direzione onde",
+    "B22021": "altezza onde",
+    "B22043": "temperatura mare",
+    "B33007": "percentuale confidenza",
+}
+
+
+def _sql_quote(path: Path) -> str:
+    return str(path).replace("'", "''")
+
+
+def _code_desc_sql(code_expr: str = "v.key") -> str:
+    parts = [f"WHEN '{code}' THEN '{desc.replace(chr(39), chr(39)+chr(39))}'" for code, desc in CODE_DESC.items()]
+    return f"CASE {code_expr} {' '.join(parts)} ELSE NULL END"
 
 def month_range(start: date, end: date) -> list[tuple[int, int]]:
     months: list[tuple[int, int]] = []
@@ -53,12 +91,113 @@ def parse_ym(text: str) -> date:
     return date(int(year), int(month), 1)
 
 
+def month_stem(cache_dir: Path, year: int, month: int) -> Path:
+    return cache_dir / f"{year:04d}-{month:02d}"
+
+
+def json_gz_to_parquet(gz_path: Path, out_path: Path) -> None:
+    """Convert monthly .json.gz to flat typed Parquet (zstd). Does not delete the gz."""
+    if duckdb is None:
+        raise SystemExit("duckdb non disponibile: uv sync")
+    src = _sql_quote(gz_path)
+    dest = _sql_quote(out_path)
+    code_desc = _code_desc_sql("v.key")
+    # Atomic replace: write beside target then rename.
+    tmp = out_path.with_suffix(out_path.suffix + ".tmp")
+    tmp_sql = _sql_quote(tmp)
+    con = duckdb.connect()
+    con.execute(
+        f"""
+        COPY (
+          WITH base AS (
+            SELECT
+              date AS stamp,
+              version,
+              network,
+              ident,
+              lon,
+              lat,
+              data,
+              json_extract_string(data, '$[0].vars.B01019.v') AS station_b01019
+            FROM read_json(
+              '{src}',
+              columns={{
+                'date': 'VARCHAR',
+                'version': 'VARCHAR',
+                'network': 'VARCHAR',
+                'ident': 'VARCHAR',
+                'lon': 'INTEGER',
+                'lat': 'INTEGER',
+                'data': 'JSON'
+              }},
+              format='newline_delimited',
+              maximum_object_size=8000000
+            )
+          ),
+          blocks AS (
+            SELECT
+              stamp, station_b01019, version, network, ident, lon, lat,
+              CAST(je.key AS INTEGER)::SMALLINT AS block_idx,
+              je.value AS block
+            FROM base, json_each(data) AS je
+          ),
+          exploded AS (
+            SELECT
+              b.stamp,
+              b.station_b01019,
+              b.version,
+              b.network,
+              b.ident,
+              b.lon,
+              b.lat,
+              b.block_idx,
+              TRY_CAST(json_extract(b.block, '$.timerange[0]') AS INTEGER) AS timerange_0,
+              TRY_CAST(json_extract(b.block, '$.timerange[1]') AS INTEGER) AS timerange_1,
+              TRY_CAST(json_extract(b.block, '$.timerange[2]') AS INTEGER) AS timerange_2,
+              TRY_CAST(json_extract(b.block, '$.level[0]') AS INTEGER) AS level_0,
+              TRY_CAST(json_extract(b.block, '$.level[1]') AS INTEGER) AS level_1,
+              TRY_CAST(json_extract(b.block, '$.level[2]') AS INTEGER) AS level_2,
+              TRY_CAST(json_extract(b.block, '$.level[3]') AS INTEGER) AS level_3,
+              v.key AS code,
+              {code_desc} AS code_desc,
+              TRY_CAST(json_extract(v.value, '$.v') AS DOUBLE) AS value_num,
+              json_extract(v.value, '$.a') AS attrs
+            FROM blocks b, json_each(json_extract(b.block, '$.vars')) AS v
+          )
+          SELECT *
+          FROM exploded
+          ORDER BY
+            version, network, ident,
+            level_0, level_1, level_2, level_3,
+            timerange_0, timerange_1, timerange_2,
+            block_idx, code, station_b01019, lat, lon, stamp
+        ) TO '{tmp_sql}' (
+          FORMAT PARQUET,
+          COMPRESSION ZSTD,
+          ROW_GROUP_SIZE {ROW_GROUP_SIZE}
+        )
+        """
+    )
+    tmp.replace(out_path)
+
+
 def download_month(year: int, month: int, cache_dir: Path, force: bool) -> Path:
-    name = f"{year:04d}-{month:02d}.json.gz"
-    dest = cache_dir / name
-    if dest.exists() and dest.stat().st_size > 0 and not force:
-        print(f"  cache hit {dest.name}", flush=True)
-        return dest
+    """Return the monthly cache file: flat .parquet preferred, .json.gz fallback."""
+    stem = month_stem(cache_dir, year, month)
+    parquet = stem.with_suffix(".parquet")
+    gz = stem.with_suffix(".json.gz")
+    if parquet.exists() and parquet.stat().st_size > 0 and not force:
+        print(f"  cache hit {parquet.name}", flush=True)
+        return parquet
+    if gz.exists() and gz.stat().st_size > 0 and not force:
+        if duckdb is not None:
+            print(f"  convert cache {gz.name} -> parquet …", flush=True)
+            json_gz_to_parquet(gz, parquet)
+            # Keep .json.gz until tools/verify-storico-cache.py --delete-json
+            return parquet
+        print(f"  cache hit {gz.name}", flush=True)
+        return gz
+    name = gz.name
     url = f"{BASE_URL}/{name}"
     print(f"  download {url}", flush=True)
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
@@ -69,9 +208,14 @@ def download_month(year: int, month: int, cache_dir: Path, force: bool) -> Path:
         if exc.code == 404:
             raise FileNotFoundError(f"mese non disponibile: {name}") from exc
         raise
-    dest.write_bytes(data)
-    print(f"  wrote {dest.name} ({len(data) / 1e6:.1f} MB)", flush=True)
-    return dest
+    gz.write_bytes(data)
+    print(f"  wrote {gz.name} ({len(data) / 1e6:.1f} MB)", flush=True)
+    if duckdb is not None:
+        json_gz_to_parquet(gz, parquet)
+        # Keep .json.gz until tools/verify-storico-cache.py --delete-json
+        print(f"  cache parquet {parquet.name} ({parquet.stat().st_size / 1e6:.1f} MB)", flush=True)
+        return parquet
+    return gz
 
 
 def extract_month(
@@ -84,6 +228,10 @@ def extract_month(
     rain_tr: list[int] | None = None,
 ) -> tuple[dict[str, list[tuple[str, float]]], dict[str, list[tuple[str, float]]]]:
     """One pass over the monthly file for levels and rainfall."""
+    if gz_path.suffix == ".parquet":
+        return _extract_month_parquet(
+            gz_path, level_names, rain_names, level_code, level_tr, rain_code, rain_tr
+        )
     level_tr = INSTANT_TR if level_tr is None else level_tr
     rain_tr = RAIN_TR if rain_tr is None else rain_tr
     levels: dict[str, list[tuple[str, float]]] = {n: [] for n in level_names}
@@ -123,6 +271,49 @@ def extract_month(
                     payload = payload_vars.get(rain_code)
                     if payload and isinstance(payload.get("v"), (int, float)):
                         rains[name].append((stamp, float(payload["v"])))
+    return levels, rains
+
+
+def _extract_month_parquet(
+    parquet_path: Path,
+    level_names: set[str],
+    rain_names: set[str],
+    level_code: str = LEVEL_CODE,
+    level_tr: list[int] | None = None,
+    rain_code: str = RAIN_CODE,
+    rain_tr: list[int] | None = None,
+) -> tuple[dict[str, list[tuple[str, float]]], dict[str, list[tuple[str, float]]]]:
+    """Same extraction as extract_month but reading the flat monthly Parquet cache."""
+    level_tr = INSTANT_TR if level_tr is None else level_tr
+    rain_tr = RAIN_TR if rain_tr is None else rain_tr
+    levels: dict[str, list[tuple[str, float]]] = {n: [] for n in level_names}
+    rains: dict[str, list[tuple[str, float]]] = {n: [] for n in rain_names}
+    wanted = level_names | rain_names
+    if not wanted:
+        return levels, rains
+    lvl_tr, rn_tr = tuple(level_tr), tuple(rain_tr)
+    rows = duckdb.connect().execute(
+        """
+        SELECT stamp, station_b01019, timerange_0, timerange_1, timerange_2,
+               code, value_num
+        FROM read_parquet(?)
+        WHERE station_b01019 = ANY(?::VARCHAR[])
+          AND code = ANY(?::VARCHAR[])
+          AND value_num IS NOT NULL
+        ORDER BY station_b01019, stamp, block_idx
+        """,
+        [str(parquet_path), sorted(wanted), [level_code, rain_code]],
+    ).fetchall()
+    for stamp, station, tr0, tr1, tr2, code, value in rows:
+        if station is None or value is None or not math.isfinite(float(value)):
+            continue
+        tr_t = (tr0, tr1, tr2)
+        stamp_s = str(stamp)
+        val = float(value)
+        if station in level_names and code == level_code and tr_t == lvl_tr:
+            levels[station].append((stamp_s, val))
+        if station in rain_names and code == rain_code and tr_t == rn_tr:
+            rains[station].append((stamp_s, val))
     return levels, rains
 
 
@@ -191,7 +382,12 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Scarica storico livelli/pioggia ARPAE per il dashboard")
     parser.add_argument("--config", type=Path, default=root / "config.json")
     parser.add_argument("--out", type=Path, default=root / "storico", help="Directory CSV/Parquet per stazione")
-    parser.add_argument("--cache", type=Path, default=root / "storico" / "raw", help="Cache file .json.gz mensili")
+    parser.add_argument(
+        "--cache",
+        type=Path,
+        default=root / "storico" / "raw",
+        help="Cache mensile parquet flatten (json.gz convertiti al volo)",
+    )
     parser.add_argument("--from", dest="date_from", type=str, default=None, help="YYYY-MM (incluso)")
     parser.add_argument("--to", dest="date_to", type=str, default=None, help="YYYY-MM (incluso)")
     parser.add_argument(
@@ -205,8 +401,8 @@ def main() -> int:
     parser.add_argument(
         "--format",
         choices=("csv", "parquet", "both"),
-        default="both",
-        help="Formato di scrittura (default both: CSV per JS + Parquet per fit Python)",
+        default="parquet",
+        help="Formato di scrittura (default parquet: compatto, zstd; 'both' aggiunge i CSV)",
     )
     args = parser.parse_args()
     if args.format in ("parquet", "both") and duckdb is None:
