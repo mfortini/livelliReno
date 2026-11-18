@@ -25,7 +25,20 @@ MAX_LAG_H = 12
 
 
 def load_series(path: Path) -> pd.Series:
-    df = pd.read_csv(path, parse_dates=[0])
+    if path.suffix == ".csv":
+        alt = path.with_suffix(".parquet")
+        if alt.exists():
+            path = alt
+    if path.suffix == ".parquet":
+        import duckdb
+
+        df = duckdb.connect().execute(
+            "SELECT CAST(time AS TIMESTAMPTZ) AS time, CAST(value AS DOUBLE) AS value "
+            "FROM read_parquet(?)",
+            [str(path)],
+        ).df()
+    else:
+        df = pd.read_csv(path, parse_dates=[0])
     df.columns = ["time", "value"]
     s = df.set_index("time")["value"].astype(float)
     s.index = pd.to_datetime(s.index, utc=True)
@@ -120,7 +133,7 @@ def main() -> None:
         station_rows = []
         any_nonoverlap = False
         for up in ups:
-            if not (args.data / f"{up}.csv").exists():
+            if not ((args.data / f"{up}.parquet").exists() or (args.data / f"{up}.csv").exists()):
                 continue
             x = load_series(args.data / f"{up}.csv").reindex(y.index)
             x_vals = x.to_numpy(dtype=float)

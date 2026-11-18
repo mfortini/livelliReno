@@ -21,12 +21,20 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import time
+import warnings
 from datetime import datetime, timezone
 from pathlib import Path
 
 import duckdb
 import numpy as np
 import pandas as pd
+
+
+def progress(msg: str) -> None:
+    """Timestamped progress line (always flushed for tee/pipes)."""
+    ts = datetime.now().strftime("%H:%M:%S")
+    print(f"[{ts}] {msg}", flush=True)
 
 STEP_MINUTES = 30
 HORIZONS = [1, 2, 3, 4]  # steps of 30 min (always)
@@ -98,17 +106,32 @@ def load_wide(data_dir: Path, stations: list[str]) -> pd.DataFrame:
     return wide.rename(columns={"bucket": "ts"}).set_index("ts").sort_index().dropna(how="all")
 
 
+def rain_gauge_frame(rain_dir: Path, name: str) -> pd.DataFrame | None:
+    """One gauge `time,value` frame; Parquet preferred, CSV fallback."""
+    parquet = rain_dir / f"{name}.parquet"
+    csv_path = rain_dir / f"{name}.csv"
+    path = parquet if parquet.exists() else (csv_path if csv_path.exists() else None)
+    if path is None:
+        return None
+    if path.suffix == ".parquet":
+        df = duckdb.connect().execute(
+            "SELECT CAST(time AS TIMESTAMPTZ) AS time, CAST(value AS DOUBLE) AS value "
+            "FROM read_parquet(?) WHERE value IS NOT NULL",
+            [str(path)],
+        ).df()
+    else:
+        df = pd.read_csv(path, parse_dates=["time"])
+    return df if not df.empty else None
+
+
 def load_rain_basin(rain_dir: Path, gauges: list[str], index: pd.DatetimeIndex) -> pd.DataFrame | None:
     """Basin max of 6h/24h cumulated rainfall on the level grid."""
     if not gauges or not rain_dir.is_dir():
         return None
     series: list[pd.Series] = []
     for name in gauges:
-        path = rain_dir / f"{name}.csv"
-        if not path.exists():
-            continue
-        df = pd.read_csv(path, parse_dates=["time"])
-        if df.empty:
+        df = rain_gauge_frame(rain_dir, name)
+        if df is None:
             continue
         s = df.set_index("time")["value"].astype(float).sort_index()
         s = s[~s.index.duplicated(keep="last")]
@@ -472,10 +495,12 @@ def fit_node(
     max_lag_hours: float,
     rain: pd.DataFrame | None = None,
 ) -> dict | None:
+    t_node = time.time()
     present = [u for u in upstreams if u in wide.columns and downstream in wide.columns]
     if not present or downstream not in wide.columns:
         return None
 
+    progress(f"  {downstream}: stima lag su {present}…")
     blocks = month_blocks(wide.index)
     train_rows = blocks == 0
 
@@ -489,12 +514,17 @@ def fit_node(
         if (mask & train_rows).sum() < WEAK_POINTS:
             lags.append(0)
             lag_rs.append(None)
+            progress(f"    lag {up}: skip (campioni deboli) → 0′")
             continue
         x_s = pd.Series(x_all).interpolate(limit=2).to_numpy()
         y_s = pd.Series(y_all).interpolate(limit=2).to_numpy()
         lag, r = estimate_lag(x_s, y_s, max_lag_steps, train_mask=train_rows)
         lags.append(lag)
         lag_rs.append(r)
+        progress(
+            f"    lag {up}: {lag * STEP_MINUTES}′ "
+            f"(r={None if r is None else round(float(r), 3)})"
+        )
 
     thresholds: dict[str, dict] = {}
     for up, lag in zip(present, lags):
@@ -508,11 +538,18 @@ def fit_node(
     horizon_steps = list(HORIZONS)
     if lag_min >= EXTEND_LAG_MIN:
         horizon_steps = horizon_steps + list(HORIZONS_EXTENDED)
+    progress(
+        f"  {downstream}: fit {len(horizon_steps)} orizzonti "
+        f"(maxLag={lag_min}′, rain={'sì' if use_rain else 'no'})…"
+    )
 
     horizons: dict[str, dict] = {}
-    for h in horizon_steps:
+    for i_h, h in enumerate(horizon_steps, 1):
+        t_h = time.time()
+        mins = h * STEP_MINUTES
         frame = build_horizon_design(wide, downstream, present, lags, h, rain=rain if use_rain else None)
         if frame is None:
+            progress(f"    [{i_h}/{len(horizon_steps)}] +{mins}′: skip (design vuoto)")
             continue
         fb = month_blocks(frame.index)
         packed = fit_horizon(
@@ -525,17 +562,31 @@ def fit_node(
             use_rain=use_rain,
         )
         if packed is None:
+            progress(f"    [{i_h}/{len(horizon_steps)}] +{mins}′: skip (fit fallito)")
             continue
-        key = str(h * STEP_MINUTES)
+        key = str(mins)
         # Extended horizons: keep only if event skill clears the threshold
         if h in HORIZONS_EXTENDED:
             skill = (packed.get("validateEvents") or {}).get("skill")
             if skill is None or skill < SKILL_KEEP:
+                progress(
+                    f"    [{i_h}/{len(horizon_steps)}] +{mins}′: scartato "
+                    f"(eventSkill={skill}, soglia {SKILL_KEEP}) in {time.time() - t_h:.1f}s"
+                )
                 continue
         horizons[key] = packed
+        ev = (packed.get("validateEvents") or {}).get("skill")
+        ho = (packed.get("holdoutEvents") or {}).get("skill")
+        n_tr = (packed.get("train") or {}).get("n")
+        progress(
+            f"    [{i_h}/{len(horizon_steps)}] +{mins}′: ok "
+            f"nTrain={n_tr} valEvt={ev} holdEvt={ho} ({time.time() - t_h:.1f}s)"
+        )
 
     if not horizons:
+        progress(f"  {downstream}: nessun orizzonte valido ({time.time() - t_node:.1f}s)")
         return None
+    progress(f"  {downstream}: node done in {time.time() - t_node:.1f}s")
 
     h120 = horizons.get("120") or {}
     skill120 = (h120.get("validateEvents") or {}).get("skill")
@@ -594,18 +645,25 @@ def fit_config(
 ) -> dict:
     nodes: dict = {}
     edges: dict = {}
-    for downstream, meta in config.get("sensors", {}).items():
+    targets = [
+        (downstream, meta)
+        for downstream, meta in config.get("sensors", {}).items()
+        if any(u in config["sensors"] for u in (meta.get("dependencies") or []))
+    ]
+    progress(f"Fit ridge: {len(targets)} nodi valle da stimare")
+    for i, (downstream, meta) in enumerate(targets, 1):
         ups = [u for u in (meta.get("dependencies") or []) if u in config["sensors"]]
         if not ups:
             continue
+        progress(f"[{i}/{len(targets)}] ▶ {downstream} ← {ups}")
         node = fit_node(wide, downstream, ups, max_lag_hours, rain=rain)
         if not node:
-            print(f"  skip {downstream}: campioni insufficienti")
+            progress(f"  skip {downstream}: campioni insufficienti")
             continue
         nodes[downstream] = node
         flag = "OK" if node["reliable"] else "no-skill"
-        print(
-            f"  {downstream}: ups={node['upstreams']} lags={node['lagMinutes']} "
+        progress(
+            f"  ✓ {downstream}: ups={node['upstreams']} lags={node['lagMinutes']} "
             f"skill120={node['skill120']} holdout={node.get('holdoutSkill120')} "
             f"[{flag}] n={node['samples']} horizons={sorted(node['horizons'], key=int)}"
         )
@@ -687,16 +745,19 @@ def main() -> None:
 
     global SPLIT_MODE
     SPLIT_MODE = args.split
-    print(f"Split mesi: {SPLIT_MODE}")
+    warnings.filterwarnings("ignore", category=FutureWarning)
+    warnings.filterwarnings("ignore", message=".*inplace keyword.*")
+    t0 = time.time()
+    progress(f"Split mesi: {SPLIT_MODE}")
 
     config = json.loads(args.config.read_text(encoding="utf-8"))
     stations = list(config["sensors"].keys())
-    print(f"Carico {len(stations)} stazioni da {args.data} (DuckDB)…")
+    progress(f"Carico {len(stations)} stazioni da {args.data} (DuckDB)…")
     wide = load_wide(args.data, stations)
-    print(f"Griglia {STEP_MINUTES} min: {len(wide)} timestep, {wide.index.min()} → {wide.index.max()}")
+    progress(f"Griglia {STEP_MINUTES} min: {len(wide)} timestep, {wide.index.min()} → {wide.index.max()}")
     wide, spike_counts = filter_spikes(wide, spike_abs=args.spike_abs)
     spiked = {k: v for k, v in spike_counts.items() if v}
-    print(f"Spike filtrati (|Δ|>{args.spike_abs} m / 30′): {spiked or 'nessuno'}")
+    progress(f"Spike filtrati (|Δ|>{args.spike_abs} m / 30′): {spiked or 'nessuno'}")
 
     rain = None
     if not args.no_rain:
@@ -707,21 +768,27 @@ def main() -> None:
             if isinstance(g, str) or (isinstance(g, dict) and g.get("name"))
         ]
         rain_dir = args.data / "rain"
+        progress(f"Carico pioggia bacino ({len(gauges)} pluviometri)…")
         rain = load_rain_basin(rain_dir, gauges, wide.index)
         if rain is not None:
             n_ok = int(rain["rain6h"].notna().sum())
-            print(f"Pioggia bacino: {len(gauges)} pluviometri, {n_ok} timestep con dato")
+            progress(f"Pioggia bacino: {n_ok} timestep con dato")
         else:
-            print("Pioggia: nessun CSV in data/rain (fit solo livelli)")
+            progress("Pioggia: nessun file in data/rain (fit solo livelli)")
 
     payload = fit_config(config, wide, max_lag_hours=args.max_lag_hours, rain=rain)
     if args.apply_backtest:
-        print(f"Applico reliable da {args.apply_backtest}…")
+        progress(f"Applico reliable da {args.apply_backtest}…")
         payload = apply_backtest_reliable(payload, args.apply_backtest)
     args.out.parent.mkdir(parents=True, exist_ok=True)
+    progress(f"Scrivo {args.out}…")
     args.out.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     reliable = sum(1 for n in payload["nodes"].values() if n.get("reliable"))
-    print(f"Wrote {len(payload['nodes'])} nodes ({reliable} reliable) / {len(payload['edges'])} edges → {args.out}")
+    progress(
+        f"Wrote {len(payload['nodes'])} nodes ({reliable} reliable) / "
+        f"{len(payload['edges'])} edges → {args.out} "
+        f"(totale {time.time() - t0:.0f}s)"
+    )
 
 
 if __name__ == "__main__":

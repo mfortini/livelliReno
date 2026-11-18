@@ -113,7 +113,15 @@ uv run python tools/fetch-storico.py --from 2024-01 --to 2026-11
 ```
 
 Variabili: **B13215** (livello) e **B13011** 15′ (pioggia, pluviometri in `config.rainfall.gauges`).
-CSV livelli in `./storico`, pioggia in `./storico/rain`, cache in `./storico/raw` (gitignored).
+Parquet (zstd) livelli in `./storico`, pioggia in `./storico/rain`, cache mensile **flatten** in `./storico/raw` (gitignored). I loader Python preferiscono `.parquet` e ricadono su `.csv` se presente; `--format csv|both` in fetch-storico ripristina i CSV.
+
+Migrazione cache raw (parità prima di cancellare i `.json.gz`):
+
+```bash
+uv run python tools/verify-storico-cache.py --convert
+uv run python tools/verify-storico-cache.py
+uv run python tools/verify-storico-cache.py --delete-json   # solo se exit 0
+```
 
 ## Modello `direct_horizon_delta_ridge` (v4)
 

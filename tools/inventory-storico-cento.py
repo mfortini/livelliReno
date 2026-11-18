@@ -39,9 +39,23 @@ def _load_ft():
 
 
 def raw_station_stats(path: Path) -> dict:
+    if path.suffix == ".csv":
+        alt = path.with_suffix(".parquet")
+        if alt.exists():
+            path = alt
     if not path.exists():
         return {"exists": False}
-    df = pd.read_csv(path, parse_dates=["time"]).sort_values("time")
+    if path.suffix == ".parquet":
+        import duckdb
+
+        df = duckdb.connect().execute(
+            "SELECT CAST(time AS TIMESTAMPTZ) AS time, CAST(value AS DOUBLE) AS value "
+            "FROM read_parquet(?)",
+            [str(path)],
+        ).df()
+    else:
+        df = pd.read_csv(path, parse_dates=["time"])
+    df = df.sort_values("time")
     df = df[~df.time.duplicated(keep="last")]
     v = df["value"].astype(float).to_numpy()
     fin = np.isfinite(v)
@@ -130,7 +144,10 @@ def main() -> None:
     raw = {name: raw_station_stats(args.data / f"{name}.csv") for name in stations}
     rain = {name: raw_station_stats(args.data / "rain" / f"{name}.csv") for name in rain_gauges}
 
-    wide_stations = CENTO_STATIONS + [a for a in ACCEPTORS if (args.data / f"{a}.csv").exists()]
+    wide_stations = CENTO_STATIONS + [
+        a for a in ACCEPTORS
+        if (args.data / f"{a}.parquet").exists() or (args.data / f"{a}.csv").exists()
+    ]
     wide = ft.load_wide(args.data, wide_stations)
     wide, spike_counts = ft.filter_spikes(wide)
     blocks = ft.month_blocks(wide.index)

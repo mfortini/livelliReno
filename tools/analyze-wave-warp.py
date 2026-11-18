@@ -42,9 +42,9 @@ def log(msg: str) -> None:
 
 
 def load_series(data_dir: Path, name: str) -> pd.DataFrame:
-    path = data_dir / f"{name}.csv"
+    path = data_dir / f"{name}.parquet"
     if not path.exists():
-        path = data_dir / f"{name}.parquet"
+        path = data_dir / f"{name}.csv"
     if path.suffix == ".parquet":
         import duckdb
         con = duckdb.connect()
