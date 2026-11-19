@@ -10,6 +10,8 @@ uv run python tools/fetch-storico.py --months 24
 uv run python tools/fit-transfer.py --data ./storico --out models/transfer-coeffs.json
 uv run python tools/fit-ml-cento.py --data ./storico --skip-lgbm \
   --export-dnn models/cento-dnn.json --export-coeffs models/transfer-coeffs.json
+# Browser artifact (~27 MB compact); also run by fit-ml-cento after --export-coeffs:
+node tools/pack-runtime-coeffs.js
 node tools/backtest.js --every 120 --json models/backtest-summary.json
 ```
 
@@ -29,7 +31,7 @@ Opzionale: `--stations Cento,Gallo` per un sottoinsieme; `--only-candidates pers
 Diagnosi Fase 1: `models/fase1-diagnosi.md`. Parità MLP: `uv run python tools/dump-mlp-parity.py` + test `E1 Layer A/B`. Fit split: `--split {alt,block}`; selezione: `--selection-split {outer,inner}`.
 
 Dipendenze: DuckDB, pandas, NumPy, LightGBM, PyTorch CPU (vedi `pyproject.toml`).
-Cento in produzione browser: `kind: window_delta_mlp` (pesi JSON) dopo `fit-ml-cento.py --export-coeffs`.
+Cento in produzione browser: `kind: window_delta_mlp` (pesi JSON) dopo `fit-ml-cento.py --export-coeffs`. La pagina Predizioni soft-load `models/transfer-coeffs-runtime.json` (pack compatto; fallback al file pieno).
 
 Accettori valle (Dosso, Opera Reno Panfilia, Secondo Salto, Gallo) come feature backwater:
 
@@ -148,7 +150,7 @@ Previsione: \(\hat y(t+h)=y(t)+\widehat{\Delta y}-\mathrm{biasEMA}_{48h}\). La p
 - **Forchetta a due regimi**: spread base vs high quando un monte supera `z85`
 - **Affidabilità**: dopo il backtest, `reliable=true` solo se skill@120′ eventi \(\ge 0.10\) (anche vs media mobile 3 h nel report)
 
-Output `models/transfer-coeffs.json`. La dashboard soft-load il file.
+Output `models/transfer-coeffs.json`. Pack browser: `node tools/pack-runtime-coeffs.js` → `models/transfer-coeffs-runtime.json`.
 
 ### Lag-aligned upstream features (esperimento, non adottato)
 

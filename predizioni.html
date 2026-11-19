@@ -199,7 +199,10 @@
     let selectedRange = 48;
     const FORECAST_RED = '#c62828';
     const HINDCAST_ORANGE = '#c45c26';
-    const cardState = new Map(); // downstream -> { prediction, down, ups, rainSensors, bandHours, hindcast, showHindcast }
+    // downstream -> { prediction, down, ups, rainSensors, bandHours, hindcast, hindcastRange, showHindcast }
+    const cardState = new Map();
+    const visiblePlots = new Set();
+    let plotObserver = null;
 
     function reliableHoursFor(nodeModel, prediction) {
         const fromModel = P.maxReliableHorizonMinutes(nodeModel || prediction) / 60;
@@ -513,6 +516,47 @@
         });
     }
 
+    function ensureHindcast(state) {
+        if (state.hindcast && state.hindcastRange === selectedRange && state.hindcast.ok) {
+            return state.hindcast;
+        }
+        state.hindcast = computeHindcast(state);
+        state.hindcastRange = selectedRange;
+        return state.hindcast;
+    }
+
+    function formatLags(prediction) {
+        const lags = Array.isArray(prediction.lagMinutes) ? prediction.lagMinutes : [prediction.lagMinutes];
+        const ups = prediction.upstreams || [];
+        return lags.map((lag, i) => `${ups[i] || 'monte'} ${Math.round(lag)}′`).join(' · ');
+    }
+
+    function predictionMetaHtml(node, prediction, nodeModel, hours, reliableH) {
+        const upsLabel = (prediction.upstreams || node.upstreams).join(' + ');
+        const skillLabel = prediction.skill120 == null ? '' : ` · skill@2h ${prediction.skill120.toFixed(2)}`;
+        const ci = nodeModel?.skill120CI;
+        const ciLabel = ci && Number.isFinite(ci.lo) && Number.isFinite(ci.hi)
+            ? ` · CI90 [${ci.lo.toFixed(2)}, ${ci.hi.toFixed(2)}]`
+            : '';
+        const bandLabel = nodeModel?.quantiles ? ' · banda q10–90' : '';
+        const degLabel = prediction.degraded ? ' · <strong>degradata</strong>' : '';
+        return `da <strong>${upsLabel}</strong><br>lag ${formatLags(prediction)} · r=${prediction.r == null ? 'n/d' : prediction.r.toFixed(2)} · RMSE ${number(prediction.rmse)} m · fonte <strong>${prediction.source}</strong>${prediction.kind ? ' · ' + prediction.kind : ''}${skillLabel}${ciLabel}${bandLabel}${degLabel}<br>orizzonte pieno ${formatHorizonHours(reliableH)} h · coda sfumata fino a ${formatHorizonHours(hours)} h${prediction.reason ? '<br>' + prediction.reason : ''}`;
+    }
+
+    function fillForkTable(table, prediction) {
+        let body = table.querySelector('tbody');
+        if (!body) {
+            body = document.createElement('tbody');
+            table.appendChild(body);
+        }
+        body.replaceChildren();
+        for (const point of prediction.next || []) {
+            const row = document.createElement('tr');
+            row.innerHTML = `<th scope="row">${dateTime(point.time)}</th><td>${number(point.min)}</td><td>${number(point.med)}</td><td>${number(point.max)}</td>`;
+            body.appendChild(row);
+        }
+    }
+
     function refreshCardPlots(downstream) {
         const state = cardState.get(downstream);
         if (!state) return;
@@ -522,7 +566,9 @@
         const note = document.getElementById(`hindcast-note-${id}`);
         const hc = state.showHindcast ? state.hindcast : null;
         const hours = state.bandHours || bandHoursFor(null, state.prediction);
-        drawStationPlot(`plot-${id}`, state.down, state.prediction, hc, hours);
+        if (visiblePlots.has(downstream) || !plotObserver) {
+            drawStationPlot(`plot-${id}`, state.down, state.prediction, hc, hours);
+        }
         if (state.showHindcast && hc?.ok) {
             if (compareEl) {
                 compareEl.hidden = false;
@@ -563,6 +609,74 @@
         }
     }
 
+    function updateCardDom(downstream) {
+        const state = cardState.get(downstream);
+        if (!state) return;
+        const card = document.getElementById(nodeCardId(downstream));
+        if (!card) return;
+        const nodeModel = coeffs?.nodes?.[downstream];
+        const hours = state.bandHours || bandHoursFor(nodeModel, state.prediction);
+        const reliableH = reliableHoursFor(nodeModel, state.prediction);
+        const meta = card.querySelector('.edge-meta');
+        if (meta) {
+            meta.innerHTML = predictionMetaHtml(
+                { upstreams: state.ups.map(u => u.id), downstream },
+                state.prediction, nodeModel, hours, reliableH
+            );
+        }
+        const table = card.querySelector('.fork-table');
+        if (table) fillForkTable(table, state.prediction);
+        const btn = card.querySelector('.hindcast-btn');
+        if (btn) {
+            btn.setAttribute('aria-pressed', state.showHindcast ? 'true' : 'false');
+            btn.textContent = state.showHindcast ? 'Nascondi storica' : 'Predizione storica';
+        }
+        refreshCardPlots(downstream);
+    }
+
+    // Re-predict a single station (e.g. after Cento q10/q90 soft-merge).
+    function refreshCard(downstream) {
+        const state = cardState.get(downstream);
+        if (!state) return false;
+        const nodeModel = coeffs?.nodes?.[downstream];
+        const bandHours = bandHoursFor(nodeModel);
+        const rainSensors = Object.values(sensorsById).filter(s => s?.kind === 'rain' && s.timeSeries?.length);
+        let prediction = P.predictNode(state.down, state.ups, {
+            hours: 72, now: renderTime, coeffs, horizonHours: bandHours, downstreamId: downstream,
+            sensorMap: sensorsById, rainSensors
+        });
+        if (!prediction.ok) return false;
+        prediction = applyUpstreamDegrade(prediction, state.ups, renderTime);
+        state.prediction = prediction;
+        state.bandHours = bandHoursFor(nodeModel, prediction);
+        state.rainSensors = rainSensors;
+        state.hindcast = null;
+        state.hindcastRange = null;
+        if (state.showHindcast) {
+            const hc = ensureHindcast(state);
+            state.showHindcast = !!(hc && hc.ok);
+        }
+        updateCardDom(downstream);
+        return true;
+    }
+
+    // Range 24/48/72 only refilters past series — forecast knots stay at hours:72.
+    function updateRangeViews() {
+        for (const [downstream, state] of cardState) {
+            if (state.showHindcast) {
+                const hc = ensureHindcast(state);
+                state.showHindcast = !!(hc && hc.ok);
+            }
+            refreshCardPlots(downstream);
+            const card = document.getElementById(nodeCardId(downstream));
+            const btn = card?.querySelector('.hindcast-btn');
+            if (btn) {
+                btn.setAttribute('aria-pressed', state.showHindcast ? 'true' : 'false');
+                btn.textContent = state.showHindcast ? 'Nascondi storica' : 'Predizione storica';
+            }
+        }
+    }
+
     function downstreamNodes() {
         const byDown = new Map();
         for (const edge of P.buildGraph(config).edges) {
@@ -577,20 +691,19 @@
                 || a.downstream.localeCompare(b.downstream, 'it'));
     }
 
-    function formatLags(prediction) {
-        const lags = Array.isArray(prediction.lagMinutes) ? prediction.lagMinutes : [prediction.lagMinutes];
-        const ups = prediction.upstreams || [];
-        return lags.map((lag, i) => `${ups[i] || 'monte'} ${Math.round(lag)}′`).join(' · ');
-    }
-
     function renderAll() {
         const grid = document.getElementById('edge-grid');
         const status = document.getElementById('status-line');
         const nodes = downstreamNodes();
         const focus = parseEdgeHash();
         renderTime = new Date();
-        const keepHindcast = new Map([...cardState].map(([k, v]) => [k, !!v.showHindcast]));
+        const keepHindcast = new Map([...cardState].map(([k, v]) => [k, {
+            show: !!v.showHindcast,
+            hindcast: v.hindcast,
+            hindcastRange: v.hindcastRange
+        }]));
         cardState.clear();
+        visiblePlots.clear();
         grid.replaceChildren();
         let okCount = 0;
         for (const node of nodes) {
@@ -628,30 +741,17 @@
 
             const meta = document.createElement('p');
             meta.className = 'edge-meta';
-            const upsLabel = (prediction.upstreams || node.upstreams).join(' + ');
-            const skillLabel = prediction.skill120 == null ? '' : ` · skill@2h ${prediction.skill120.toFixed(2)}`;
-            const ci = nodeModel?.skill120CI;
-            const ciLabel = ci && Number.isFinite(ci.lo) && Number.isFinite(ci.hi)
-                ? ` · CI90 [${ci.lo.toFixed(2)}, ${ci.hi.toFixed(2)}]`
-                : '';
-            const bandLabel = nodeModel?.quantiles ? ' · banda q10–90' : '';
-            const degLabel = prediction.degraded ? ' · <strong>degradata</strong>' : '';
-            meta.innerHTML = `da <strong>${upsLabel}</strong><br>lag ${formatLags(prediction)} · r=${prediction.r == null ? 'n/d' : prediction.r.toFixed(2)} · RMSE ${number(prediction.rmse)} m · fonte <strong>${prediction.source}</strong>${prediction.kind ? ' · ' + prediction.kind : ''}${skillLabel}${ciLabel}${bandLabel}${degLabel}<br>orizzonte pieno ${formatHorizonHours(reliableH)} h · coda sfumata fino a ${formatHorizonHours(hours)} h${prediction.reason ? '<br>' + prediction.reason : ''}`;
+            meta.innerHTML = predictionMetaHtml(node, prediction, nodeModel, hours, reliableH);
             card.appendChild(meta);
             const table = document.createElement('table');
             table.className = 'fork-table';
             table.innerHTML = '<thead><tr><th>Ora</th><th>Min</th><th>Med</th><th>Max</th></tr></thead>';
-            const body = document.createElement('tbody');
-            for (const point of prediction.next || []) {
-                const row = document.createElement('tr');
-                row.innerHTML = `<th scope="row">${dateTime(point.time)}</th><td>${number(point.min)}</td><td>${number(point.med)}</td><td>${number(point.max)}</td>`;
-                body.appendChild(row);
-            }
-            table.appendChild(body);
+            fillForkTable(table, prediction);
             card.appendChild(table);
             const plot = document.createElement('div');
             plot.className = 'edge-plot';
             plot.id = `plot-${card.id}`;
+            plot.dataset.downstream = node.downstream;
             card.appendChild(plot);
 
             const bar = document.createElement('div');
@@ -682,11 +782,13 @@
             resid.hidden = true;
             card.appendChild(resid);
 
+            const kept = keepHindcast.get(node.downstream);
             const state = {
                 down, ups, rainSensors, prediction,
                 bandHours: hours,
-                showHindcast: !!keepHindcast.get(node.downstream),
-                hindcast: null
+                showHindcast: !!kept?.show,
+                hindcast: kept?.hindcastRange === selectedRange ? kept.hindcast : null,
+                hindcastRange: kept?.hindcastRange === selectedRange ? kept.hindcastRange : null
             };
             cardState.set(node.downstream, state);
             grid.appendChild(card);
@@ -704,14 +806,14 @@
                 btn.disabled = true;
                 btn.textContent = 'Calcolo…';
                 requestAnimationFrame(() => {
-                    st.hindcast = computeHindcast(st);
-                    st.showHindcast = !!(st.hindcast && st.hindcast.ok);
+                    const hc = ensureHindcast(st);
+                    st.showHindcast = !!(hc && hc.ok);
                     btn.disabled = false;
                     if (!st.showHindcast) {
                         btn.setAttribute('aria-pressed', 'false');
                         btn.textContent = 'Predizione storica';
                         note.hidden = false;
-                        note.textContent = st.hindcast?.reason || 'Hindcast non disponibile su questo intervallo.';
+                        note.textContent = hc?.reason || 'Hindcast non disponibile su questo intervallo.';
                         refreshCardPlots(node.downstream);
                         return;
                     }
@@ -721,16 +823,21 @@
                 });
             });
 
+            if (plotObserver) plotObserver.observe(plot);
+            else visiblePlots.add(node.downstream);
+
             requestAnimationFrame(() => {
                 if (state.showHindcast) {
-                    state.hindcast = computeHindcast(state);
-                    state.showHindcast = !!(state.hindcast && state.hindcast.ok);
+                    const hc = ensureHindcast(state);
+                    state.showHindcast = !!(hc && hc.ok);
                     if (state.showHindcast) {
                         btn.setAttribute('aria-pressed', 'true');
                         btn.textContent = 'Nascondi storica';
                     }
                 }
-                refreshCardPlots(node.downstream);
+                if (visiblePlots.has(node.downstream) || !plotObserver) {
+                    refreshCardPlots(node.downstream);
+                }
             });
         }
         updateStationDag();
@@ -757,13 +864,30 @@
                 el.classList.toggle('active', on);
                 el.setAttribute('aria-pressed', on ? 'true' : 'false');
             });
-            renderAll();
+            updateRangeViews();
         });
+    }
+
+    function ensurePlotObserver() {
+        if (plotObserver || !('IntersectionObserver' in window)) return;
+        plotObserver = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                const id = entry.target.dataset.downstream;
+                if (!id) return;
+                if (entry.isIntersecting) {
+                    visiblePlots.add(id);
+                    refreshCardPlots(id);
+                } else {
+                    visiblePlots.delete(id);
+                }
+            });
+        }, { rootMargin: '120px 0px' });
     }
 
     async function boot() {
         updateHeaderCompact();
         bindRangeButtons();
+        ensurePlotObserver();
         window.addEventListener('scroll', () => updateHeaderCompact(), { passive: true });
         window.addEventListener('hashchange', () => {
             document.querySelectorAll('.edge-card.is-target').forEach(el => el.classList.remove('is-target'));
@@ -779,13 +903,17 @@
             }
         });
         try {
-            config = await client.json('config.json');
-            coeffs = await P.loadCoeffs(window.fetch.bind(window));
+            const fetchFn = window.fetch.bind(window);
+            // Config + coeffs in parallel; ARPAE starts as soon as config is ready (not after coeffs).
+            const configP = client.json('config.json');
+            const coeffsP = P.loadCoeffs(fetchFn);
+            config = await configP;
             const cache = D.readCache(window.localStorage, config);
-            const result = await client.load(config);
+            const [coeffsResult, arpaeResult] = await Promise.all([coeffsP, client.load(config)]);
+            coeffs = coeffsResult;
             const now = Date.now();
             const records = { ...cache };
-            Object.entries(result.items).forEach(([name, item]) => { records[name] = { item, fetchedAt: now }; });
+            Object.entries(arpaeResult.items).forEach(([name, item]) => { records[name] = { item, fetchedAt: now }; });
             D.saveCache(window.localStorage, records);
             sensorsById = Object.fromEntries(Object.keys(config.sensors).map(name => {
                 const record = records[name];
@@ -804,14 +932,13 @@
                 };
             }
             renderAll();
-            // Banda q10–90 Cento (~48 MB): dopo il primo paint, senza bloccare il caricamento.
+            // Banda q10–90 Cento (~48 MB): dopo il primo paint; aggiorna solo la card Cento.
             if (coeffs?.nodes?.Cento?.kind === 'window_delta_mlp') {
-                const fetchFn = window.fetch.bind(window);
                 P.softMergeCentoBands(fetchFn, coeffs).then(ok => {
-                    if (ok) renderAll();
+                    if (ok) refreshCard('Cento');
                 }).catch(() => { /* banda residua già in pagina */ });
                 P.softMergeCentoCrossing(fetchFn, coeffs).then(ok => {
-                    if (ok) renderAll();
+                    if (ok) refreshCard('Cento');
                 }).catch(() => { /* crossing opzionale */ });
             }
         } catch (error) {

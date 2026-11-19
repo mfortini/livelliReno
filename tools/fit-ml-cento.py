@@ -18,6 +18,7 @@ import argparse
 import importlib.util
 import json
 import math
+import subprocess
 import sys
 import time
 from datetime import datetime, timezone
@@ -1796,6 +1797,10 @@ def main() -> None:
             f"[{('OK' if reliable else 'no-skill')}] skill120={skill120}",
             level="ok",
         )
+        # Browser loads the compact runtime pack (no indent / train blobs).
+        pack = ROOT / "tools" / "pack-runtime-coeffs.js"
+        if pack.is_file():
+            subprocess.run(["node", str(pack), "--in", str(args.export_coeffs)], check=False)
     elif args.export_coeffs:
         log(f"Skip coeffs patch: {args.export_coeffs} missing", level="warn")
 

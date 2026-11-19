@@ -627,6 +627,52 @@ test('window_delta_mlp forecasts Cento from feature window', () => {
     assert.ok(Math.abs(ema[1].value - (y0 + 0.35 * 0.05)) < 1e-6);
 });
 
+test('forecastWindowMlp raw features are horizon-independent (safe to reuse)', () => {
+    const start = new Date('2026-11-10T00:00:00Z');
+    const now = new Date('2026-11-11T12:00:00Z');
+    const n = 60;
+    const values = Array.from({ length: n }, (_, i) => 1 + 0.01 * i);
+    const cento = sensor('Cento', values, start);
+    const forcelli = sensor('Forcelli', values.map(v => v + 0.2), start);
+    const sensorMap = { Cento: cento, Forcelli: forcelli };
+    const stations = ['Cento', 'Forcelli'];
+    const recipe = { usePolyDerivatives: false };
+    const at0 = P.buildWindowFeatureVector(sensorMap, stations, 4, +now, STEP, [], false, recipe, 0);
+    const at120 = P.buildWindowFeatureVector(sensorMap, stations, 4, +now, STEP, [], false, recipe, 120);
+    assert.deepEqual(at0, at120);
+
+    const featureNames = Object.keys(at0);
+    const mean = featureNames.map(() => 0);
+    const std = featureNames.map(() => 1);
+    const nIn = featureNames.length;
+    const layers = [
+        { W: Array.from({ length: 2 }, () => Array.from({ length: nIn }, () => 0)), b: [0, 0], activation: 'relu' },
+        { W: [[0, 0]], b: [0.04], activation: 'linear' }
+    ];
+    const block = { mean, std, layers, spreadLow: 0.01, spreadHigh: 0.02 };
+    const model = P.parseWindowMlpNode({
+        kind: 'window_delta_mlp',
+        stations,
+        lookbackSteps: 4,
+        stepMinutes: 30,
+        featureNames,
+        featureRecipe: recipe,
+        useRain: false,
+        reliable: true,
+        horizons: { '30': block, '60': { ...block }, '120': { ...block } }
+    });
+    const pts = P.forecastWindowMlp(model, sensorMap, [], 2, now, STEP, {
+        anchor: P.latestFinite(cento.timeSeries),
+        downstream: cento,
+        smooth: 0,
+        maxStep: null
+    });
+    const y0 = cento.timeSeries.at(-1).value;
+    const knots = pts.filter(p => p.regime !== 'anchor');
+    assert.equal(knots.length, 3);
+    for (const p of knots) assert.ok(Math.abs(p.value - (y0 + 0.04)) < 1e-6);
+});
+
 test('residual_lin3 decode is lin3 + MLP residual', () => {
     const start = new Date('2026-11-10T00:00:00Z');
     const n = 60;
@@ -1401,13 +1447,17 @@ test('loadCoeffs soft-fails on missing file', async () => {
 });
 
 test('loadCoeffs soft-adopts reliable seq GRU over MLP Cento', async () => {
+    const coeffsBody = {
+        nodes: {
+            Cento: { kind: 'window_delta_mlp', stations: ['Cento'], featureNames: ['x'], horizons: {} },
+            Gallo: { kind: 'direct_horizon_delta_ridge', reliable: true, horizons: {} },
+            'Casalecchio chiusa': { kind: 'direct_horizon_delta_ridge', reliable: true, horizons: {} },
+            Bonconvento: { kind: 'direct_horizon_delta_ridge', reliable: true, horizons: {} }
+        }
+    };
     const files = {
-        'models/transfer-coeffs.json': {
-            nodes: {
-                Cento: { kind: 'window_delta_mlp', stations: ['Cento'], featureNames: ['x'], horizons: {} },
-                Gallo: { kind: 'direct_horizon_delta_ridge', reliable: true, horizons: {} }
-            }
-        },
+        'models/transfer-coeffs-runtime.json': coeffsBody,
+        'models/transfer-coeffs.json': coeffsBody,
         'models/seq-cento-gru.json': {
             kind: 'window_delta_gru',
             downstream: 'Cento',
@@ -1427,7 +1477,9 @@ test('loadCoeffs soft-adopts reliable seq GRU over MLP Cento', async () => {
             horizons: {}
         }
     };
+    const fetched = [];
     const data = await P.loadCoeffs(async (url) => {
+        fetched.push(url);
         const body = files[url];
         if (!body) return { ok: false, status: 404 };
         return { ok: true, json: async () => body };
@@ -1436,6 +1488,24 @@ test('loadCoeffs soft-adopts reliable seq GRU over MLP Cento', async () => {
     assert.equal(data.nodes.Cento.reliable, true);
     assert.equal(data.nodes.Gallo.kind, 'window_delta_gru');
     assert.equal(P.seqGruUrl('Casalecchio chiusa'), 'models/seq-casalecchio-chiusa-gru.json');
+    // Whitelist: MLP + SEQ_SOFT_ADOPT_EXTRA only — not every ridge station.
+    assert.ok(fetched.includes('models/seq-cento-gru.json'));
+    assert.ok(fetched.includes('models/seq-gallo-gru.json'));
+    assert.ok(fetched.includes('models/seq-casalecchio-chiusa-gru.json'));
+    assert.ok(!fetched.includes('models/seq-bonconvento-gru.json'));
+    assert.ok(!fetched.some(u => /hybrid-(rc|muskingum)-cento/.test(u)));
+    // Candidates before adopt: MLP Cento + ridge extras. After adopt Cento is already GRU.
+    assert.deepEqual(
+        P.seqSoftAdoptCandidates({
+            nodes: {
+                Cento: { kind: 'window_delta_mlp' },
+                Gallo: { kind: 'direct_horizon_delta_ridge' },
+                'Casalecchio chiusa': { kind: 'direct_horizon_delta_ridge' },
+                Bonconvento: { kind: 'direct_horizon_delta_ridge' }
+            }
+        }).sort(),
+        ['Casalecchio chiusa', 'Cento', 'Gallo'].sort()
+    );
 });
 
 test('config dependencies form a connected DAG used by rankNodes', () => {
