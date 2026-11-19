@@ -1968,14 +1968,12 @@
             });
         }
         let previous = y0;
-        const temporalRecipe = TemporalSampling?.temporalContract
-            ? TemporalSampling.temporalContract(model.featureRecipe)
-            : null;
-        const reuseTemporalFeatures = temporalRecipe
-            && (temporalRecipe.inputStepMinutes !== 30 || temporalRecipe.method !== 'raw')
-            && model.featureRecipe?.upstreamLagAlign !== true
-            && model.featureRecipe?.targetMode !== 'residual_lin3'
-            && model.featureRecipe?.targetMode !== 'residual_poly2';
+        // Feature vector is independent of h unless lag-align or residual baselines use it.
+        const tModeRecipe = model.featureRecipe?.targetMode;
+        const featuresDependOnHorizon = model.featureRecipe?.upstreamLagAlign === true
+            || tModeRecipe === 'residual_lin3'
+            || tModeRecipe === 'residual_poly2';
+        const reuseFeatures = !featuresDependOnHorizon;
         let sharedRaw = null;
         // Floor maxStep with the last observed 30′ move so quiet lookback p95 cannot
         // cancel an already-rising limb (causal; does not invent peaks).
@@ -1993,15 +1991,15 @@
             if (!block) continue;
             const target = Math.ceil((nowMs + blockMinutes * MINUTE) / stepMs) * stepMs;
             if (target > end + 1) continue;
-            const raw = reuseTemporalFeatures && sharedRaw
+            const raw = reuseFeatures && sharedRaw
                 ? sharedRaw
                 : buildWindowFeatureVector(
                     sensorMap, model.stations, model.lookbackSteps, nowMs,
                     (finite(Number(model.stepMinutes)) ? Number(model.stepMinutes) : 30) * MINUTE,
                     rainSensors, model.useRain,
-                    model.featureRecipe, reuseTemporalFeatures ? 0 : blockMinutes
+                    model.featureRecipe, reuseFeatures ? 0 : blockMinutes
                 );
-            if (reuseTemporalFeatures && !sharedRaw) sharedRaw = raw;
+            if (reuseFeatures && !sharedRaw) sharedRaw = raw;
             const x = standardizeWindowFeatures(raw, model.featureNames, block.mean, block.std);
             if (!x) continue;
             const layersMed = block.layersQ50 || block.layers;
@@ -3377,11 +3375,27 @@
         return slug ? `models/seq-${slug}-gru.json` : null;
     }
 
+    // Soft-adopt only where a seq export is expected (MLP nodes + known ridge→GRU).
+    // Avoids N×404 over every ridge station without a seq-* file.
+    const SEQ_SOFT_ADOPT_EXTRA = ['Casalecchio chiusa', 'Gallo'];
+
+    function seqSoftAdoptCandidates(data) {
+        const names = new Set();
+        for (const [name, node] of Object.entries(data?.nodes || {})) {
+            const kind = String(node?.kind || '');
+            if (kind.startsWith('window_delta_') && kind !== 'window_delta_gru') names.add(name);
+        }
+        for (const name of SEQ_SOFT_ADOPT_EXTRA) {
+            if (data?.nodes?.[name]) names.add(name);
+        }
+        return [...names];
+    }
+
     async function softAdoptSeqGru(fetcher, data, downstream) {
         const url = seqGruUrl(downstream);
         if (!url) return;
         try {
-            const seqRes = await fetcher(url, { cache: 'no-store' });
+            const seqRes = await fetcher(url);
             if (!seqRes?.ok) return;
             const seq = await seqRes.json();
             if (seq?.kind === 'window_delta_gru' && seq.reliable === true && seq.downstream) {
@@ -3484,7 +3498,7 @@
 
     async function softMergeCentoBands(fetcher, data) {
         try {
-            const res = await fetcher('models/cento-dnn-bands.json', { cache: 'no-store' });
+            const res = await fetcher('models/cento-dnn-bands.json');
             if (!res?.ok) return false;
             const bands = await res.json();
             if (!bands?.horizons || !data.nodes?.Cento) return false;
@@ -3501,7 +3515,7 @@
             // Prefer discrete hazard (WP2); fall back to M9 pinball export.
             let crossing = null;
             for (const path of ['models/cento-crossing-hazard.json', 'models/cento-crossing-time.json']) {
-                const res = await fetcher(path, { cache: 'no-store' });
+                const res = await fetcher(path);
                 if (!res?.ok) continue;
                 const doc = await res.json();
                 if (doc?.thresholds) {
@@ -3520,7 +3534,7 @@
 
     async function softApplySkillGates(fetcher, data) {
         try {
-            const res = await fetcher('models/skill-gates.json', { cache: 'no-store' });
+            const res = await fetcher('models/skill-gates.json');
             if (!res?.ok) return false;
             const gates = await res.json();
             applySkillGates(data, gates);
@@ -3530,46 +3544,20 @@
         }
     }
 
-    async function loadCoeffs(fetcher, url = 'models/transfer-coeffs.json') {
+    async function loadCoeffs(fetcher, url = 'models/transfer-coeffs-runtime.json') {
         try {
-            const response = await fetcher(url, { cache: 'no-store' });
+            let response = await fetcher(url);
+            // Fallback to full training export when runtime pack is absent.
+            if (!response?.ok && /transfer-coeffs-runtime\.json$/.test(url)) {
+                response = await fetcher('models/transfer-coeffs.json');
+            }
             if (!response?.ok) return null;
             const data = await response.json();
             if (!(data?.edges || data?.nodes)) return null;
-            // Soft-adopt reliable seq GRU exports per downstream (Cento + others).
-            // Prefer seq GRU e2e over RC / Muskingum / MLP / ridge node.
-            const names = new Set(Object.keys(data.nodes || {}));
-            names.add('Cento');
-            await Promise.all([...names].map(name => softAdoptSeqGru(fetcher, data, name)));
-            try {
-                const rcRes = await fetcher('models/hybrid-rc-cento.json', { cache: 'no-store' });
-                if (rcRes?.ok) {
-                    const rc = await rcRes.json();
-                    if (rc?.kind === 'rc_gru' && rc.reliable === true && rc.downstream) {
-                        data.nodes = data.nodes || {};
-                        if (data.nodes[rc.downstream]?.kind !== 'window_delta_gru') {
-                            data.nodes[rc.downstream] = rc;
-                        }
-                    }
-                }
-            } catch {
-                /* keep transfer-coeffs node */
-            }
-            try {
-                const muskRes = await fetcher('models/hybrid-muskingum-cento.json', { cache: 'no-store' });
-                if (muskRes?.ok) {
-                    const musk = await muskRes.json();
-                    if (musk?.kind === 'muskingum_gru' && musk.reliable === true && musk.downstream) {
-                        data.nodes = data.nodes || {};
-                        const cur = data.nodes[musk.downstream]?.kind;
-                        if (cur !== 'window_delta_gru' && cur !== 'rc_gru') {
-                            data.nodes[musk.downstream] = musk;
-                        }
-                    }
-                }
-            } catch {
-                /* keep transfer-coeffs node */
-            }
+            // Soft-adopt reliable seq GRU for MLP nodes + known ridge→GRU candidates only.
+            await Promise.all(seqSoftAdoptCandidates(data).map(name => softAdoptSeqGru(fetcher, data, name)));
+            // Hybrid RC / Muskingum: both current exports are reliable:false — skip probe.
+            // Re-enable when a reliable hybrid is shipped alongside transfer-coeffs.
             // Fase 3: CI + isteresi reliable. Bande quantili Cento: softMergeCentoBands (opz., pesante).
             await softApplySkillGates(fetcher, data);
             return data;
@@ -3587,7 +3575,7 @@
         sampleAt, sampleNormLevel, buildMuskingumSeq, buildRcSeq, buildSeqChannelMatrix, standardizeSeqMatrix,
         buildWindowFeatureVector, lin3Extrapolate, poly2Extrapolate, localPolyDerivatives, standardizeWindowFeatures, nextHalfHourForks, forkAround, withFork, loadCoeffs,
         softMergeCentoBands, softMergeCentoCrossing, softApplySkillGates,
-        seqGruUrl, pearson, residuals, estimateRecentBias, estimateMlpOnlineCorrection, applyMlpOnlineCorrection,
+        seqGruUrl, seqSoftAdoptCandidates, pearson, residuals, estimateRecentBias, estimateMlpOnlineCorrection, applyMlpOnlineCorrection,
         driverIsHigh, basinRainAt, hindcastSeries,
         truncateSensor, seriesUntil, maxReliableHorizonMinutes, maxHorizonMinutesAvailable, estimatePredictedLag,
         reliableFromSkill, skillLoOf, mergeQuantileBands, mergeCrossingTime, predictCrossingTau, warpForecastByCrossing,
