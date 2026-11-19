@@ -166,7 +166,7 @@
             </div>
             <details class="reading-help">
                 <summary>Come leggere grafici e soglie</summary>
-                <p>Stesso intervallo e soglie delle Osservazioni. A destra di «ora»: linea «più probabile» e fan (min–max / quantili 10–90). Fino all’orizzonte affidabile la banda è piena; oltre si sfuma e si allarga. Se una stazione di monte manca o è obsoleta, la banda si allarga e compare un avviso. «Predizione storica» confronta ŷ(t−H) con l’osservato. Non è allerta territoriale.</p>
+                <p>Stesso intervallo e soglie delle Osservazioni. A destra di «ora»: linea «più probabile» e fan (min–max / quantili 10–90). Fino all’orizzonte affidabile la banda è piena; oltre si sfuma e si allarga. Se una stazione di monte manca o è obsoleta, la banda si allarga e compare un avviso. «Predizione storica» verifica il lead a 2&nbsp;h (skill@2h). Non è allerta territoriale.</p>
             </details>
             <div id="edge-grid" class="edge-grid" aria-live="polite"></div>
         </div>
@@ -199,6 +199,8 @@
     let selectedRange = 48;
     const FORECAST_RED = '#c62828';
     const HINDCAST_ORANGE = '#c45c26';
+    // Hindcast checks the classic skill@2h lead (best absolute RMSE), not the faded 6 h band.
+    const HINDCAST_HORIZON_HOURS = 2;
     // downstream -> { prediction, down, ups, rainSensors, bandHours, hindcast, hindcastRange, showHindcast }
     const cardState = new Map();
     const visiblePlots = new Set();
@@ -508,7 +510,7 @@
             hours: selectedRange,
             now: renderTime,
             coeffs,
-            horizonHours: state.bandHours || bandHoursFor(null, state.prediction),
+            horizonHours: HINDCAST_HORIZON_HOURS,
             downstreamId: state.down.id,
             sensorMap: sensorsById,
             rainSensors: state.rainSensors,
@@ -517,7 +519,10 @@
     }
 
     function ensureHindcast(state) {
-        if (state.hindcast && state.hindcastRange === selectedRange && state.hindcast.ok) {
+        if (state.hindcast
+            && state.hindcastRange === selectedRange
+            && state.hindcast.horizonHours === HINDCAST_HORIZON_HOURS
+            && state.hindcast.ok) {
             return state.hindcast;
         }
         state.hindcast = computeHindcast(state);
@@ -565,15 +570,16 @@
         const residEl = document.getElementById(`resid-${id}`);
         const note = document.getElementById(`hindcast-note-${id}`);
         const hc = state.showHindcast ? state.hindcast : null;
-        const hours = state.bandHours || bandHoursFor(null, state.prediction);
+        const bandH = state.bandHours || bandHoursFor(null, state.prediction);
+        const hindcastH = hc?.horizonHours || HINDCAST_HORIZON_HOURS;
         if (visiblePlots.has(downstream) || !plotObserver) {
-            drawStationPlot(`plot-${id}`, state.down, state.prediction, hc, hours);
+            drawStationPlot(`plot-${id}`, state.down, state.prediction, hc, bandH);
         }
         if (state.showHindcast && hc?.ok) {
             if (compareEl) {
                 compareEl.hidden = false;
                 requestAnimationFrame(() => {
-                    drawComparePlot(`compare-${id}`, state.down, hc, hours);
+                    drawComparePlot(`compare-${id}`, state.down, hc, hindcastH);
                     if (window.Plotly?.Plots) Plotly.Plots.resize(compareEl);
                 });
             }
@@ -586,12 +592,15 @@
             }
             if (note) {
                 const mae = hc.points.reduce((s, p) => s + Math.abs(p.residual), 0) / hc.points.length;
+                const abs = hc.points.map(p => Math.abs(p.residual));
+                const maxAbs = abs.length ? Math.max(...abs) : null;
                 const lagMin = hc.lag?.lagMin;
                 const lagNote = Number.isFinite(lagMin)
                     ? ` · ritardo tipico ≈ ${Math.round(lagMin)}′`
                     : '';
+                const maxNote = Number.isFinite(maxAbs) ? ` · max ${number(maxAbs)} m` : '';
                 note.hidden = false;
-                note.textContent = `Stesso istante di verifica · ${hc.points.length} punti · MAE ${number(mae)} m (predetto ${formatHorizonHours(hours)} h prima − osservato)${lagNote}.`;
+                note.textContent = `Stesso istante di verifica · ${hc.points.length} punti · MAE ${number(mae)} m${maxNote} (predetto ${formatHorizonHours(hindcastH)} h prima − osservato)${lagNote}.`;
             }
         } else {
             if (compareEl) {
