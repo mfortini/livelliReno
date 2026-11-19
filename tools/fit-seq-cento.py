@@ -458,41 +458,68 @@ def train_seq(
     loader = DataLoader(TensorDataset(x_tr, y_tr), batch_size=BATCH, shuffle=True)
 
     n_tr, n_va = int(train_m.sum()), int(val_m.sum())
+    n_batches = max(1, (n_tr + BATCH - 1) // BATCH)
     log(
         f"{label} start: in={X_std.shape[-1]} L={X_std.shape[1]} "
-        f"train={n_tr} val={n_va} batch={BATCH} epochs≤{EPOCHS}"
+        f"train={n_tr} val={n_va} batch={BATCH} (~{n_batches}/epoch) "
+        f"epochs≤{EPOCHS} patience={PATIENCE} device=cpu"
     )
     t0 = time.perf_counter()
     best_state = None
     best_val = float("inf")
     patience = 0
     history = {"best_epoch": 0, "best_val_mse": None}
+    epoch_durs: list[float] = []
 
     for epoch in range(1, EPOCHS + 1):
+        t_ep = time.perf_counter()
         model.train()
+        running = 0.0
+        n_seen = 0
         for xb, yb in loader:
             opt.zero_grad(set_to_none=True)
-            loss = loss_fn(model(xb), yb)
+            pred_b = model(xb)
+            loss = loss_fn(pred_b, yb)
             loss.backward()
             opt.step()
+            bs = int(xb.shape[0])
+            running += float(loss.item()) * bs
+            n_seen += bs
+        train_mse = running / max(1, n_seen)
         model.eval()
         with torch.no_grad():
             val_mse = float(loss_fn(model(x_va), y_va).item())
+        star = " "
         if val_mse < best_val - 1e-7:
             best_val = val_mse
             best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
             patience = 0
             history["best_epoch"] = epoch
             history["best_val_mse"] = round(best_val, 8)
+            star = "*"
         else:
             patience += 1
-        if _VERBOSE and (epoch == 1 or epoch % 5 == 0 or patience == 0):
+        dt = time.perf_counter() - t_ep
+        epoch_durs.append(dt)
+        avg = sum(epoch_durs) / len(epoch_durs)
+        # If still setting new bests, ETA toward EPOCHS; else toward early-stop.
+        eta_epochs = (EPOCHS - epoch) if patience == 0 else max(0, PATIENCE - patience)
+        eta_s = avg * eta_epochs
+        if _VERBOSE:
             log(
-                f"  {label} epoch {epoch}/{EPOCHS} val_mse={val_mse:.6g} "
-                f"best={best_val:.6g} pat={patience}/{PATIENCE}",
+                f"  {label} epoch {epoch}/{EPOCHS}{star}  "
+                f"train_mse={train_mse:.6g}  val_mse={val_mse:.6g}  "
+                f"best={best_val:.6g}@ep{history['best_epoch']}  "
+                f"pat={patience}/{PATIENCE}  "
+                f"{dt:.1f}s/ep  eta~{eta_s / 60:.1f}m",
                 level="debug",
             )
         if patience >= PATIENCE:
+            log(
+                f"  {label} early stop at epoch {epoch} "
+                f"(no improve for {PATIENCE} epochs)",
+                level="info",
+            )
             break
 
     if best_state is not None:
@@ -502,7 +529,8 @@ def train_seq(
         pred = model(torch.tensor(X_std, dtype=torch.float32)).numpy()
     log(
         f"{label} done in {time.perf_counter() - t0:.1f}s  "
-        f"best_epoch={history['best_epoch']} best_val_mse={history['best_val_mse']}",
+        f"best_epoch={history['best_epoch']} best_val_mse={history['best_val_mse']}  "
+        f"avg={sum(epoch_durs)/max(1,len(epoch_durs)):.1f}s/ep",
         level="ok",
     )
     return model, np.asarray(pred, dtype=float), history
@@ -754,7 +782,7 @@ def main() -> None:
             },
         }
 
-        for arch in arches:
+        for ai, arch in enumerate(arches, start=1):
             if arch == "gru":
                 model = SeqGRU(n_in, hidden=GRU_HIDDEN)
                 arch_label = f"GRU(h={GRU_HIDDEN})"
@@ -778,8 +806,14 @@ def main() -> None:
                 )
                 export_fn = export_seq_transformer
 
+            job = (
+                f"{arch_label} +{minutes}′ "
+                f"[h {hi}/{len(horizons)} · arch {ai}/{len(arches)}]"
+            )
+            log(f"▶ {job}", level="info")
+            t_arch = time.perf_counter()
             model, pred, hist = train_seq(
-                model, X_std, y, train_m, val_m, label=arch_label
+                model, X_std, y, train_m, val_m, label=job
             )
             metrics = ml.eval_splits(
                 y0, y, pred, train_m, val_m, hold_m, poly_baseline=poly_base
@@ -787,11 +821,12 @@ def main() -> None:
             spreads = ml.pack_spreads(y0, y, pred, val_m)
             he = metrics["holdoutEvents"]
             log(
-                f"{arch_label} +{minutes}′: val={metrics['validate']['skill']} "
+                f"✓ {job}: val={metrics['validate']['skill']} "
                 f"valEvt={metrics['validateEvents']['skill']} "
                 f"holdEvt/poly2={he.get('skill')} "
                 f"(persist {he.get('skillPersist')}) "
-                f"wall={time.perf_counter() - t_h:.1f}s",
+                f"arch_wall={time.perf_counter() - t_arch:.1f}s "
+                f"horizon_wall={time.perf_counter() - t_h:.1f}s",
                 level="ok",
             )
             block[arch] = {
