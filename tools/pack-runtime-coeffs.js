@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// Pack browser-facing transfer coeffs: compact JSON, strip per-horizon train blobs.
+// Pack browser-facing transfer coeffs: compact JSON, strip bulky train/holdout blobs.
+// Keeps validate / validateEvents (needed for maxReliableHorizonMinutes / UI fade cut).
 // Usage: node tools/pack-runtime-coeffs.js
 //   [--in models/transfer-coeffs.json] [--out models/transfer-coeffs-runtime.json]
 
@@ -12,8 +13,9 @@ function opt(name, fallback) {
     return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : fallback;
 }
 
+// Keep validate / validateEvents: maxReliableHorizonMinutes and UI skill cuts read them.
 const STRIP_KEYS = new Set([
-    'train', 'validate', 'validateEvents', 'holdout', 'holdoutEvents', 'earlyStopping'
+    'train', 'holdout', 'holdoutEvents', 'earlyStopping'
 ]);
 
 function stripHorizonBlobs(node) {

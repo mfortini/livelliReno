@@ -1508,6 +1508,24 @@ test('loadCoeffs soft-adopts reliable seq GRU over MLP Cento', async () => {
     );
 });
 
+test('runtime coeffs pack keeps validateEvents for reliable-horizon cut', () => {
+    const fullPath = new URL('../models/transfer-coeffs.json', `file://${__filename}`);
+    const runtimePath = new URL('../models/transfer-coeffs-runtime.json', `file://${__filename}`);
+    const { existsSync } = require('fs');
+    if (!existsSync(fullPath) || !existsSync(runtimePath)) return;
+    const full = JSON.parse(readFileSync(fullPath, 'utf8'));
+    const runtime = JSON.parse(readFileSync(runtimePath, 'utf8'));
+    assert.ok(runtime.nodes.Cento.horizons['360']?.validateEvents?.skill >= 0.1);
+    assert.equal(
+        P.maxReliableHorizonMinutes(full.nodes.Cento),
+        P.maxReliableHorizonMinutes(runtime.nodes.Cento)
+    );
+    assert.equal(
+        P.maxReliableHorizonMinutes(full.nodes.Gallo),
+        P.maxReliableHorizonMinutes(runtime.nodes.Gallo)
+    );
+});
+
 test('config dependencies form a connected DAG used by rankNodes', () => {
     const cfg = JSON.parse(readFileSync(new URL('../config.json', `file://${__filename}`), 'utf8'));
     const ranks = P.rankNodes(cfg);
