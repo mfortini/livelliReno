@@ -1,0 +1,6178 @@
+{
+  "kind": "fase0_eval_table",
+  "version": 2,
+  "disclaimer": "Sperimentale: non operativo, non allertistico.",
+  "protocol": {
+    "everyMin": 30,
+    "horizonsMinutes": [
+      30,
+      60,
+      90,
+      120,
+      150,
+      180,
+      210,
+      240,
+      270,
+      300,
+      330,
+      360
+    ],
+    "baselines": [
+      "persist",
+      "poly2_6pt",
+      "ridge",
+      "arx"
+    ],
+    "eventSource": "models/events.json",
+    "sampling": "dense_30min",
+    "ma3": false,
+    "publishLagMin": null,
+    "dropUpstream": null,
+    "yearFolds": false,
+    "arxOrder": 3,
+    "soglie": "models/arpae-soglie.json",
+    "rawData": "blocked: only validated storico CSV in repo (no distinct raw corpus)"
+  },
+  "from": "2026-01-01T00:00:00.000Z",
+  "to": "2026-11-15T04:00:00.000Z",
+  "seed": 1,
+  "caveat": "Pesi fitted con mesi alterni che si sovrappongono al test; numeri assoluti possono essere ottimistici.",
+  "stations": {
+    "Cento": {
+      "persist": {
+        "30": {
+          "nAll": 15262,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0,
+          "skillAllPoly2": -1.4645085978797439,
+          "skillAllRidge": null,
+          "skillAllArx": -0.89368431914985,
+          "skillEventPersist": 0,
+          "skillEventPoly2": -1.9553951909782743,
+          "skillEventRidge": null,
+          "skillEventArx": -1.004044622199709,
+          "skillEventPersistCI": {
+            "skill": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 9
+          },
+          "risingRmse": 0.09110989970845533,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.09008543573558545,
+            "lo": 0.07394959806135169,
+            "hi": 0.10641558992546427,
+            "nEvents": 9
+          },
+          "risingMinMed": -0.3199999999999994,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -0.3155555555555554,
+            "lo": -0.3933333333333333,
+            "hi": -0.24111111111111105,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.03553888079544388,
+          "fallingN": 830,
+          "phaseLagMin": 30.00090897616994,
+          "phaseLagMinDiscrete": 30,
+          "nseEvent": 0.9991688103026818,
+          "nseEventCI": {
+            "value": 0.9991688103026817,
+            "lo": 0.9988208044561786,
+            "hi": 0.9993004109847062,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9952361108732958,
+          "kgeEventR": 0.9995924685079782,
+          "kgeEventAlpha": 1.001085392485801,
+          "kgeEventBeta": 0.9953793419466154,
+          "kgeEventCI": {
+            "value": 0.995236110873296,
+            "lo": 0.9923463107680436,
+            "hi": 0.9968894828492417,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": 0,
+          "peakTimeErrMed": -330,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.9670781893004116,
+            "yellowCounts": {
+              "hits": 235,
+              "misses": 4,
+              "falseAlarms": 4
+            },
+            "orange": 0.8518518518518519,
+            "orangeCounts": {
+              "hits": 23,
+              "misses": 2,
+              "falseAlarms": 2
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.9832635983263598,
+            "orange": 0.92,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.016736401673640166,
+            "orange": 0.08,
+            "red": null
+          }
+        },
+        "60": {
+          "nAll": 15260,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0,
+          "skillAllPoly2": -1.2461800507727965,
+          "skillAllRidge": null,
+          "skillAllArx": -1.084641654953928,
+          "skillEventPersist": 0,
+          "skillEventPoly2": -1.4907683092221262,
+          "skillEventRidge": null,
+          "skillEventArx": -1.1459480987424278,
+          "skillEventPersistCI": {
+            "skill": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 9
+          },
+          "risingRmse": 0.18104662433840554,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.17910848417762015,
+            "lo": 0.14702945335661896,
+            "hi": 0.21182070804737876,
+            "nEvents": 9
+          },
+          "risingMinMed": -0.6299999999999999,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -0.6177777777777779,
+            "lo": -0.7677777777777777,
+            "hi": -0.4733333333333334,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.07065187008839871,
+          "fallingN": 830,
+          "phaseLagMin": 60.001322645617655,
+          "phaseLagMinDiscrete": 60,
+          "nseEvent": 0.9967102058006914,
+          "nseEventCI": {
+            "value": 0.9967102058006914,
+            "lo": 0.9953237300335668,
+            "hi": 0.9972432424079698,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9904532724644651,
+          "kgeEventR": 0.9983889826479255,
+          "kgeEventAlpha": 1.002213404095357,
+          "kgeEventBeta": 0.9908542101467555,
+          "kgeEventCI": {
+            "value": 0.9904532724644659,
+            "lo": 0.9848251741806985,
+            "hi": 0.9935648009564402,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": -0.019999999999999574,
+          "peakTimeErrMed": -330,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.9352226720647774,
+            "yellowCounts": {
+              "hits": 231,
+              "misses": 8,
+              "falseAlarms": 8
+            },
+            "orange": 0.7241379310344828,
+            "orangeCounts": {
+              "hits": 21,
+              "misses": 4,
+              "falseAlarms": 4
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.9665271966527197,
+            "orange": 0.84,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.03347280334728033,
+            "orange": 0.16,
+            "red": null
+          }
+        },
+        "90": {
+          "nAll": 15259,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0,
+          "skillAllPoly2": -0.9086227929761295,
+          "skillAllRidge": null,
+          "skillAllArx": -1.3620923537801066,
+          "skillEventPersist": 0,
+          "skillEventPoly2": -1.0553759324050267,
+          "skillEventRidge": null,
+          "skillEventArx": -1.4361801770061868,
+          "skillEventPersistCI": {
+            "skill": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 9
+          },
+          "risingRmse": 0.2695420249716301,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.2669238543639705,
+            "lo": 0.2189814815856681,
+            "hi": 0.31610563634506056,
+            "nEvents": 9
+          },
+          "risingMinMed": -0.91,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -0.8999999999999999,
+            "lo": -1.108888888888889,
+            "hi": -0.6966666666666668,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.10597624193856695,
+          "fallingN": 830,
+          "phaseLagMin": 90.00143405478566,
+          "phaseLagMinDiscrete": 90,
+          "nseEvent": 0.9926795423215615,
+          "nseEventCI": {
+            "value": 0.9926795423215615,
+            "lo": 0.9895644022386773,
+            "hi": 0.9938913684272653,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9855350800499955,
+          "kgeEventR": 0.9964199365927942,
+          "kgeEventAlpha": 1.003385079969428,
+          "kgeEventBeta": 0.9864000629133439,
+          "kgeEventCI": {
+            "value": 0.9855350800499967,
+            "lo": 0.9772669776751792,
+            "hi": 0.9898808369318739,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": -0.03000000000000025,
+          "peakTimeErrMed": -330,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.9043824701195219,
+            "yellowCounts": {
+              "hits": 227,
+              "misses": 12,
+              "falseAlarms": 12
+            },
+            "orange": 0.6129032258064516,
+            "orangeCounts": {
+              "hits": 19,
+              "misses": 6,
+              "falseAlarms": 6
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.9497907949790795,
+            "orange": 0.76,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.0502092050209205,
+            "orange": 0.24,
+            "red": null
+          }
+        },
+        "120": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0,
+          "skillAllPoly2": -0.6339321820961277,
+          "skillAllRidge": null,
+          "skillAllArx": -0.931578437855058,
+          "skillEventPersist": 0,
+          "skillEventPoly2": -0.7343210289030637,
+          "skillEventRidge": null,
+          "skillEventArx": -0.9610200823731423,
+          "skillEventPersistCI": {
+            "skill": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 9
+          },
+          "risingRmse": 0.35619934355670974,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.3531183212409401,
+            "lo": 0.2892960837825263,
+            "hi": 0.41883759215151245,
+            "nEvents": 9
+          },
+          "risingMinMed": -1.18,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -1.1722222222222223,
+            "lo": -1.4355555555555555,
+            "hi": -0.9111111111111112,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.14141198463210367,
+          "fallingN": 830,
+          "phaseLagMin": 120,
+          "phaseLagMinDiscrete": 120,
+          "nseEvent": 0.9871584083822954,
+          "nseEventCI": {
+            "value": 0.9871584083822954,
+            "lo": 0.9816357879820043,
+            "hi": 0.9892885475167594,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9804178099509775,
+          "kgeEventR": 0.9937286680275597,
+          "kgeEventAlpha": 1.0045975789138388,
+          "kgeEventBeta": 0.9820279430632298,
+          "kgeEventCI": {
+            "value": 0.9804178099509779,
+            "lo": 0.9694851543993773,
+            "hi": 0.9857162010872285,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": -0.040000000000000036,
+          "peakTimeErrMed": -330,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.8745098039215686,
+            "yellowCounts": {
+              "hits": 223,
+              "misses": 16,
+              "falseAlarms": 16
+            },
+            "orange": 0.5151515151515151,
+            "orangeCounts": {
+              "hits": 17,
+              "misses": 8,
+              "falseAlarms": 8
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.9330543933054394,
+            "orange": 0.68,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.06694560669456066,
+            "orange": 0.32,
+            "red": null
+          }
+        },
+        "150": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0,
+          "skillAllPoly2": -0.41835592794713206,
+          "skillAllRidge": null,
+          "skillAllArx": -0.8335662949002385,
+          "skillEventPersist": 0,
+          "skillEventPoly2": -0.49367728393113586,
+          "skillEventRidge": null,
+          "skillEventArx": -0.8567667553934424,
+          "skillEventPersistCI": {
+            "skill": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 9
+          },
+          "risingRmse": 0.4408429294876622,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.4374798325410283,
+            "lo": 0.35788873278419175,
+            "hi": 0.5188935627621309,
+            "nEvents": 9
+          },
+          "risingMinMed": -1.4,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -1.4266666666666667,
+            "lo": -1.7344444444444447,
+            "hi": -1.1133333333333335,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.17695414966690462,
+          "fallingN": 830,
+          "phaseLagMin": 120,
+          "phaseLagMinDiscrete": 120,
+          "nseEvent": 0.9802333959250975,
+          "nseEventCI": {
+            "value": 0.9802333959250976,
+            "lo": 0.9716736560162988,
+            "hi": 0.9835301380365941,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9750325245528935,
+          "kgeEventR": 0.9903613463277008,
+          "kgeEventAlpha": 1.0058614488529314,
+          "kgeEventBeta": 0.9777263697855108,
+          "kgeEventCI": {
+            "value": 0.9750325245528936,
+            "lo": 0.9617142249356866,
+            "hi": 0.9811735381326631,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": -0.06999999999999984,
+          "peakTimeErrMed": -330,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.8455598455598455,
+            "yellowCounts": {
+              "hits": 219,
+              "misses": 20,
+              "falseAlarms": 20
+            },
+            "orange": 0.42857142857142855,
+            "orangeCounts": {
+              "hits": 15,
+              "misses": 10,
+              "falseAlarms": 10
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.9163179916317992,
+            "orange": 0.6,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.08368200836820083,
+            "orange": 0.4,
+            "red": null
+          }
+        },
+        "180": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0,
+          "skillAllPoly2": -0.24778235858441566,
+          "skillAllRidge": null,
+          "skillAllArx": -0.7462919811959017,
+          "skillEventPersist": 0,
+          "skillEventPoly2": -0.3080018772770303,
+          "skillEventRidge": null,
+          "skillEventArx": -0.7673526176149004,
+          "skillEventPersistCI": {
+            "skill": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 9
+          },
+          "risingRmse": 0.5233875831656523,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.5198716057891307,
+            "lo": 0.4257272483449146,
+            "hi": 0.6176995766712606,
+            "nEvents": 9
+          },
+          "risingMinMed": -1.58,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -1.6566666666666667,
+            "lo": -2.005555555555555,
+            "hi": -1.3066666666666664,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.21257656310309214,
+          "fallingN": 830,
+          "phaseLagMin": 120,
+          "phaseLagMinDiscrete": 120,
+          "nseEvent": 0.9719925440140877,
+          "nseEventCI": {
+            "value": 0.9719925440140879,
+            "lo": 0.9597177761729171,
+            "hi": 0.9768135068581996,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9693424865366148,
+          "kgeEventR": 0.9863645835037539,
+          "kgeEventAlpha": 1.0071687177786286,
+          "kgeEventBeta": 0.9734940000350503,
+          "kgeEventCI": {
+            "value": 0.9693424865366158,
+            "lo": 0.9537864854129127,
+            "hi": 0.9761384714601837,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": -0.10999999999999988,
+          "peakTimeErrMed": -330,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.8174904942965779,
+            "yellowCounts": {
+              "hits": 215,
+              "misses": 24,
+              "falseAlarms": 24
+            },
+            "orange": 0.35135135135135137,
+            "orangeCounts": {
+              "hits": 13,
+              "misses": 12,
+              "falseAlarms": 12
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.899581589958159,
+            "orange": 0.52,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.100418410041841,
+            "orange": 0.48,
+            "red": null
+          }
+        },
+        "210": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0,
+          "skillAllPoly2": -0.11064628092272444,
+          "skillAllRidge": null,
+          "skillAllArx": -0.6708320069278642,
+          "skillEventPersist": 0,
+          "skillEventPoly2": -0.16093032836138255,
+          "skillEventRidge": null,
+          "skillEventArx": -0.69085181312261,
+          "skillEventPersistCI": {
+            "skill": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 9
+          },
+          "risingRmse": 0.6038055200068838,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.6002231221469958,
+            "lo": 0.4915512961558619,
+            "hi": 0.7139203728437853,
+            "nEvents": 9
+          },
+          "risingMinMed": -1.75,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -1.87,
+            "lo": -2.252222222222222,
+            "hi": -1.4855555555555553,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.2482114333842229,
+          "fallingN": 830,
+          "phaseLagMin": 120,
+          "phaseLagMinDiscrete": 120,
+          "nseEvent": 0.9625228225093261,
+          "nseEventCI": {
+            "value": 0.9625228225093261,
+            "lo": 0.9456653811839626,
+            "hi": 0.9691030535315474,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.963329754440413,
+          "kgeEventR": 0.9817842379265515,
+          "kgeEventAlpha": 1.0085153667498707,
+          "kgeEventBeta": 0.9693343604240982,
+          "kgeEventCI": {
+            "value": 0.9633297544404132,
+            "lo": 0.9459626720799179,
+            "hi": 0.9705970886504361,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": -0.16000000000000014,
+          "peakTimeErrMed": -330,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.7902621722846442,
+            "yellowCounts": {
+              "hits": 211,
+              "misses": 28,
+              "falseAlarms": 28
+            },
+            "orange": 0.3157894736842105,
+            "orangeCounts": {
+              "hits": 12,
+              "misses": 13,
+              "falseAlarms": 13
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.8828451882845189,
+            "orange": 0.48,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.11715481171548117,
+            "orange": 0.52,
+            "red": null
+          }
+        },
+        "240": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0,
+          "skillAllPoly2": 0.0015226598380635448,
+          "skillAllRidge": null,
+          "skillAllArx": -0.605693000153732,
+          "skillEventPersist": 0,
+          "skillEventPoly2": -0.04163822758678393,
+          "skillEventRidge": null,
+          "skillEventArx": -0.625917551644046,
+          "skillEventPersistCI": {
+            "skill": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 9
+          },
+          "risingRmse": 0.6820960511844899,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.6784992207088328,
+            "lo": 0.5551941061445189,
+            "hi": 0.8080686963459918,
+            "nEvents": 9
+          },
+          "risingMinMed": -1.91,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -2.0688888888888886,
+            "lo": -2.4755555555555557,
+            "hi": -1.6511111111111108,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.283872319848032,
+          "fallingN": 830,
+          "phaseLagMin": 120,
+          "phaseLagMinDiscrete": 120,
+          "nseEvent": 0.9519049323196178,
+          "nseEventCI": {
+            "value": 0.9519049323196177,
+            "lo": 0.9297122379099736,
+            "hi": 0.9605354777865658,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9569815169529855,
+          "kgeEventR": 0.9766632671427736,
+          "kgeEventAlpha": 1.0099070829420882,
+          "kgeEventBeta": 0.9652460579099966,
+          "kgeEventCI": {
+            "value": 0.9569815169529873,
+            "lo": 0.937681736862384,
+            "hi": 0.9647016078098276,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": -0.20999999999999996,
+          "peakTimeErrMed": -330,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.7638376383763837,
+            "yellowCounts": {
+              "hits": 207,
+              "misses": 32,
+              "falseAlarms": 32
+            },
+            "orange": 0.28205128205128205,
+            "orangeCounts": {
+              "hits": 11,
+              "misses": 14,
+              "falseAlarms": 14
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.8661087866108786,
+            "orange": 0.44,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.13389121338912133,
+            "orange": 0.56,
+            "red": null
+          }
+        },
+        "270": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0,
+          "skillAllPoly2": 0.09474162188384982,
+          "skillAllRidge": null,
+          "skillAllArx": -0.5501246871174652,
+          "skillEventPersist": 0,
+          "skillEventPoly2": 0.056966864237321,
+          "skillEventRidge": null,
+          "skillEventArx": -0.5696174337994016,
+          "skillEventPersistCI": {
+            "skill": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 9
+          },
+          "risingRmse": 0.7582665776394061,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.7546775008142115,
+            "lo": 0.616470903050787,
+            "hi": 0.8991299834661324,
+            "nEvents": 9
+          },
+          "risingMinMed": -2.0700000000000003,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -2.2477777777777783,
+            "lo": -2.673333333333334,
+            "hi": -1.7977777777777777,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.31954598816792656,
+          "fallingN": 830,
+          "phaseLagMin": 120,
+          "phaseLagMinDiscrete": 120,
+          "nseEvent": 0.9402178455344898,
+          "nseEventCI": {
+            "value": 0.94021784553449,
+            "lo": 0.9121113914690459,
+            "hi": 0.9511754668814933,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9502951501960419,
+          "kgeEventR": 0.9710435718111406,
+          "kgeEventAlpha": 1.0113412898087843,
+          "kgeEventBeta": 0.9612253625929187,
+          "kgeEventCI": {
+            "value": 0.9502951501960436,
+            "lo": 0.929543905141111,
+            "hi": 0.9583491678023498,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": -0.2699999999999996,
+          "peakTimeErrMed": -330,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.7381818181818182,
+            "yellowCounts": {
+              "hits": 203,
+              "misses": 36,
+              "falseAlarms": 36
+            },
+            "orange": 0.25,
+            "orangeCounts": {
+              "hits": 10,
+              "misses": 15,
+              "falseAlarms": 15
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.8493723849372385,
+            "orange": 0.4,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.1506276150627615,
+            "orange": 0.6,
+            "red": null
+          }
+        },
+        "300": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0,
+          "skillAllPoly2": 0.17353236403157046,
+          "skillAllRidge": null,
+          "skillAllArx": -0.5013319853652092,
+          "skillEventPersist": 0,
+          "skillEventPoly2": 0.13986951995662722,
+          "skillEventRidge": null,
+          "skillEventArx": -0.5209052757931012,
+          "skillEventPersistCI": {
+            "skill": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 9
+          },
+          "risingRmse": 0.8323549402411091,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.828774866300124,
+            "lo": 0.676308884563286,
+            "hi": 0.9886678424854585,
+            "nEvents": 9
+          },
+          "risingMinMed": -2.25,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -2.411111111111111,
+            "lo": -2.8499999999999996,
+            "hi": -1.9322222222222223,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.3551841538308402,
+          "fallingN": 830,
+          "phaseLagMin": 120,
+          "phaseLagMinDiscrete": 120,
+          "nseEvent": 0.9275360293362259,
+          "nseEventCI": {
+            "value": 0.927536029336226,
+            "lo": 0.8927440057187809,
+            "hi": 0.9409653107643254,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.943282822363095,
+          "kgeEventR": 0.964964272760196,
+          "kgeEventAlpha": 1.012813050155114,
+          "kgeEventBeta": 0.9572780875709336,
+          "kgeEventCI": {
+            "value": 0.9432828223630961,
+            "lo": 0.9209369028118498,
+            "hi": 0.951990330106534,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": -0.33999999999999986,
+          "peakTimeErrMed": -330,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.7132616487455197,
+            "yellowCounts": {
+              "hits": 199,
+              "misses": 40,
+              "falseAlarms": 40
+            },
+            "orange": 0.21951219512195122,
+            "orangeCounts": {
+              "hits": 9,
+              "misses": 16,
+              "falseAlarms": 16
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.8326359832635983,
+            "orange": 0.36,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.16736401673640167,
+            "orange": 0.64,
+            "red": null
+          }
+        },
+        "330": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0,
+          "skillAllPoly2": 0.24087683103363944,
+          "skillAllRidge": null,
+          "skillAllArx": -0.45883794847489745,
+          "skillEventPersist": 0,
+          "skillEventPoly2": 0.21051545066056054,
+          "skillEventRidge": null,
+          "skillEventArx": -0.4782458667927054,
+          "skillEventPersistCI": {
+            "skill": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 9
+          },
+          "risingRmse": 0.9043907743951511,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.9007995510736707,
+            "lo": 0.7345453199110158,
+            "hi": 1.0749656776853471,
+            "nEvents": 9
+          },
+          "risingMinMed": -2.42,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -2.5633333333333335,
+            "lo": -3.032222222222222,
+            "hi": -2.06,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.3907737150647954,
+          "fallingN": 830,
+          "phaseLagMin": 120,
+          "phaseLagMinDiscrete": 120,
+          "nseEvent": 0.9139274269065806,
+          "nseEventCI": {
+            "value": 0.9139274269065807,
+            "lo": 0.8718085614572637,
+            "hi": 0.930059878683579,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.935939717799242,
+          "kgeEventR": 0.9584629021527116,
+          "kgeEventAlpha": 1.0143376607899142,
+          "kgeEventBeta": 0.9533864746973704,
+          "kgeEventCI": {
+            "value": 0.9359397177992423,
+            "lo": 0.9115161043041226,
+            "hi": 0.9451305234252272,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": -0.41000000000000014,
+          "peakTimeErrMed": -330,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.6890459363957597,
+            "yellowCounts": {
+              "hits": 195,
+              "misses": 44,
+              "falseAlarms": 44
+            },
+            "orange": 0.19047619047619047,
+            "orangeCounts": {
+              "hits": 8,
+              "misses": 17,
+              "falseAlarms": 17
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.8158995815899581,
+            "orange": 0.32,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.18410041841004185,
+            "orange": 0.68,
+            "red": null
+          }
+        },
+        "360": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0,
+          "skillAllPoly2": 0.29912139731502563,
+          "skillAllRidge": null,
+          "skillAllArx": -0.4211362925399458,
+          "skillEventPersist": 0,
+          "skillEventPoly2": 0.2714645667417457,
+          "skillEventRidge": null,
+          "skillEventArx": -0.4403144325556103,
+          "skillEventPersistCI": {
+            "skill": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 9
+          },
+          "risingRmse": 0.9744081980389591,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.9707765395222542,
+            "lo": 0.7915707763159932,
+            "hi": 1.158827896442598,
+            "nEvents": 9
+          },
+          "risingMinMed": -2.59,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -2.703333333333333,
+            "lo": -3.1988888888888884,
+            "hi": -2.18,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.42631525752098154,
+          "fallingN": 830,
+          "phaseLagMin": 120,
+          "phaseLagMinDiscrete": 120,
+          "nseEvent": 0.8994607968477256,
+          "nseEventCI": {
+            "value": 0.8994607968477262,
+            "lo": 0.8493914656290439,
+            "hi": 0.9186080739373943,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9282990064920944,
+          "kgeEventR": 0.9515742507053805,
+          "kgeEventAlpha": 1.0158935252095005,
+          "kgeEventBeta": 0.949568113938795,
+          "kgeEventCI": {
+            "value": 0.9282990064920936,
+            "lo": 0.901580475633734,
+            "hi": 0.938027925977474,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": -0.5199999999999996,
+          "peakTimeErrMed": -330,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.6655052264808362,
+            "yellowCounts": {
+              "hits": 191,
+              "misses": 48,
+              "falseAlarms": 48
+            },
+            "orange": 0.16279069767441862,
+            "orangeCounts": {
+              "hits": 7,
+              "misses": 18,
+              "falseAlarms": 18
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.799163179916318,
+            "orange": 0.28,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.200836820083682,
+            "orange": 0.72,
+            "red": null
+          }
+        }
+      },
+      "poly2": {
+        "30": {
+          "nAll": 15262,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.5942395977598471,
+          "skillAllPoly2": 0,
+          "skillAllRidge": null,
+          "skillAllArx": 0.23161788894588686,
+          "skillEventPersist": 0.661635776138288,
+          "skillEventPoly2": 0,
+          "skillEventRidge": null,
+          "skillEventArx": 0.32190299682515755,
+          "skillEventPersistCI": {
+            "skill": 0.6616357761382896,
+            "lo": 0.5799528625423955,
+            "hi": 0.7787133277381275,
+            "nEvents": 9
+          },
+          "risingRmse": 0.031737880955690856,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.025227401750029424,
+            "lo": 0.017846876056674153,
+            "hi": 0.03301267254102755,
+            "nEvents": 9
+          },
+          "risingMinMed": -0.08399999999999896,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -0.11000000000000014,
+            "lo": -0.1704444444444441,
+            "hi": -0.06066666666666712,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.008379262986251896,
+          "fallingN": 830,
+          "phaseLagMin": -0.42445893203543367,
+          "phaseLagMinDiscrete": 0,
+          "nseEvent": 0.9999048368023087,
+          "nseEventCI": {
+            "value": 0.9999048368023087,
+            "lo": 0.9998512842807284,
+            "hi": 0.9999516647030252,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9997570779332882,
+          "kgeEventR": 0.9999524580992539,
+          "kgeEventAlpha": 1.0002382012243156,
+          "kgeEventBeta": 0.9999966721022335,
+          "kgeEventCI": {
+            "value": 0.9997570779332873,
+            "lo": 0.9996634184834644,
+            "hi": 0.9998418744877589,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 30,
+          "crossingTimeErrCI": {
+            "value": 30,
+            "lo": 30,
+            "hi": 30,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": -0.002142857142861665,
+          "peakTimeErrMed": 30,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 1,
+            "yellowCounts": {
+              "hits": 239,
+              "misses": 0,
+              "falseAlarms": 0
+            },
+            "orange": 0.88,
+            "orangeCounts": {
+              "hits": 22,
+              "misses": 3,
+              "falseAlarms": 0
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 1,
+            "orange": 0.88,
+            "red": null
+          },
+          "far": {
+            "yellow": 0,
+            "orange": 0,
+            "red": null
+          }
+        },
+        "60": {
+          "nAll": 15260,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.5547997144503395,
+          "skillAllPoly2": 0,
+          "skillAllRidge": null,
+          "skillAllArx": 0.0719169399457944,
+          "skillEventPersist": 0.5985174549164298,
+          "skillEventPoly2": 0,
+          "skillEventRidge": null,
+          "skillEventArx": 0.13843929569964164,
+          "skillEventPersistCI": {
+            "skill": 0.5985174549164303,
+            "lo": 0.4982108136885093,
+            "hi": 0.7484635845982226,
+            "nEvents": 9
+          },
+          "risingRmse": 0.07579720613714065,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.05983207409886217,
+            "lo": 0.041677086791023416,
+            "hi": 0.07844226041947418,
+            "nEvents": 9
+          },
+          "risingMinMed": -0.19228571428571306,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -0.2536507936507923,
+            "lo": -0.3901904761904762,
+            "hi": -0.14236507936507908,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.01417436466725031,
+          "fallingN": 830,
+          "phaseLagMin": -1.031655256831766,
+          "phaseLagMinDiscrete": 0,
+          "nseEvent": 0.9994697238827677,
+          "nseEventCI": {
+            "value": 0.9994697238827677,
+            "lo": 0.9991591782451323,
+            "hi": 0.9997475105123647,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9991415336027302,
+          "kgeEventR": 0.9997354115020378,
+          "kgeEventAlpha": 1.0008166731485675,
+          "kgeEventBeta": 1.0000015653742145,
+          "kgeEventCI": {
+            "value": 0.9991415336027302,
+            "lo": 0.9988023988313126,
+            "hi": 0.9994444968379871,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 30,
+          "crossingTimeErrCI": {
+            "value": 30,
+            "lo": 30,
+            "hi": 30,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": -0.009857142857176981,
+          "peakTimeErrMed": 0,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.991701244813278,
+            "yellowCounts": {
+              "hits": 239,
+              "misses": 0,
+              "falseAlarms": 2
+            },
+            "orange": 0.92,
+            "orangeCounts": {
+              "hits": 23,
+              "misses": 2,
+              "falseAlarms": 0
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 1,
+            "orange": 0.92,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.008298755186721992,
+            "orange": 0,
+            "red": null
+          }
+        },
+        "90": {
+          "nAll": 15259,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.4760620046663633,
+          "skillAllPoly2": 0,
+          "skillAllRidge": null,
+          "skillAllArx": -0.23758993263246042,
+          "skillEventPersist": 0.5134709985487254,
+          "skillEventPoly2": 0,
+          "skillEventRidge": null,
+          "skillEventArx": -0.18527230887420942,
+          "skillEventPersistCI": {
+            "skill": 0.5134709985487245,
+            "lo": 0.3933760597350763,
+            "hi": 0.6904819940487216,
+            "nEvents": 9
+          },
+          "risingRmse": 0.13735744774852626,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.10970563335341692,
+            "lo": 0.07672494769393233,
+            "hi": 0.14309864066564476,
+            "nEvents": 9
+          },
+          "risingMinMed": -0.36585714285715865,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -0.4264999999999995,
+            "lo": -0.6168492063492094,
+            "hi": -0.2522936507936482,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.021823008343028798,
+          "fallingN": 830,
+          "phaseLagMin": -1.001236152930734,
+          "phaseLagMinDiscrete": 0,
+          "nseEvent": 0.9982671710277888,
+          "nseEventCI": {
+            "value": 0.9982671710277888,
+            "lo": 0.9972572717871906,
+            "hi": 0.9991544309649718,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9978137400620716,
+          "kgeEventR": 0.9991373362355591,
+          "kgeEventAlpha": 1.002008848915721,
+          "kgeEventBeta": 0.9999916465864622,
+          "kgeEventCI": {
+            "value": 0.9978137400620707,
+            "lo": 0.9969198013320602,
+            "hi": 0.9986027224823025,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 30,
+          "crossingTimeErrCI": {
+            "value": 30,
+            "lo": 30,
+            "hi": 30,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": -0.012142857142814378,
+          "peakTimeErrMed": -30,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.9794238683127572,
+            "yellowCounts": {
+              "hits": 238,
+              "misses": 1,
+              "falseAlarms": 4
+            },
+            "orange": 0.8461538461538461,
+            "orangeCounts": {
+              "hits": 22,
+              "misses": 3,
+              "falseAlarms": 1
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.99581589958159,
+            "orange": 0.88,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.01652892561983471,
+            "orange": 0.043478260869565216,
+            "red": null
+          }
+        },
+        "120": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.38797949452398517,
+          "skillAllPoly2": 0,
+          "skillAllRidge": null,
+          "skillAllArx": -0.18216561190262381,
+          "skillEventPersist": 0.42340548068399575,
+          "skillEventPoly2": 0,
+          "skillEventRidge": null,
+          "skillEventArx": -0.13071343176497296,
+          "skillEventPersistCI": {
+            "skill": 0.4234054806839943,
+            "lo": 0.2839647022726075,
+            "hi": 0.6271138420567868,
+            "nEvents": 9
+          },
+          "risingRmse": 0.21573642873197768,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.17469410279476197,
+            "lo": 0.12276139674014178,
+            "hi": 0.22669553322757485,
+            "nEvents": 9
+          },
+          "risingMinMed": -0.5536428571428404,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -0.6201428571428506,
+            "lo": -0.8792539682539616,
+            "hi": -0.37861904761904763,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.030798794598313677,
+          "fallingN": 830,
+          "phaseLagMin": -0.27171631348700387,
+          "phaseLagMinDiscrete": 0,
+          "nseEvent": 0.9957306685309893,
+          "nseEventCI": {
+            "value": 0.9957306685309893,
+            "lo": 0.9933130682183856,
+            "hi": 0.9978282189758739,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9953648744279917,
+          "kgeEventR": 0.9978825651521548,
+          "kgeEventAlpha": 1.004123159991405,
+          "kgeEventBeta": 0.9999797412069984,
+          "kgeEventCI": {
+            "value": 0.9953648744279898,
+            "lo": 0.9934144794125008,
+            "hi": 0.9970741943035037,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 30,
+          "crossingTimeErrCI": {
+            "value": 30,
+            "lo": 30,
+            "hi": 30,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": -0.014999999999998792,
+          "peakTimeErrMed": -30,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.9673469387755103,
+            "yellowCounts": {
+              "hits": 237,
+              "misses": 2,
+              "falseAlarms": 6
+            },
+            "orange": 0.7857142857142857,
+            "orangeCounts": {
+              "hits": 22,
+              "misses": 3,
+              "falseAlarms": 3
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.9916317991631799,
+            "orange": 0.88,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.024691358024691357,
+            "orange": 0.12,
+            "red": null
+          }
+        },
+        "150": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.2949583526277798,
+          "skillAllPoly2": 0,
+          "skillAllRidge": null,
+          "skillAllArx": -0.2927406011226421,
+          "skillEventPersist": 0.330511342203619,
+          "skillEventPoly2": 0,
+          "skillEventRidge": null,
+          "skillEventArx": -0.24308428290929696,
+          "skillEventPersistCI": {
+            "skill": 0.3305113422036179,
+            "lo": 0.17210037345615892,
+            "hi": 0.5591565264658862,
+            "nEvents": 9
+          },
+          "risingRmse": 0.31064173935344563,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.2548342000177214,
+            "lo": 0.18123857653348383,
+            "hi": 0.3278069762115521,
+            "nEvents": 9
+          },
+          "risingMinMed": -0.7942857142856914,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -0.8239682539682496,
+            "lo": -1.1646031746031626,
+            "hi": -0.5120634920634971,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.04193555888610756,
+          "fallingN": 830,
+          "phaseLagMin": 1.3031953593260548,
+          "phaseLagMinDiscrete": 0,
+          "nseEvent": 0.9911403103108923,
+          "nseEventCI": {
+            "value": 0.9911403103108924,
+            "lo": 0.9862638015571206,
+            "hi": 0.9953232446985336,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9912844087698612,
+          "kgeEventR": 0.9956315391917262,
+          "kgeEventAlpha": 1.0075416263799815,
+          "kgeEventBeta": 0.9999558162675197,
+          "kgeEventCI": {
+            "value": 0.991284408769857,
+            "lo": 0.9875949120110883,
+            "hi": 0.9945150630740496,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 30,
+          "crossingTimeErrCI": {
+            "value": 30,
+            "lo": 30,
+            "hi": 30,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": -0.04142857142857537,
+          "peakTimeErrMed": -60,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.9673469387755103,
+            "yellowCounts": {
+              "hits": 237,
+              "misses": 2,
+              "falseAlarms": 6
+            },
+            "orange": 0.7586206896551724,
+            "orangeCounts": {
+              "hits": 22,
+              "misses": 3,
+              "falseAlarms": 4
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.9916317991631799,
+            "orange": 0.88,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.024691358024691357,
+            "orange": 0.15384615384615385,
+            "red": null
+          }
+        },
+        "180": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.19857818703697638,
+          "skillAllPoly2": 0,
+          "skillAllRidge": null,
+          "skillAllArx": -0.39951648553280994,
+          "skillEventPersist": 0.23547510338304856,
+          "skillEventPoly2": 0,
+          "skillEventRidge": null,
+          "skillEventArx": -0.3511850772677301,
+          "skillEventPersistCI": {
+            "skill": 0.23547510338304778,
+            "lo": 0.05718229483197523,
+            "hi": 0.48955264720858205,
+            "nEvents": 9
+          },
+          "risingRmse": 0.42188781333248426,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.350062042968777,
+            "lo": 0.2511516677261232,
+            "hi": 0.44787557297105196,
+            "nEvents": 9
+          },
+          "risingMinMed": -1.0545714285714431,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -1.028253968253965,
+            "lo": -1.433079365079362,
+            "hi": -0.6572063492063516,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.05519067335496912,
+          "fallingN": 830,
+          "phaseLagMin": 3.695836407715685,
+          "phaseLagMinDiscrete": 0,
+          "nseEvent": 0.9836296890974582,
+          "nseEventCI": {
+            "value": 0.9836296890974582,
+            "lo": 0.9749096769798484,
+            "hi": 0.9911159762557537,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.985001753607745,
+          "kgeEventR": 0.9919968061350612,
+          "kgeEventAlpha": 1.012684237741135,
+          "kgeEventBeta": 0.9999200266959205,
+          "kgeEventCI": {
+            "value": 0.9850017536077396,
+            "lo": 0.9786318592465416,
+            "hi": 0.9905865911338051,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 30,
+          "crossingTimeErrCI": {
+            "value": 30,
+            "lo": 30,
+            "hi": 30,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": -0.04342857142855694,
+          "peakTimeErrMed": -60,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.9595141700404858,
+            "yellowCounts": {
+              "hits": 237,
+              "misses": 2,
+              "falseAlarms": 8
+            },
+            "orange": 0.7142857142857143,
+            "orangeCounts": {
+              "hits": 20,
+              "misses": 5,
+              "falseAlarms": 3
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.9916317991631799,
+            "orange": 0.8,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.0326530612244898,
+            "orange": 0.13043478260869565,
+            "red": null
+          }
+        },
+        "210": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.09962332996856527,
+          "skillAllPoly2": 0,
+          "skillAllRidge": null,
+          "skillAllArx": -0.5043781585796494,
+          "skillEventPersist": 0.13862186595515236,
+          "skillEventPoly2": 0,
+          "skillEventRidge": null,
+          "skillEventArx": -0.45646277973390137,
+          "skillEventPersistCI": {
+            "skill": 0.13862186595515202,
+            "lo": -0.05812317991421034,
+            "hi": 0.41824772659995024,
+            "nEvents": 9
+          },
+          "risingRmse": 0.5492728646587827,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.460219489730501,
+            "lo": 0.3330129131396576,
+            "hi": 0.5848082214789262,
+            "nEvents": 9
+          },
+          "risingMinMed": -1.1866428571428758,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -1.232515873015869,
+            "lo": -1.6757142857142744,
+            "hi": -0.8126587301587368,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.07026766259237656,
+          "fallingN": 830,
+          "phaseLagMin": 6.8099293685999385,
+          "phaseLagMinDiscrete": 0,
+          "nseEvent": 0.9721929728016071,
+          "nseEventCI": {
+            "value": 0.972192972801607,
+            "lo": 0.9578072095460669,
+            "hi": 0.9845454308374405,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9758858667725415,
+          "kgeEventR": 0.986566010748422,
+          "kgeEventAlpha": 1.0200250930017847,
+          "kgeEventBeta": 0.9998775076738019,
+          "kgeEventCI": {
+            "value": 0.9758858667725385,
+            "lo": 0.9656850729946761,
+            "hi": 0.9848551980655393,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 30,
+          "crossingTimeErrCI": {
+            "value": 30,
+            "lo": 30,
+            "hi": 30,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": -0.0717142857142683,
+          "peakTimeErrMed": -90,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.9288537549407114,
+            "yellowCounts": {
+              "hits": 235,
+              "misses": 4,
+              "falseAlarms": 14
+            },
+            "orange": 0.7,
+            "orangeCounts": {
+              "hits": 21,
+              "misses": 4,
+              "falseAlarms": 5
+            },
+            "red": 0,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 1
+            }
+          },
+          "pod": {
+            "yellow": 0.9832635983263598,
+            "orange": 0.84,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.05622489959839357,
+            "orange": 0.19230769230769232,
+            "red": 1
+          }
+        },
+        "240": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": -0.001524981866705799,
+          "skillAllPoly2": 0,
+          "skillAllRidge": null,
+          "skillAllArx": -0.6081416528624628,
+          "skillEventPersist": 0.03997378982840272,
+          "skillEventPoly2": 0,
+          "skillEventRidge": null,
+          "skillEventArx": -0.5609234651563157,
+          "skillEventPersistCI": {
+            "skill": 0.03997378982840338,
+            "lo": -0.17768537082377667,
+            "hi": 0.34354468475099487,
+            "nEvents": 9
+          },
+          "risingRmse": 0.6926564294530676,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.5853247919667636,
+            "lo": 0.42766673768661423,
+            "hi": 0.738594346924254,
+            "nEvents": 9
+          },
+          "risingMinMed": -1.2705000000000226,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -1.4249444444444392,
+            "lo": -1.912833333333315,
+            "hi": -0.9578888888888941,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.08740543254600341,
+          "fallingN": 830,
+          "phaseLagMin": 10.56206080263215,
+          "phaseLagMinDiscrete": 0,
+          "nseEvent": 0.9556731652791641,
+          "nseEventCI": {
+            "value": 0.9556731652791641,
+            "lo": 0.9331664927978554,
+            "hi": 0.9748223851649789,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9632631101095019,
+          "kgeEventR": 0.9789234399802053,
+          "kgeEventAlpha": 1.0300890051268439,
+          "kgeEventBeta": 0.9998283403503204,
+          "kgeEventCI": {
+            "value": 0.9632631101095003,
+            "lo": 0.9479101459375945,
+            "hi": 0.9768038128517814,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 30,
+          "crossingTimeErrCI": {
+            "value": 30,
+            "lo": 30,
+            "hi": 30,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": -0.0068571428571857496,
+          "peakTimeErrMed": -30,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.8923076923076924,
+            "yellowCounts": {
+              "hits": 232,
+              "misses": 7,
+              "falseAlarms": 21
+            },
+            "orange": 0.6285714285714286,
+            "orangeCounts": {
+              "hits": 22,
+              "misses": 3,
+              "falseAlarms": 10
+            },
+            "red": 0,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 2
+            }
+          },
+          "pod": {
+            "yellow": 0.9707112970711297,
+            "orange": 0.88,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.08300395256916997,
+            "orange": 0.3125,
+            "red": 1
+          }
+        },
+        "270": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": -0.10465699536634832,
+          "skillAllPoly2": 0,
+          "skillAllRidge": null,
+          "skillAllArx": -0.7123560793143797,
+          "skillEventPersist": -0.06040812573489163,
+          "skillEventPoly2": 0,
+          "skillEventRidge": null,
+          "skillEventArx": -0.6644350810960336,
+          "skillEventPersistCI": {
+            "skill": -0.06040812573489429,
+            "lo": -0.29711792087903555,
+            "hi": 0.2662491603751086,
+            "nEvents": 9
+          },
+          "risingRmse": 0.8518750623902055,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.7251797451311446,
+            "lo": 0.5330604290776163,
+            "hi": 0.9100043629501346,
+            "nEvents": 9
+          },
+          "risingMinMed": -1.4105714285713793,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -1.6218730158730144,
+            "lo": -2.145269841269847,
+            "hi": -1.1159047619047537,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.10648690358149139,
+          "fallingN": 830,
+          "phaseLagMin": 14.782319519197122,
+          "phaseLagMinDiscrete": 0,
+          "nseEvent": 0.9327770361771054,
+          "nseEventCI": {
+            "value": 0.9327770361771053,
+            "lo": 0.8995424999288196,
+            "hi": 0.9611393708500993,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9464677691957671,
+          "kgeEventR": 0.9686907024855854,
+          "kgeEventAlpha": 1.0434209026219654,
+          "kgeEventBeta": 0.9997701315042745,
+          "kgeEventCI": {
+            "value": 0.946467769195764,
+            "lo": 0.9243816005360959,
+            "hi": 0.9660470167048636,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 30,
+          "crossingTimeErrCI": {
+            "value": 30,
+            "lo": 30,
+            "hi": 30,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": -0.1071428571428461,
+          "peakTimeErrMed": -90,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.8636363636363636,
+            "yellowCounts": {
+              "hits": 228,
+              "misses": 11,
+              "falseAlarms": 25
+            },
+            "orange": 0.44680851063829785,
+            "orangeCounts": {
+              "hits": 21,
+              "misses": 4,
+              "falseAlarms": 22
+            },
+            "red": 0,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 3
+            }
+          },
+          "pod": {
+            "yellow": 0.9539748953974896,
+            "orange": 0.84,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.09881422924901186,
+            "orange": 0.5116279069767442,
+            "red": 1
+          }
+        },
+        "300": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": -0.20996873498649538,
+          "skillAllPoly2": 0,
+          "skillAllRidge": null,
+          "skillAllArx": -0.8165647631271056,
+          "skillEventPersist": -0.16261430469197435,
+          "skillEventPoly2": 0,
+          "skillEventRidge": null,
+          "skillEventArx": -0.768226229718552,
+          "skillEventPersistCI": {
+            "skill": -0.16261430469197746,
+            "lo": -0.4196405865928632,
+            "hi": 0.18841321426106494,
+            "nEvents": 9
+          },
+          "risingRmse": 1.026851886524456,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.8798549002198282,
+            "lo": 0.651054202598204,
+            "hi": 1.0974136993987351,
+            "nEvents": 9
+          },
+          "risingMinMed": -1.6157142857142275,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -1.824126984126982,
+            "lo": -2.390793650793635,
+            "hi": -1.2820634920635183,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.12771859049296996,
+          "fallingN": 830,
+          "phaseLagMin": 19.819873686612087,
+          "phaseLagMinDiscrete": 30,
+          "nseEvent": 0.9020524782888346,
+          "nseEventCI": {
+            "value": 0.9020524782888342,
+            "lo": 0.8546050153902437,
+            "hi": 0.9423983250817327,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9248665214452458,
+          "kgeEventR": 0.9555533959795232,
+          "kgeEventAlpha": 1.060576027485855,
+          "kgeEventBeta": 0.9997103712418186,
+          "kgeEventCI": {
+            "value": 0.9248665214452445,
+            "lo": 0.8944731903277562,
+            "hi": 0.9519177985397287,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 30,
+          "crossingTimeErrCI": {
+            "value": 30,
+            "lo": 30,
+            "hi": 30,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": -0.14285714285713436,
+          "peakTimeErrMed": -90,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.8539325842696629,
+            "yellowCounts": {
+              "hits": 228,
+              "misses": 11,
+              "falseAlarms": 28
+            },
+            "orange": 0.3225806451612903,
+            "orangeCounts": {
+              "hits": 20,
+              "misses": 5,
+              "falseAlarms": 37
+            },
+            "red": 0,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 6
+            }
+          },
+          "pod": {
+            "yellow": 0.9539748953974896,
+            "orange": 0.8,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.109375,
+            "orange": 0.6491228070175439,
+            "red": 1
+          }
+        },
+        "330": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": -0.3173092863989684,
+          "skillAllPoly2": 0,
+          "skillAllRidge": null,
+          "skillAllArx": -0.9217407768772021,
+          "skillEventPersist": -0.2666492344108553,
+          "skillEventPoly2": 0,
+          "skillEventRidge": null,
+          "skillEventArx": -0.8724189954439914,
+          "skillEventPersistCI": {
+            "skill": -0.26664923441085664,
+            "lo": -0.5457047338000702,
+            "hi": 0.1098508808005626,
+            "nEvents": 9
+          },
+          "risingRmse": 1.2174707991464075,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 1.049218224887415,
+            "lo": 0.7831423420554455,
+            "hi": 1.3053460995768482,
+            "nEvents": 9
+          },
+          "risingMinMed": -1.779428571428503,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -2.0128174603174376,
+            "lo": -2.6025793650793303,
+            "hi": -1.4356111111111103,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.15107004279910768,
+          "fallingN": 830,
+          "phaseLagMin": 25.34346271058699,
+          "phaseLagMinDiscrete": 30,
+          "nseEvent": 0.8619051393674872,
+          "nseEventCI": {
+            "value": 0.861905139367487,
+            "lo": 0.7958251581006419,
+            "hi": 0.9176547140767571,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.8978815956351823,
+          "kgeEventR": 0.9393092355935144,
+          "kgeEventAlpha": 1.082125904185188,
+          "kgeEventBeta": 0.999631913681071,
+          "kgeEventCI": {
+            "value": 0.8978815956351821,
+            "lo": 0.8575517183385595,
+            "hi": 0.9340471902059002,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 30,
+          "crossingTimeErrCI": {
+            "value": 30,
+            "lo": 30,
+            "hi": 30,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": -0.1359999999999828,
+          "peakTimeErrMed": -90,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.8125,
+            "yellowCounts": {
+              "hits": 221,
+              "misses": 18,
+              "falseAlarms": 33
+            },
+            "orange": 0.26666666666666666,
+            "orangeCounts": {
+              "hits": 20,
+              "misses": 5,
+              "falseAlarms": 50
+            },
+            "red": 0,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 10
+            }
+          },
+          "pod": {
+            "yellow": 0.9246861924686193,
+            "orange": 0.8,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.12992125984251968,
+            "orange": 0.7142857142857143,
+            "red": 1
+          }
+        },
+        "360": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": -0.42678060960789876,
+          "skillAllPoly2": 0,
+          "skillAllRidge": null,
+          "skillAllArx": -1.027649705806053,
+          "skillEventPersist": -0.37261683419798164,
+          "skillEventPoly2": 0,
+          "skillEventRidge": null,
+          "skillEventArx": -0.9769998366641441,
+          "skillEventPersistCI": {
+            "skill": -0.3726168341979865,
+            "lo": -0.6731232816805448,
+            "hi": 0.027274039576767883,
+            "nEvents": 9
+          },
+          "risingRmse": 1.4237110022904513,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 1.2331725882473477,
+            "lo": 0.9255114201200045,
+            "hi": 1.5255920483529577,
+            "nEvents": 9
+          },
+          "risingMinMed": -1.9217142857142064,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -2.2606904761904314,
+            "lo": -2.934206349206287,
+            "hi": -1.5992777777777467,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.17663876773246065,
+          "fallingN": 830,
+          "phaseLagMin": 31.57366284136859,
+          "phaseLagMinDiscrete": 30,
+          "nseEvent": 0.8105764024043796,
+          "nseEventCI": {
+            "value": 0.8105764024043791,
+            "lo": 0.7215499514865273,
+            "hi": 0.8848701747051079,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.865060865284114,
+          "kgeEventR": 0.9198821808213073,
+          "kgeEventAlpha": 1.1085794946789655,
+          "kgeEventBeta": 0.9995545079317792,
+          "kgeEventCI": {
+            "value": 0.8650608652841132,
+            "lo": 0.8132024036998015,
+            "hi": 0.9119687179301365,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 30,
+          "crossingTimeErrCI": {
+            "value": 30,
+            "lo": 30,
+            "hi": 30,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": 0.7625714285714966,
+          "peakTimeErrMed": 90,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.7913669064748201,
+            "yellowCounts": {
+              "hits": 220,
+              "misses": 19,
+              "falseAlarms": 39
+            },
+            "orange": 0.23529411764705882,
+            "orangeCounts": {
+              "hits": 20,
+              "misses": 5,
+              "falseAlarms": 60
+            },
+            "red": 0,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 17
+            }
+          },
+          "pod": {
+            "yellow": 0.9205020920502092,
+            "orange": 0.8,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.15057915057915058,
+            "orange": 0.75,
+            "red": 1
+          }
+        }
+      },
+      "arx": {
+        "30": {
+          "nAll": 14996,
+          "nEvent": 1904,
+          "nEvents": 9,
+          "skillAllPersist": 0.4717324822740707,
+          "skillAllPoly2": -0.3052445462940474,
+          "skillAllRidge": null,
+          "skillAllArx": 0,
+          "skillEventPersist": 0.5009991891820553,
+          "skillEventPoly2": -0.4751125442774695,
+          "skillEventRidge": null,
+          "skillEventArx": 0,
+          "skillEventPersistCI": {
+            "skill": 0.500999189182058,
+            "lo": 0.4251849927694805,
+            "hi": 0.6017868111638145,
+            "nEvents": 9
+          },
+          "risingRmse": 0.04769606232770386,
+          "risingN": 1074,
+          "risingRmseCI": {
+            "value": 0.04291503991934712,
+            "lo": 0.033905002856203736,
+            "hi": 0.05160436371150122,
+            "nEvents": 9
+          },
+          "risingMinMed": -0.2132625072348746,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -0.23851619303151286,
+            "lo": -0.33877774051122606,
+            "hi": -0.1496664700716818,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.008525699366897399,
+          "fallingN": 830,
+          "phaseLagMin": 6.9663986687675505,
+          "phaseLagMinDiscrete": 0,
+          "nseEvent": 0.9997913836262657,
+          "nseEventCI": {
+            "value": 0.9997913836262657,
+            "lo": 0.9997145769894786,
+            "hi": 0.9998538427687931,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9975852685767568,
+          "kgeEventR": 0.9998979479195687,
+          "kgeEventAlpha": 1.0010846646664913,
+          "kgeEventBeta": 0.9978450021390861,
+          "kgeEventCI": {
+            "value": 0.9975852685767562,
+            "lo": 0.9967937449212804,
+            "hi": 0.9979066186850969,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": 0.03704242554656112,
+          "peakTimeErrMed": 210,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.99581589958159,
+            "yellowCounts": {
+              "hits": 238,
+              "misses": 1,
+              "falseAlarms": 0
+            },
+            "orange": 0.96,
+            "orangeCounts": {
+              "hits": 24,
+              "misses": 1,
+              "falseAlarms": 0
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.99581589958159,
+            "orange": 0.96,
+            "red": null
+          },
+          "far": {
+            "yellow": 0,
+            "orange": 0,
+            "red": null
+          }
+        },
+        "60": {
+          "nAll": 14994,
+          "nEvent": 1904,
+          "nEvents": 9,
+          "skillAllPersist": 0.5201756996747073,
+          "skillAllPoly2": -0.0796850663747084,
+          "skillAllRidge": null,
+          "skillAllArx": 0,
+          "skillEventPersist": 0.5340002240667071,
+          "skillEventPoly2": -0.16083227614258422,
+          "skillEventRidge": null,
+          "skillEventArx": 0,
+          "skillEventPersistCI": {
+            "skill": 0.5340002240667082,
+            "lo": 0.46593053864569944,
+            "hi": 0.624544131666134,
+            "nEvents": 9
+          },
+          "risingRmse": 0.08883168133765362,
+          "risingN": 1074,
+          "risingRmseCI": {
+            "value": 0.08052551812656986,
+            "lo": 0.063867889266363,
+            "hi": 0.0966611373889157,
+            "nEvents": 9
+          },
+          "risingMinMed": -0.37392377239557995,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -0.4177560721936073,
+            "lo": -0.5712077577538635,
+            "hi": -0.2747715225119676,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.013327418200460808,
+          "fallingN": 830,
+          "phaseLagMin": 17.186097009313556,
+          "phaseLagMinDiscrete": 30,
+          "nseEvent": 0.9992798528401702,
+          "nseEventCI": {
+            "value": 0.9992798528401702,
+            "lo": 0.9990231532156535,
+            "hi": 0.9994865322449306,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.995657620993866,
+          "kgeEventR": 0.9996478241546857,
+          "kgeEventAlpha": 1.0021918021071787,
+          "kgeEventBeta": 0.9962679454545977,
+          "kgeEventCI": {
+            "value": 0.9956576209938651,
+            "lo": 0.9942692306440735,
+            "hi": 0.9962384270844552,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": 0.05802964462689575,
+          "peakTimeErrMed": 270,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.9916317991631799,
+            "yellowCounts": {
+              "hits": 237,
+              "misses": 2,
+              "falseAlarms": 0
+            },
+            "orange": 0.9230769230769231,
+            "orangeCounts": {
+              "hits": 24,
+              "misses": 1,
+              "falseAlarms": 1
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.9916317991631799,
+            "orange": 0.96,
+            "red": null
+          },
+          "far": {
+            "yellow": 0,
+            "orange": 0.04,
+            "red": null
+          }
+        },
+        "90": {
+          "nAll": 14992,
+          "nEvent": 1904,
+          "nEvents": 9,
+          "skillAllPersist": 0.5765553804426862,
+          "skillAllPoly2": 0.19073806561326567,
+          "skillAllRidge": null,
+          "skillAllArx": 0,
+          "skillEventPersist": 0.5895164400595804,
+          "skillEventPoly2": 0.15623098245358735,
+          "skillEventRidge": null,
+          "skillEventArx": 0,
+          "skillEventPersistCI": {
+            "skill": 0.58951644005958,
+            "lo": 0.5308870404436278,
+            "hi": 0.6675395152781832,
+            "nEvents": 9
+          },
+          "risingRmse": 0.1166028737232485,
+          "risingN": 1074,
+          "risingRmseCI": {
+            "value": 0.10616531016971886,
+            "lo": 0.08461881618468253,
+            "hi": 0.127295861963767,
+            "nEvents": 9
+          },
+          "risingMinMed": -0.5008464039085316,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -0.549888855158661,
+            "lo": -0.7588495853121144,
+            "hi": -0.3585509514069222,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.017365683838648997,
+          "fallingN": 830,
+          "phaseLagMin": 22.094186261563678,
+          "phaseLagMinDiscrete": 30,
+          "nseEvent": 0.9987565178550718,
+          "nseEventCI": {
+            "value": 0.9987565178550718,
+            "lo": 0.9983241947296181,
+            "hi": 0.999098476624403,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9947794794267073,
+          "kgeEventR": 0.9993911803558135,
+          "kgeEventAlpha": 1.0032883901112324,
+          "kgeEventBeta": 0.9959913014364542,
+          "kgeEventCI": {
+            "value": 0.9947794794267042,
+            "lo": 0.9930172180800281,
+            "hi": 0.9955208538234344,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": 0.08845506666339364,
+          "peakTimeErrMed": 270,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.9916317991631799,
+            "yellowCounts": {
+              "hits": 237,
+              "misses": 2,
+              "falseAlarms": 0
+            },
+            "orange": 0.9230769230769231,
+            "orangeCounts": {
+              "hits": 24,
+              "misses": 1,
+              "falseAlarms": 1
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.9916317991631799,
+            "orange": 0.96,
+            "red": null
+          },
+          "far": {
+            "yellow": 0,
+            "orange": 0.04,
+            "red": null
+          }
+        },
+        "120": {
+          "nAll": 14991,
+          "nEvent": 1904,
+          "nEvents": 9,
+          "skillAllPersist": 0.48218427587930013,
+          "skillAllPoly2": 0.15304151670372956,
+          "skillAllRidge": null,
+          "skillAllArx": 0,
+          "skillEventPersist": 0.49005619213946106,
+          "skillEventPoly2": 0.11554978848030895,
+          "skillEventRidge": null,
+          "skillEventArx": 0,
+          "skillEventPersistCI": {
+            "skill": 0.4900561921394597,
+            "lo": 0.42504099399421624,
+            "hi": 0.5733476944831943,
+            "nEvents": 9
+          },
+          "risingRmse": 0.19180353662933103,
+          "risingN": 1074,
+          "risingRmseCI": {
+            "value": 0.17767452470971243,
+            "lo": 0.14310089626011746,
+            "hi": 0.2113690501666482,
+            "nEvents": 9
+          },
+          "risingMinMed": -0.8266176286179581,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -0.8500730172177939,
+            "lo": -1.1371653331312381,
+            "hi": -0.5768058071897361,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.02694326908788334,
+          "fallingN": 830,
+          "phaseLagMin": 38.46440783867669,
+          "phaseLagMinDiscrete": 30,
+          "nseEvent": 0.9966333266011421,
+          "nseEventCI": {
+            "value": 0.9966333266011421,
+            "lo": 0.995588738281874,
+            "hi": 0.9974279961256827,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.990564177728335,
+          "kgeEventR": 0.9983585118506333,
+          "kgeEventAlpha": 1.0049553096998192,
+          "kgeEventBeta": 0.9921396460399792,
+          "kgeEventCI": {
+            "value": 0.9905641777283317,
+            "lo": 0.9875207424699441,
+            "hi": 0.9919628221680379,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": 0.12150992110432135,
+          "peakTimeErrMed": 240,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.975,
+            "yellowCounts": {
+              "hits": 234,
+              "misses": 5,
+              "falseAlarms": 1
+            },
+            "orange": 0.8214285714285714,
+            "orangeCounts": {
+              "hits": 23,
+              "misses": 2,
+              "falseAlarms": 3
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.9790794979079498,
+            "orange": 0.92,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.00425531914893617,
+            "orange": 0.11538461538461539,
+            "red": null
+          }
+        },
+        "150": {
+          "nAll": 14991,
+          "nEvent": 1904,
+          "nEvents": 9,
+          "skillAllPersist": 0.4545123012210578,
+          "skillAllPoly2": 0.2256155987515448,
+          "skillAllRidge": null,
+          "skillAllArx": 0,
+          "skillEventPersist": 0.46142507177816716,
+          "skillEventPoly2": 0.19551077654730553,
+          "skillEventRidge": null,
+          "skillEventArx": 0,
+          "skillEventPersistCI": {
+            "skill": 0.4614250717781653,
+            "lo": 0.397767977193615,
+            "hi": 0.5418496662686214,
+            "nEvents": 9
+          },
+          "risingRmse": 0.2509230058985957,
+          "risingN": 1074,
+          "risingRmseCI": {
+            "value": 0.23492096737859944,
+            "lo": 0.19044156381876595,
+            "hi": 0.2780466081448144,
+            "nEvents": 9
+          },
+          "risingMinMed": -1.0770078758064499,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -1.0600806390811737,
+            "lo": -1.3893900616491974,
+            "hi": -0.742078292501058,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.03605696925780042,
+          "fallingN": 830,
+          "phaseLagMin": 53.804643922337064,
+          "phaseLagMinDiscrete": 60,
+          "nseEvent": 0.9942191173840883,
+          "nseEventCI": {
+            "value": 0.9942191173840883,
+            "lo": 0.992489946410606,
+            "hi": 0.9954683518400479,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9870678241204449,
+          "kgeEventR": 0.9971899057125214,
+          "kgeEventAlpha": 1.0064716646830723,
+          "kgeEventBeta": 0.9891620066753526,
+          "kgeEventCI": {
+            "value": 0.9870678241204436,
+            "lo": 0.983087929272639,
+            "hi": 0.988976748451642,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": 0.1468771332576848,
+          "peakTimeErrMed": 210,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.975,
+            "yellowCounts": {
+              "hits": 234,
+              "misses": 5,
+              "falseAlarms": 1
+            },
+            "orange": 0.7586206896551724,
+            "orangeCounts": {
+              "hits": 22,
+              "misses": 3,
+              "falseAlarms": 4
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.9790794979079498,
+            "orange": 0.88,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.00425531914893617,
+            "orange": 0.15384615384615385,
+            "red": null
+          }
+        },
+        "180": {
+          "nAll": 14991,
+          "nEvent": 1904,
+          "nEvents": 9,
+          "skillAllPersist": 0.42725282787545615,
+          "skillAllPoly2": 0.2847503101038459,
+          "skillAllRidge": null,
+          "skillAllArx": 0,
+          "skillEventPersist": 0.43417798418890485,
+          "skillEventPoly2": 0.25987443019723666,
+          "skillEventRidge": null,
+          "skillEventArx": 0,
+          "skillEventPersistCI": {
+            "skill": 0.4341779841889044,
+            "lo": 0.37141924261554404,
+            "hi": 0.5115144462651906,
+            "nEvents": 9
+          },
+          "risingRmse": 0.31319950817853304,
+          "risingN": 1074,
+          "risingRmseCI": {
+            "value": 0.2958237320077666,
+            "lo": 0.24067660496697124,
+            "hi": 0.34940575029703247,
+            "nEvents": 9
+          },
+          "risingMinMed": -1.3392078546172024,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -1.2614585596146446,
+            "lo": -1.6179910732963847,
+            "hi": -0.9021696295436558,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.04669265624378041,
+          "fallingN": 830,
+          "phaseLagMin": 69.27421588800348,
+          "phaseLagMinDiscrete": 60,
+          "nseEvent": 0.9909586146445203,
+          "nseEventCI": {
+            "value": 0.9909586146445203,
+            "lo": 0.9882900426201248,
+            "hi": 0.9927479201700135,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.983290175727422,
+          "kgeEventR": 0.9956161803381481,
+          "kgeEventAlpha": 1.0080354846025295,
+          "kgeEventBeta": 0.9860203240525643,
+          "kgeEventCI": {
+            "value": 0.9832901757274233,
+            "lo": 0.97815677642876,
+            "hi": 0.9857591203251829,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": 0.19202888835514553,
+          "peakTimeErrMed": 180,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.9543568464730291,
+            "yellowCounts": {
+              "hits": 230,
+              "misses": 9,
+              "falseAlarms": 2
+            },
+            "orange": 0.7241379310344828,
+            "orangeCounts": {
+              "hits": 21,
+              "misses": 4,
+              "falseAlarms": 4
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.9623430962343096,
+            "orange": 0.84,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.008620689655172414,
+            "orange": 0.16,
+            "red": null
+          }
+        },
+        "210": {
+          "nAll": 14991,
+          "nEvent": 1904,
+          "nEvents": 9,
+          "skillAllPersist": 0.4013903530805012,
+          "skillAllPoly2": 0.3346550692556969,
+          "skillAllRidge": null,
+          "skillAllArx": 0,
+          "skillEventPersist": 0.4085784759660548,
+          "skillEventPoly2": 0.3133765892476513,
+          "skillEventRidge": null,
+          "skillEventArx": 0,
+          "skillEventPersistCI": {
+            "skill": 0.4085784759660547,
+            "lo": 0.3486312102031335,
+            "hi": 0.48262902669360763,
+            "nEvents": 9
+          },
+          "risingRmse": 0.3779361331543192,
+          "risingN": 1074,
+          "risingRmseCI": {
+            "value": 0.3596919561226211,
+            "lo": 0.29421927030146366,
+            "hi": 0.42432732044378546,
+            "nEvents": 9
+          },
+          "risingMinMed": -1.57118220195312,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -1.4646756850871863,
+            "lo": -1.8539982493981269,
+            "hi": -1.0625477928964269,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.05850591918242248,
+          "fallingN": 830,
+          "phaseLagMin": 87.04858601974473,
+          "phaseLagMinDiscrete": 90,
+          "nseEvent": 0.9867811938651849,
+          "nseEventCI": {
+            "value": 0.9867811938651848,
+            "lo": 0.98287142475129,
+            "hi": 0.9891401806200256,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.979088619095432,
+          "kgeEventR": 0.993606982329672,
+          "kgeEventAlpha": 1.0095693075531362,
+          "kgeEventBeta": 0.9825402311196197,
+          "kgeEventCI": {
+            "value": 0.9790886190954337,
+            "lo": 0.9727361637401527,
+            "hi": 0.9821587213792876,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": 0.20656304336014664,
+          "peakTimeErrMed": 150,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.9382716049382716,
+            "yellowCounts": {
+              "hits": 228,
+              "misses": 11,
+              "falseAlarms": 4
+            },
+            "orange": 0.6333333333333333,
+            "orangeCounts": {
+              "hits": 19,
+              "misses": 6,
+              "falseAlarms": 5
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.9539748953974896,
+            "orange": 0.76,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.017241379310344827,
+            "orange": 0.20833333333333334,
+            "red": null
+          }
+        },
+        "240": {
+          "nAll": 14991,
+          "nEvent": 1904,
+          "nEvents": 9,
+          "skillAllPersist": 0.37710979967223857,
+          "skillAllPoly2": 0.3776089102741965,
+          "skillAllRidge": null,
+          "skillAllArx": 0,
+          "skillEventPersist": 0.38495922101697067,
+          "skillEventPoly2": 0.35933031657839043,
+          "skillEventRidge": null,
+          "skillEventArx": 0,
+          "skillEventPersistCI": {
+            "skill": 0.38495922101697055,
+            "lo": 0.32670966877516205,
+            "hi": 0.45545372975849374,
+            "nEvents": 9
+          },
+          "risingRmse": 0.44427612174359327,
+          "risingN": 1074,
+          "risingRmseCI": {
+            "value": 0.4255483352396662,
+            "lo": 0.34775870100616024,
+            "hi": 0.5018619320397327,
+            "nEvents": 9
+          },
+          "risingMinMed": -1.7078447648449733,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -1.6613001198832,
+            "lo": -2.091653704944271,
+            "hi": -1.2281118282047696,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.07168123501104792,
+          "fallingN": 830,
+          "phaseLagMin": 120,
+          "phaseLagMinDiscrete": 120,
+          "nseEvent": 0.9816527258864889,
+          "nseEventCI": {
+            "value": 0.9816527258864889,
+            "lo": 0.9761541706971311,
+            "hi": 0.9847885171814982,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9745868270900477,
+          "kgeEventR": 0.9911458159841701,
+          "kgeEventAlpha": 1.010957395696829,
+          "kgeEventBeta": 0.9788489181764131,
+          "kgeEventCI": {
+            "value": 0.9745868270900496,
+            "lo": 0.9670986591093076,
+            "hi": 0.9783292343005525,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": 0.2184359544483847,
+          "peakTimeErrMed": 120,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.9,
+            "yellowCounts": {
+              "hits": 225,
+              "misses": 14,
+              "falseAlarms": 11
+            },
+            "orange": 0.5666666666666667,
+            "orangeCounts": {
+              "hits": 17,
+              "misses": 8,
+              "falseAlarms": 5
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.9414225941422594,
+            "orange": 0.68,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.046610169491525424,
+            "orange": 0.22727272727272727,
+            "red": null
+          }
+        },
+        "270": {
+          "nAll": 14991,
+          "nEvent": 1904,
+          "nEvents": 9,
+          "skillAllPersist": 0.3547840247369518,
+          "skillAllPoly2": 0.41551298860490493,
+          "skillAllRidge": null,
+          "skillAllArx": 0,
+          "skillEventPersist": 0.36289924924722994,
+          "skillEventPoly2": 0.3991772131239256,
+          "skillEventRidge": null,
+          "skillEventArx": 0,
+          "skillEventPersistCI": {
+            "skill": 0.36289924924722883,
+            "lo": 0.3070488015091034,
+            "hi": 0.42986518929171125,
+            "nEvents": 9
+          },
+          "risingRmse": 0.5119400198870547,
+          "risingN": 1074,
+          "risingRmseCI": {
+            "value": 0.49313818111943675,
+            "lo": 0.4045015828679126,
+            "hi": 0.5800984260189127,
+            "nEvents": 9
+          },
+          "risingMinMed": -1.8161583113766122,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -1.842072339507499,
+            "lo": -2.2913600296540286,
+            "hi": -1.3754378861098926,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.08598242692057605,
+          "fallingN": 830,
+          "phaseLagMin": 120,
+          "phaseLagMinDiscrete": 120,
+          "nseEvent": 0.975527093976887,
+          "nseEventCI": {
+            "value": 0.975527093976887,
+            "lo": 0.9683269480728542,
+            "hi": 0.979440218441729,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9694777708470514,
+          "kgeEventR": 0.9882194488384376,
+          "kgeEventAlpha": 1.012288911116446,
+          "kgeEventBeta": 0.9746660751093124,
+          "kgeEventCI": {
+            "value": 0.96947777084705,
+            "lo": 0.9606882109082572,
+            "hi": 0.9738224796548713,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": 0.24942182138688462,
+          "peakTimeErrMed": 90,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.8849206349206349,
+            "yellowCounts": {
+              "hits": 223,
+              "misses": 16,
+              "falseAlarms": 13
+            },
+            "orange": 0.5161290322580645,
+            "orangeCounts": {
+              "hits": 16,
+              "misses": 9,
+              "falseAlarms": 6
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.9330543933054394,
+            "orange": 0.64,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.05508474576271186,
+            "orange": 0.2727272727272727,
+            "red": null
+          }
+        },
+        "300": {
+          "nAll": 14991,
+          "nEvent": 1904,
+          "nEvents": 9,
+          "skillAllPersist": 0.3338182600345332,
+          "skillAllPoly2": 0.4490569505743014,
+          "skillAllRidge": null,
+          "skillAllArx": 0,
+          "skillEventPersist": 0.34249443797249934,
+          "skillEventPoly2": 0.4344443252056739,
+          "skillEventRidge": null,
+          "skillEventArx": 0,
+          "skillEventPersistCI": {
+            "skill": 0.342494437972499,
+            "lo": 0.289221888557598,
+            "hi": 0.40742708509278314,
+            "nEvents": 9
+          },
+          "risingRmse": 0.5803199645813512,
+          "risingN": 1074,
+          "risingRmseCI": {
+            "value": 0.5616245226589291,
+            "lo": 0.46247722801277047,
+            "hi": 0.6606763662079186,
+            "nEvents": 9
+          },
+          "risingMinMed": -1.9323503849503916,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -2.013064022724209,
+            "lo": -2.4840453748305444,
+            "hi": -1.5292985791584026,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.10145939813730474,
+          "fallingN": 830,
+          "phaseLagMin": 120,
+          "phaseLagMinDiscrete": 120,
+          "nseEvent": 0.9684022738230496,
+          "nseEventCI": {
+            "value": 0.9684022738230496,
+            "lo": 0.9588573731826235,
+            "hi": 0.9732951197312474,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9641375106725896,
+          "kgeEventR": 0.9848218147101978,
+          "kgeEventAlpha": 1.0135188162833495,
+          "kgeEventBeta": 0.9704537237817673,
+          "kgeEventCI": {
+            "value": 0.9641375106725871,
+            "lo": 0.9539255040937443,
+            "hi": 0.9690782629424541,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": 0.29388136592854686,
+          "peakTimeErrMed": 60,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.8656126482213439,
+            "yellowCounts": {
+              "hits": 219,
+              "misses": 20,
+              "falseAlarms": 14
+            },
+            "orange": 0.3888888888888889,
+            "orangeCounts": {
+              "hits": 14,
+              "misses": 11,
+              "falseAlarms": 11
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.9163179916317992,
+            "orange": 0.56,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.060085836909871244,
+            "orange": 0.44,
+            "red": null
+          }
+        },
+        "330": {
+          "nAll": 14991,
+          "nEvent": 1904,
+          "nEvents": 9,
+          "skillAllPersist": 0.31441569287947035,
+          "skillAllPoly2": 0.47921949620402693,
+          "skillAllRidge": null,
+          "skillAllArx": 0,
+          "skillEventPersist": 0.32352011163170635,
+          "skillEventPoly2": 0.4659150854952453,
+          "skillEventRidge": null,
+          "skillEventArx": 0,
+          "skillEventPersistCI": {
+            "skill": 0.32352011163170524,
+            "lo": 0.2724538902179232,
+            "hi": 0.3877472742313418,
+            "nEvents": 9
+          },
+          "risingRmse": 0.6491498294291177,
+          "risingN": 1074,
+          "risingRmseCI": {
+            "value": 0.6307293896798961,
+            "lo": 0.5193642682059095,
+            "hi": 0.7417205816327868,
+            "nEvents": 9
+          },
+          "risingMinMed": -2.0294908298992285,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -2.174662652491708,
+            "lo": -2.662151648014241,
+            "hi": -1.6793071381351918,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.11789753923943765,
+          "fallingN": 830,
+          "phaseLagMin": 120,
+          "phaseLagMinDiscrete": 120,
+          "nseEvent": 0.9602675981971395,
+          "nseEventCI": {
+            "value": 0.9602675981971394,
+            "lo": 0.9480295858479916,
+            "hi": 0.9662152100439407,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9583320943400069,
+          "kgeEventR": 0.9809552988188495,
+          "kgeEventAlpha": 1.014653047261515,
+          "kgeEventBeta": 0.9659588201590694,
+          "kgeEventCI": {
+            "value": 0.9583320943400037,
+            "lo": 0.9467047380494911,
+            "hi": 0.9638774947829968,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": 0.33052688683430453,
+          "peakTimeErrMed": 30,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.8365758754863813,
+            "yellowCounts": {
+              "hits": 215,
+              "misses": 24,
+              "falseAlarms": 18
+            },
+            "orange": 0.2926829268292683,
+            "orangeCounts": {
+              "hits": 12,
+              "misses": 13,
+              "falseAlarms": 16
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.899581589958159,
+            "orange": 0.48,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.07725321888412018,
+            "orange": 0.5714285714285714,
+            "red": null
+          }
+        },
+        "360": {
+          "nAll": 14991,
+          "nEvent": 1904,
+          "nEvents": 9,
+          "skillAllPersist": 0.2962317194689811,
+          "skillAllPoly2": 0.5064302554312257,
+          "skillAllRidge": null,
+          "skillAllArx": 0,
+          "skillEventPersist": 0.30570510095665326,
+          "skillEventPoly2": 0.4941686778327471,
+          "skillEventRidge": null,
+          "skillEventArx": 0,
+          "skillEventPersistCI": {
+            "skill": 0.30570510095665104,
+            "lo": 0.2564947372219082,
+            "hi": 0.36653820734291975,
+            "nEvents": 9
+          },
+          "risingRmse": 0.7182738499848854,
+          "risingN": 1074,
+          "risingRmseCI": {
+            "value": 0.7002417744524261,
+            "lo": 0.5764930112659367,
+            "hi": 0.8254532690693481,
+            "nEvents": 9
+          },
+          "risingMinMed": -2.1204345943720853,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -2.328171537844455,
+            "lo": -2.8389485319442014,
+            "hi": -1.8152975381184318,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.1353658841601277,
+          "fallingN": 830,
+          "phaseLagMin": 120,
+          "phaseLagMinDiscrete": 120,
+          "nseEvent": 0.9511090127001505,
+          "nseEventCI": {
+            "value": 0.9511090127001505,
+            "lo": 0.9352390453606403,
+            "hi": 0.9581450400681456,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9520539895107887,
+          "kgeEventR": 0.9766115722366452,
+          "kgeEventAlpha": 1.0155194633936164,
+          "kgeEventBeta": 0.9611290902529399,
+          "kgeEventCI": {
+            "value": 0.9520539895107869,
+            "lo": 0.9389524765225655,
+            "hi": 0.9581705140640461,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": null,
+          "pinballEvent": null,
+          "peakLevelErrMed": 0.33425076290872013,
+          "peakTimeErrMed": 0,
+          "bandCoverageAll": null,
+          "bandCoverageEvent": null,
+          "bandNAll": 0,
+          "bandNEvent": 0,
+          "csi": {
+            "yellow": 0.8192307692307692,
+            "yellowCounts": {
+              "hits": 213,
+              "misses": 26,
+              "falseAlarms": 21
+            },
+            "orange": 0.2619047619047619,
+            "orangeCounts": {
+              "hits": 11,
+              "misses": 14,
+              "falseAlarms": 17
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.891213389121339,
+            "orange": 0.44,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.08974358974358974,
+            "orange": 0.6071428571428571,
+            "red": null
+          }
+        }
+      },
+      "prod": {
+        "30": {
+          "nAll": 15262,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.7169496983854156,
+          "skillAllPoly2": 0.3024200980384021,
+          "skillAllRidge": null,
+          "skillAllArx": 0.4639920823018261,
+          "skillEventPersist": 0.7756767654526734,
+          "skillEventPoly2": 0.33703619139413954,
+          "skillEventRidge": null,
+          "skillEventArx": 0.5504462281709861,
+          "skillEventPersistCI": {
+            "skill": 0.7756767654526745,
+            "lo": 0.7417980687501813,
+            "hi": 0.8211872913883427,
+            "nEvents": 9
+          },
+          "risingRmse": 0.02067248616639577,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.018167372646698845,
+            "lo": 0.014307176256954704,
+            "hi": 0.022154002199603385,
+            "nEvents": 9
+          },
+          "risingMinMed": -0.07999999999999985,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -0.09762808553853022,
+            "lo": -0.14563778512632028,
+            "hi": -0.05827408253338536,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.007138490295215615,
+          "fallingN": 830,
+          "phaseLagMin": 2.478303308998289,
+          "phaseLagMinDiscrete": 0,
+          "nseEvent": 0.9999581737750911,
+          "nseEventCI": {
+            "value": 0.9999581737750911,
+            "lo": 0.9999413170980163,
+            "hi": 0.9999714475058832,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9985734878449146,
+          "kgeEventR": 0.9999797986878233,
+          "kgeEventAlpha": 1.000438730803121,
+          "kgeEventBeta": 0.9986427807406372,
+          "kgeEventCI": {
+            "value": 0.9985734878449122,
+            "lo": 0.9976707575598385,
+            "hi": 0.9989439057513736,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": 0.0019200421671039243,
+          "pinballEvent": 0.00476245478117747,
+          "peakLevelErrMed": 0.0060523564697883,
+          "peakTimeErrMed": 30,
+          "bandCoverageAll": 0.9223561787445944,
+          "bandCoverageEvent": 0.935248041775457,
+          "bandNAll": 15262,
+          "bandNEvent": 1915,
+          "csi": {
+            "yellow": 1,
+            "yellowCounts": {
+              "hits": 239,
+              "misses": 0,
+              "falseAlarms": 0
+            },
+            "orange": 0.8,
+            "orangeCounts": {
+              "hits": 20,
+              "misses": 5,
+              "falseAlarms": 0
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 1,
+            "orange": 0.8,
+            "red": null
+          },
+          "far": {
+            "yellow": 0,
+            "orange": 0,
+            "red": null
+          }
+        },
+        "60": {
+          "nAll": 15260,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.7224809760793143,
+          "skillAllPoly2": 0.3766423047594172,
+          "skillAllRidge": null,
+          "skillAllArx": 0.4214722826927829,
+          "skillEventPersist": 0.7466316488855491,
+          "skillEventPoly2": 0.3689181404842612,
+          "skillEventRidge": null,
+          "skillEventArx": 0.4562846686444403,
+          "skillEventPersistCI": {
+            "skill": 0.7466316488855493,
+            "lo": 0.7007253402393894,
+            "hi": 0.8079079212525369,
+            "nEvents": 9
+          },
+          "risingRmse": 0.04761685229252321,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.041407727646882234,
+            "lo": 0.032220809094738116,
+            "hi": 0.05109877892668998,
+            "nEvents": 9
+          },
+          "risingMinMed": -0.21999999999999975,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -0.2580561926649877,
+            "lo": -0.3765926526870696,
+            "hi": -0.15421111808604326,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.01035091349887506,
+          "fallingN": 830,
+          "phaseLagMin": 7.257344465260619,
+          "phaseLagMinDiscrete": 0,
+          "nseEvent": 0.9997888099462529,
+          "nseEventCI": {
+            "value": 0.9997888099462529,
+            "lo": 0.9996921889451449,
+            "hi": 0.9998678263597838,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9976634646456973,
+          "kgeEventR": 0.9998964764981662,
+          "kgeEventAlpha": 1.0009676719938883,
+          "kgeEventBeta": 0.9978757845545428,
+          "kgeEventCI": {
+            "value": 0.997663464645697,
+            "lo": 0.9963475991797872,
+            "hi": 0.9981433983122908,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": 0.0027164734099520164,
+          "pinballEvent": 0.007241905125120159,
+          "peakLevelErrMed": 0.01138195362654848,
+          "peakTimeErrMed": 60,
+          "bandCoverageAll": 0.9416775884665793,
+          "bandCoverageEvent": 0.9201044386422976,
+          "bandNAll": 15260,
+          "bandNEvent": 1915,
+          "csi": {
+            "yellow": 1,
+            "yellowCounts": {
+              "hits": 239,
+              "misses": 0,
+              "falseAlarms": 0
+            },
+            "orange": 0.72,
+            "orangeCounts": {
+              "hits": 18,
+              "misses": 7,
+              "falseAlarms": 0
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 1,
+            "orange": 0.72,
+            "red": null
+          },
+          "far": {
+            "yellow": 0,
+            "orange": 0,
+            "red": null
+          }
+        },
+        "90": {
+          "nAll": 15259,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.6959411584728541,
+          "skillAllPoly2": 0.41966636465537244,
+          "skillAllRidge": null,
+          "skillAllArx": 0.28178493532949145,
+          "skillEventPersist": 0.7076161868744824,
+          "skillEventPoly2": 0.39904134747700226,
+          "skillEventRidge": null,
+          "skillEventArx": 0.28770035038613273,
+          "skillEventPersistCI": {
+            "skill": 0.7076161868744818,
+            "lo": 0.6513049225139856,
+            "hi": 0.7862841055373624,
+            "nEvents": 9
+          },
+          "risingRmse": 0.08221735918796244,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.07023087747980525,
+            "lo": 0.05310925299930844,
+            "hi": 0.08768887081565617,
+            "nEvents": 9
+          },
+          "risingMinMed": -0.36999999999999966,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -0.43103769602359465,
+            "lo": -0.6107222741465861,
+            "hi": -0.26239081392419794,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.015582409214680744,
+          "fallingN": 830,
+          "phaseLagMin": 17.927017237929096,
+          "phaseLagMinDiscrete": 30,
+          "nseEvent": 0.9993741865604694,
+          "nseEventCI": {
+            "value": 0.9993741865604694,
+            "lo": 0.9990789346818275,
+            "hi": 0.9996239106429782,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9953326629273516,
+          "kgeEventR": 0.9996952129695452,
+          "kgeEventAlpha": 1.0014839321103302,
+          "kgeEventBeta": 0.9955853555400558,
+          "kgeEventCI": {
+            "value": 0.9953326629273512,
+            "lo": 0.9924779997287304,
+            "hi": 0.9965010666815631,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": 0.003440432762852165,
+          "pinballEvent": 0.009981706888142301,
+          "peakLevelErrMed": 0.022721059734069904,
+          "peakTimeErrMed": 60,
+          "bandCoverageAll": 0.9383314765056688,
+          "bandCoverageEvent": 0.8997389033942559,
+          "bandNAll": 15259,
+          "bandNEvent": 1915,
+          "csi": {
+            "yellow": 1,
+            "yellowCounts": {
+              "hits": 239,
+              "misses": 0,
+              "falseAlarms": 0
+            },
+            "orange": 0.68,
+            "orangeCounts": {
+              "hits": 17,
+              "misses": 8,
+              "falseAlarms": 0
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 1,
+            "orange": 0.68,
+            "red": null
+          },
+          "far": {
+            "yellow": 0,
+            "orange": 0,
+            "red": null
+          }
+        },
+        "120": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.6685228308114624,
+          "skillAllPoly2": 0.45838878563272556,
+          "skillAllRidge": null,
+          "skillAllArx": 0.3597258473541878,
+          "skillEventPersist": 0.6744649050186837,
+          "skillEventPoly2": 0.43541763912794695,
+          "skillEventRidge": null,
+          "skillEventArx": 0.36161914122439043,
+          "skillEventPersistCI": {
+            "skill": 0.6744649050186833,
+            "lo": 0.6166562658397109,
+            "hi": 0.7563319648443674,
+            "nEvents": 9
+          },
+          "risingRmse": 0.12147030795361087,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.10515566104668243,
+            "lo": 0.0791456083014045,
+            "hi": 0.1313492563975831,
+            "nEvents": 9
+          },
+          "risingMinMed": -0.5599999999999994,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -0.6268492712273361,
+            "lo": -0.8686232542562111,
+            "hi": -0.4059207646768947,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.02018703946033916,
+          "fallingN": 830,
+          "phaseLagMin": 27.037758294877204,
+          "phaseLagMinDiscrete": 30,
+          "nseEvent": 0.9986391367521928,
+          "nseEventCI": {
+            "value": 0.9986391367521928,
+            "lo": 0.9980243403081733,
+            "hi": 0.9991711519678879,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9928984615698881,
+          "kgeEventR": 0.9993403718665866,
+          "kgeEventAlpha": 1.003215097750931,
+          "kgeEventBeta": 0.9937023905129071,
+          "kgeEventCI": {
+            "value": 0.9928984615698865,
+            "lo": 0.9876741712681963,
+            "hi": 0.9949573910863063,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": 0.0042989526168355,
+          "pinballEvent": 0.013601731341406291,
+          "peakLevelErrMed": 0.026812968338267407,
+          "peakTimeErrMed": 60,
+          "bandCoverageAll": 0.9302660899200419,
+          "bandCoverageEvent": 0.8898172323759791,
+          "bandNAll": 15258,
+          "bandNEvent": 1915,
+          "csi": {
+            "yellow": 0.9958333333333333,
+            "yellowCounts": {
+              "hits": 239,
+              "misses": 0,
+              "falseAlarms": 1
+            },
+            "orange": 0.64,
+            "orangeCounts": {
+              "hits": 16,
+              "misses": 9,
+              "falseAlarms": 0
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 1,
+            "orange": 0.64,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.004166666666666667,
+            "orange": 0,
+            "red": null
+          }
+        },
+        "150": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.6451290143243169,
+          "skillAllPoly2": 0.49666663381045306,
+          "skillAllRidge": null,
+          "skillAllArx": 0.3493205216270422,
+          "skillEventPersist": 0.6477248571417447,
+          "skillEventPoly2": 0.4738146214190282,
+          "skillEventRidge": null,
+          "skillEventArx": 0.3459072259893158,
+          "skillEventPersistCI": {
+            "skill": 0.6477248571417438,
+            "lo": 0.591614275314351,
+            "hi": 0.7294185363544035,
+            "nEvents": 9
+          },
+          "risingRmse": 0.16264914220671234,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.14296623463788044,
+            "lo": 0.1082295859394731,
+            "hi": 0.1766090372060651,
+            "nEvents": 9
+          },
+          "risingMinMed": -0.7499999999999996,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -0.8176353189198364,
+            "lo": -1.121111111111111,
+            "hi": -0.5237240326157566,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.028818304372402095,
+          "fallingN": 830,
+          "phaseLagMin": 36.95949547090114,
+          "phaseLagMinDiscrete": 30,
+          "nseEvent": 0.9975470083897804,
+          "nseEventCI": {
+            "value": 0.9975470083897804,
+            "lo": 0.996542424420267,
+            "hi": 0.998376408423232,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9906349404467335,
+          "kgeEventR": 0.9988129414360757,
+          "kgeEventAlpha": 1.0049553989154982,
+          "kgeEventBeta": 0.9921425669592213,
+          "kgeEventCI": {
+            "value": 0.9906349404467317,
+            "lo": 0.9841645586558747,
+            "hi": 0.9933952846172339,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": 0.005355272423218647,
+          "pinballEvent": 0.018250705317260158,
+          "peakLevelErrMed": 0.019774677703121135,
+          "peakTimeErrMed": 60,
+          "bandCoverageAll": 0.9184034604797483,
+          "bandCoverageEvent": 0.8668407310704961,
+          "bandNAll": 15258,
+          "bandNEvent": 1915,
+          "csi": {
+            "yellow": 0.9875518672199171,
+            "yellowCounts": {
+              "hits": 238,
+              "misses": 1,
+              "falseAlarms": 2
+            },
+            "orange": 0.64,
+            "orangeCounts": {
+              "hits": 16,
+              "misses": 9,
+              "falseAlarms": 0
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.99581589958159,
+            "orange": 0.64,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.008333333333333333,
+            "orange": 0,
+            "red": null
+          }
+        },
+        "180": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.6292515564764516,
+          "skillAllPoly2": 0.5373866326986856,
+          "skillAllRidge": null,
+          "skillAllArx": 0.3525649660339656,
+          "skillEventPersist": 0.6302497212800184,
+          "skillEventPoly2": 0.516365941310559,
+          "skillEventRidge": null,
+          "skillEventArx": 0.3465208770404017,
+          "skillEventPersistCI": {
+            "skill": 0.6302497212800182,
+            "lo": 0.5759696033678938,
+            "hi": 0.706845195582414,
+            "nEvents": 9
+          },
+          "risingRmse": 0.2038838845543715,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.18282522237323476,
+            "lo": 0.13992987278768487,
+            "hi": 0.22358928780101664,
+            "nEvents": 9
+          },
+          "risingMinMed": -0.9499999999999995,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -1.0090684046733291,
+            "lo": -1.352094549006758,
+            "hi": -0.6790065337773952,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.0282019683150467,
+          "fallingN": 830,
+          "phaseLagMin": 42.94110403291471,
+          "phaseLagMinDiscrete": 30,
+          "nseEvent": 0.9961709531317051,
+          "nseEventCI": {
+            "value": 0.9961709531317051,
+            "lo": 0.9947439566485036,
+            "hi": 0.9973027327998488,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9835740135266564,
+          "kgeEventR": 0.9981927330252441,
+          "kgeEventAlpha": 1.0054522160536885,
+          "kgeEventBeta": 0.9846110377930049,
+          "kgeEventCI": {
+            "value": 0.9835740135266567,
+            "lo": 0.9716433317450875,
+            "hi": 0.987889775913853,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": 0.006446563372416088,
+          "pinballEvent": 0.02231363173459347,
+          "peakLevelErrMed": 0.03921917286878607,
+          "peakTimeErrMed": 30,
+          "bandCoverageAll": 0.9037881766941932,
+          "bandCoverageEvent": 0.8516971279373368,
+          "bandNAll": 15258,
+          "bandNEvent": 1915,
+          "csi": {
+            "yellow": 0.9916666666666667,
+            "yellowCounts": {
+              "hits": 238,
+              "misses": 1,
+              "falseAlarms": 1
+            },
+            "orange": 0.5333333333333333,
+            "orangeCounts": {
+              "hits": 16,
+              "misses": 9,
+              "falseAlarms": 5
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.99581589958159,
+            "orange": 0.64,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.0041841004184100415,
+            "orange": 0.23809523809523808,
+            "red": null
+          }
+        },
+        "210": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.6095102604421314,
+          "skillAllPoly2": 0.5663040230215701,
+          "skillAllRidge": null,
+          "skillAllArx": 0.34755724476978755,
+          "skillEventPersist": 0.608338701094809,
+          "skillEventPoly2": 0.545308519655551,
+          "skillEventRidge": null,
+          "skillEventArx": 0.3377587826162013,
+          "skillEventPersistCI": {
+            "skill": 0.6083387010948091,
+            "lo": 0.554542805053803,
+            "hi": 0.6829602869507877,
+            "nEvents": 9
+          },
+          "risingRmse": 0.24805678756550942,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.224147209868843,
+            "lo": 0.17192423208053112,
+            "hi": 0.27341405865002494,
+            "nEvents": 9
+          },
+          "risingMinMed": -1.1399999999999992,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -1.1735128491177735,
+            "lo": -1.5599999999999998,
+            "hi": -0.7983921557775862,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.046070184048209756,
+          "fallingN": 830,
+          "phaseLagMin": 57.18640006333398,
+          "phaseLagMinDiscrete": 60,
+          "nseEvent": 0.9942510544506105,
+          "nseEventCI": {
+            "value": 0.9942510544506105,
+            "lo": 0.9922326850025736,
+            "hi": 0.9958055159178617,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9868645353907696,
+          "kgeEventR": 0.9972276141381787,
+          "kgeEventAlpha": 1.0102610098725777,
+          "kgeEventBeta": 0.9922820997979773,
+          "kgeEventCI": {
+            "value": 0.986864535390765,
+            "lo": 0.9797361234067916,
+            "hi": 0.9894291763679957,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": 0.007492217986954863,
+          "pinballEvent": 0.027494010686008277,
+          "peakLevelErrMed": 0.050165003868450686,
+          "peakTimeErrMed": 30,
+          "bandCoverageAll": 0.9127015336217067,
+          "bandCoverageEvent": 0.8407310704960835,
+          "bandNAll": 15258,
+          "bandNEvent": 1915,
+          "csi": {
+            "yellow": 0.9795081967213115,
+            "yellowCounts": {
+              "hits": 239,
+              "misses": 0,
+              "falseAlarms": 5
+            },
+            "orange": 0.6666666666666666,
+            "orangeCounts": {
+              "hits": 18,
+              "misses": 7,
+              "falseAlarms": 2
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 1,
+            "orange": 0.72,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.020491803278688523,
+            "orange": 0.1,
+            "red": null
+          }
+        },
+        "240": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.6004038406638396,
+          "skillAllPoly2": 0.6010122896871052,
+          "skillAllRidge": null,
+          "skillAllArx": 0.3583712440656118,
+          "skillEventPersist": 0.5980970976275801,
+          "skillEventPoly2": 0.5813625731108082,
+          "skillEventRidge": null,
+          "skillEventArx": 0.346539016975999,
+          "skillEventPersistCI": {
+            "skill": 0.5980970976275803,
+            "lo": 0.5497351695994049,
+            "hi": 0.6685687366516613,
+            "nEvents": 9
+          },
+          "risingRmse": 0.28965822233739685,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.2645252497299329,
+            "lo": 0.20215285060042432,
+            "hi": 0.3216503053641052,
+            "nEvents": 9
+          },
+          "risingMinMed": -1.3599999999999994,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -1.3315201913434573,
+            "lo": -1.7477777777777774,
+            "hi": -0.9197070493535817,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.03970636432007955,
+          "fallingN": 830,
+          "phaseLagMin": 64.80966071908102,
+          "phaseLagMinDiscrete": 60,
+          "nseEvent": 0.9922313988423855,
+          "nseEventCI": {
+            "value": 0.9922313988423855,
+            "lo": 0.9896049143322659,
+            "hi": 0.9940492532969627,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9837593989987539,
+          "kgeEventR": 0.996260040969902,
+          "kgeEventAlpha": 1.0105319385154814,
+          "kgeEventBeta": 0.988216617699447,
+          "kgeEventCI": {
+            "value": 0.9837593989987544,
+            "lo": 0.9731901140102232,
+            "hi": 0.9884345712608535,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": 0.008333254603437805,
+          "pinballEvent": 0.030854024351048,
+          "peakLevelErrMed": 0.08581667984616814,
+          "peakTimeErrMed": 30,
+          "bandCoverageAll": 0.9030672434132914,
+          "bandCoverageEvent": 0.8370757180156658,
+          "bandNAll": 15258,
+          "bandNEvent": 1915,
+          "csi": {
+            "yellow": 0.9714285714285714,
+            "yellowCounts": {
+              "hits": 238,
+              "misses": 1,
+              "falseAlarms": 6
+            },
+            "orange": 0.6,
+            "orangeCounts": {
+              "hits": 15,
+              "misses": 10,
+              "falseAlarms": 0
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.99581589958159,
+            "orange": 0.6,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.02459016393442623,
+            "orange": 0,
+            "red": null
+          }
+        },
+        "270": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.5846298749212349,
+          "skillAllPoly2": 0.6239827142532948,
+          "skillAllRidge": null,
+          "skillAllArx": 0.35612451482433694,
+          "skillEventPersist": 0.580776552062638,
+          "skillEventPoly2": 0.6046583973063873,
+          "skillEventRidge": null,
+          "skillEventArx": 0.3419795674600209,
+          "skillEventPersistCI": {
+            "skill": 0.5807765520626371,
+            "lo": 0.5356891661970098,
+            "hi": 0.6464620699057029,
+            "nEvents": 9
+          },
+          "risingRmse": 0.3353374515681095,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.309570290677077,
+            "lo": 0.23729568238423773,
+            "hi": 0.37523055348967094,
+            "nEvents": 9
+          },
+          "risingMinMed": -1.5199999999999996,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -1.4780624571740821,
+            "lo": -1.924729123840749,
+            "hi": -1.0404416855771454,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.055147032968424735,
+          "fallingN": 830,
+          "phaseLagMin": 79.52318044305319,
+          "phaseLagMinDiscrete": 90,
+          "nseEvent": 0.9894933880241674,
+          "nseEventCI": {
+            "value": 0.9894933880241674,
+            "lo": 0.9859767540425741,
+            "hi": 0.9917455385887874,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9805653307252329,
+          "kgeEventR": 0.9949440233433383,
+          "kgeEventAlpha": 1.010740026594518,
+          "kgeEventBeta": 0.9846118455097462,
+          "kgeEventCI": {
+            "value": 0.9805653307252271,
+            "lo": 0.9672871557829941,
+            "hi": 0.9857846054440815,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": 0.009428869213525128,
+          "pinballEvent": 0.0372896986305971,
+          "peakLevelErrMed": 0.047541575537491276,
+          "peakTimeErrMed": 0,
+          "bandCoverageAll": 0.9139467820159917,
+          "bandCoverageEvent": 0.8323759791122716,
+          "bandNAll": 15258,
+          "bandNEvent": 1915,
+          "csi": {
+            "yellow": 0.9715447154471545,
+            "yellowCounts": {
+              "hits": 239,
+              "misses": 0,
+              "falseAlarms": 7
+            },
+            "orange": 0.3939393939393939,
+            "orangeCounts": {
+              "hits": 13,
+              "misses": 12,
+              "falseAlarms": 8
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 1,
+            "orange": 0.52,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.028455284552845527,
+            "orange": 0.38095238095238093,
+            "red": null
+          }
+        },
+        "300": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.5719415733344497,
+          "skillAllPoly2": 0.6462235640573573,
+          "skillAllRidge": null,
+          "skillAllArx": 0.3573421924419017,
+          "skillEventPersist": 0.5675071576832353,
+          "skillEventPoly2": 0.6279997239227584,
+          "skillEventRidge": null,
+          "skillEventArx": 0.3422193543776787,
+          "skillEventPersistCI": {
+            "skill": 0.5675071576832349,
+            "lo": 0.5236385625119819,
+            "hi": 0.6321876440250949,
+            "nEvents": 9
+          },
+          "risingRmse": 0.3816790809742653,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.3544906659290961,
+            "lo": 0.27204523933943636,
+            "hi": 0.4288350716088156,
+            "nEvents": 9
+          },
+          "risingMinMed": -1.5999999999999996,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -1.6048141583109208,
+            "lo": -2.0677777777777773,
+            "hi": -1.1367810341022155,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.05066460555156519,
+          "fallingN": 830,
+          "phaseLagMin": 89.18630557576688,
+          "phaseLagMinDiscrete": 90,
+          "nseEvent": 0.9864456100369499,
+          "nseEventCI": {
+            "value": 0.9864456100369499,
+            "lo": 0.981942877969881,
+            "hi": 0.9891880259625623,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9701191905501427,
+          "kgeEventR": 0.9936245181697436,
+          "kgeEventAlpha": 1.0114840289973126,
+          "kgeEventBeta": 0.9731609783561391,
+          "kgeEventCI": {
+            "value": 0.9701191905501404,
+            "lo": 0.9489184118685586,
+            "hi": 0.9776134094124106,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": 0.010826354298062724,
+          "pinballEvent": 0.04310310209391112,
+          "peakLevelErrMed": 0.0359513115733181,
+          "peakTimeErrMed": -30,
+          "bandCoverageAll": 0.9047712675317866,
+          "bandCoverageEvent": 0.8219321148825065,
+          "bandNAll": 15258,
+          "bandNEvent": 1915,
+          "csi": {
+            "yellow": 0.9676113360323887,
+            "yellowCounts": {
+              "hits": 239,
+              "misses": 0,
+              "falseAlarms": 8
+            },
+            "orange": 0.22580645161290322,
+            "orangeCounts": {
+              "hits": 7,
+              "misses": 18,
+              "falseAlarms": 6
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 1,
+            "orange": 0.28,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.032388663967611336,
+            "orange": 0.46153846153846156,
+            "red": null
+          }
+        },
+        "330": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.5638851924627007,
+          "skillAllPoly2": 0.668935145269131,
+          "skillAllRidge": null,
+          "skillAllArx": 0.3637791688727616,
+          "skillEventPersist": 0.5582814120892841,
+          "skillEventPoly2": 0.6512699996884548,
+          "skillEventRidge": null,
+          "skillEventArx": 0.3470313231354738,
+          "skillEventPersistCI": {
+            "skill": 0.5582814120892832,
+            "lo": 0.5188272770840017,
+            "hi": 0.6166721833106137,
+            "nEvents": 9
+          },
+          "risingRmse": 0.4246565822570357,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.39721485181593785,
+            "lo": 0.3032269516598083,
+            "hi": 0.48103780467702745,
+            "nEvents": 9
+          },
+          "risingMinMed": -1.6599999999999995,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -1.7148141583109209,
+            "lo": -2.197164053748607,
+            "hi": -1.2135753739843456,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.0517472865060197,
+          "fallingN": 830,
+          "phaseLagMin": 104.70315020499571,
+          "phaseLagMinDiscrete": 90,
+          "nseEvent": 0.9832059231404121,
+          "nseEventCI": {
+            "value": 0.9832059231404121,
+            "lo": 0.9776240667375372,
+            "hi": 0.9864155509911228,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9690886263448799,
+          "kgeEventR": 0.9920469976454201,
+          "kgeEventAlpha": 1.012072404217315,
+          "kgeEventBeta": 0.972677484903321,
+          "kgeEventCI": {
+            "value": 0.9690886263448795,
+            "lo": 0.9490324566899488,
+            "hi": 0.9767493343954187,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": 0.011778764536084237,
+          "pinballEvent": 0.04778550019834438,
+          "peakLevelErrMed": 0.08817742275639251,
+          "peakTimeErrMed": -30,
+          "bandCoverageAll": 0.8847817538340542,
+          "bandCoverageEvent": 0.8161879895561358,
+          "bandNAll": 15258,
+          "bandNEvent": 1915,
+          "csi": {
+            "yellow": 0.9793388429752066,
+            "yellowCounts": {
+              "hits": 237,
+              "misses": 2,
+              "falseAlarms": 3
+            },
+            "orange": 0.15151515151515152,
+            "orangeCounts": {
+              "hits": 5,
+              "misses": 20,
+              "falseAlarms": 8
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.9916317991631799,
+            "orange": 0.2,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.0125,
+            "orange": 0.6153846153846154,
+            "red": null
+          }
+        },
+        "360": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.5500958275798435,
+          "skillAllPoly2": 0.6846717922920209,
+          "skillAllRidge": null,
+          "skillAllArx": 0.36062485240856623,
+          "skillEventPersist": 0.5437151031309058,
+          "skillEventPoly2": 0.6675802849702765,
+          "skillEventRidge": null,
+          "skillEventArx": 0.34280627768229555,
+          "skillEventPersistCI": {
+            "skill": 0.5437151031309042,
+            "lo": 0.5049391072315303,
+            "hi": 0.6009967310459038,
+            "nEvents": 9
+          },
+          "risingRmse": 0.4727399871410547,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.4419309241993348,
+            "lo": 0.3362787010121367,
+            "hi": 0.5392812446590404,
+            "nEvents": 9
+          },
+          "risingMinMed": -1.6899999999999995,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -1.8125919360886986,
+            "lo": -2.3055555555555554,
+            "hi": -1.2919782120595285,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.06405295759771809,
+          "fallingN": 830,
+          "phaseLagMin": 120,
+          "phaseLagMinDiscrete": 120,
+          "nseEvent": 0.9790681493995113,
+          "nseEventCI": {
+            "value": 0.9790681493995111,
+            "lo": 0.971949937551364,
+            "hi": 0.9830929275537751,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9633848978969962,
+          "kgeEventR": 0.9901115777350388,
+          "kgeEventAlpha": 1.0102146809384913,
+          "kgeEventBeta": 0.9662576660491893,
+          "kgeEventCI": {
+            "value": 0.963384897896994,
+            "lo": 0.9382305821246124,
+            "hi": 0.973171116178005,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": 0.013350277844379109,
+          "pinballEvent": 0.05531648793434793,
+          "peakLevelErrMed": 0.09189699805017248,
+          "peakTimeErrMed": -30,
+          "bandCoverageAll": 0.8779656573600734,
+          "bandCoverageEvent": 0.8046997389033943,
+          "bandNAll": 15258,
+          "bandNEvent": 1915,
+          "csi": {
+            "yellow": 0.9556451612903226,
+            "yellowCounts": {
+              "hits": 237,
+              "misses": 2,
+              "falseAlarms": 9
+            },
+            "orange": 0.16129032258064516,
+            "orangeCounts": {
+              "hits": 5,
+              "misses": 20,
+              "falseAlarms": 6
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.9916317991631799,
+            "orange": 0.2,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.036585365853658534,
+            "orange": 0.5454545454545454,
+            "red": null
+          }
+        }
+      },
+      "longhist": {
+        "30": {
+          "nAll": 15262,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.7109658618626284,
+          "skillAllPoly2": 0.2876728814796863,
+          "skillAllRidge": null,
+          "skillAllArx": 0.45266058491026784,
+          "skillEventPersist": 0.7706485321255686,
+          "skillEventPoly2": 0.3221757748000973,
+          "skillEventRidge": null,
+          "skillEventArx": 0.5403694242126365,
+          "skillEventPersistCI": {
+            "skill": 0.7706485321255696,
+            "lo": 0.7412212057523223,
+            "hi": 0.8060617933086269,
+            "nEvents": 9
+          },
+          "risingRmse": 0.020333600863042336,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.018218104295889312,
+            "lo": 0.014642555624975363,
+            "hi": 0.021791573133848857,
+            "nEvents": 9
+          },
+          "risingMinMed": -0.07999999999999985,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -0.09889248459350512,
+            "lo": -0.14667723537161453,
+            "hi": -0.06016606901678182,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.009836604041008874,
+          "fallingN": 830,
+          "phaseLagMin": 2.7204902238823627,
+          "phaseLagMinDiscrete": 0,
+          "nseEvent": 0.9999562776799003,
+          "nseEventCI": {
+            "value": 0.9999562776799003,
+            "lo": 0.9999418317072485,
+            "hi": 0.9999667069751347,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9989980182020841,
+          "kgeEventR": 0.9999786179795255,
+          "kgeEventAlpha": 1.0008727096620915,
+          "kgeEventBeta": 1.0004918212868994,
+          "kgeEventCI": {
+            "value": 0.9989980182020849,
+            "lo": 0.9979876610185151,
+            "hi": 0.999363797757057,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": 0.0019926630952630544,
+          "pinballEvent": 0.005071686837530913,
+          "peakLevelErrMed": 0.004497190712784871,
+          "peakTimeErrMed": 30,
+          "bandCoverageAll": 0.9315948106408072,
+          "bandCoverageEvent": 0.9404699738903394,
+          "bandNAll": 15262,
+          "bandNEvent": 1915,
+          "csi": {
+            "yellow": 1,
+            "yellowCounts": {
+              "hits": 239,
+              "misses": 0,
+              "falseAlarms": 0
+            },
+            "orange": 0.76,
+            "orangeCounts": {
+              "hits": 19,
+              "misses": 6,
+              "falseAlarms": 0
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 1,
+            "orange": 0.76,
+            "red": null
+          },
+          "far": {
+            "yellow": 0,
+            "orange": 0,
+            "red": null
+          }
+        },
+        "60": {
+          "nAll": 15260,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.718208773268691,
+          "skillAllPoly2": 0.36704616803333967,
+          "skillAllRidge": null,
+          "skillAllArx": 0.41256627075534646,
+          "skillEventPersist": 0.7419966484911138,
+          "skillEventPoly2": 0.3573734283885698,
+          "skillEventRidge": null,
+          "skillEventArx": 0.4463381983603315,
+          "skillEventPersistCI": {
+            "skill": 0.7419966484911141,
+            "lo": 0.7045195095612995,
+            "hi": 0.7922333909623049,
+            "nEvents": 9
+          },
+          "risingRmse": 0.04826994759160932,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.04318972236522862,
+            "lo": 0.034339489297055346,
+            "hi": 0.05235779759127985,
+            "nEvents": 9
+          },
+          "risingMinMed": -0.21999999999999975,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -0.25542260710577663,
+            "lo": -0.37167166965530335,
+            "hi": -0.15074198801379668,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.011775780050672075,
+          "fallingN": 830,
+          "phaseLagMin": 6.485366592901817,
+          "phaseLagMinDiscrete": 0,
+          "nseEvent": 0.9997810124495806,
+          "nseEventCI": {
+            "value": 0.9997810124495806,
+            "lo": 0.9996978127827676,
+            "hi": 0.9998471302493988,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9975524659116439,
+          "kgeEventR": 0.9998937124754109,
+          "kgeEventAlpha": 1.002397976025553,
+          "kgeEventBeta": 0.9995216308364303,
+          "kgeEventCI": {
+            "value": 0.9975524659116443,
+            "lo": 0.9962900345802802,
+            "hi": 0.9979731905960321,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": 0.0027454621767897605,
+          "pinballEvent": 0.00736752931819963,
+          "peakLevelErrMed": 0.007970583755806615,
+          "peakTimeErrMed": 90,
+          "bandCoverageAll": 0.9473132372214941,
+          "bandCoverageEvent": 0.9227154046997389,
+          "bandNAll": 15260,
+          "bandNEvent": 1915,
+          "csi": {
+            "yellow": 0.9916666666666667,
+            "yellowCounts": {
+              "hits": 238,
+              "misses": 1,
+              "falseAlarms": 1
+            },
+            "orange": 0.8,
+            "orangeCounts": {
+              "hits": 20,
+              "misses": 5,
+              "falseAlarms": 0
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.99581589958159,
+            "orange": 0.8,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.0041841004184100415,
+            "orange": 0,
+            "red": null
+          }
+        },
+        "90": {
+          "nAll": 15259,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.6933159397474677,
+          "skillAllPoly2": 0.4146558123595522,
+          "skillAllRidge": null,
+          "skillAllArx": 0.27558392625125594,
+          "skillEventPersist": 0.7062858934395295,
+          "skillEventPoly2": 0.3963070943677638,
+          "skillEventRidge": null,
+          "skillEventArx": 0.28445951589029916,
+          "skillEventPersistCI": {
+            "skill": 0.7062858934395293,
+            "lo": 0.6585230826730163,
+            "hi": 0.7705609005924007,
+            "nEvents": 9
+          },
+          "risingRmse": 0.08244040016009767,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.0726811250377931,
+            "lo": 0.056714437311933846,
+            "hi": 0.08891552330165069,
+            "nEvents": 9
+          },
+          "risingMinMed": -0.36999999999999966,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -0.4390959066364308,
+            "lo": -0.618705423604474,
+            "hi": -0.27740212360943883,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.016661603759727757,
+          "fallingN": 830,
+          "phaseLagMin": 19.30585691700562,
+          "phaseLagMinDiscrete": 30,
+          "nseEvent": 0.9993684789298133,
+          "nseEventCI": {
+            "value": 0.9993684789298133,
+            "lo": 0.999108805260517,
+            "hi": 0.9995769416001677,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.994765898095917,
+          "kgeEventR": 0.9996947247895894,
+          "kgeEventAlpha": 1.0020244535036547,
+          "kgeEventBeta": 0.9951829243518734,
+          "kgeEventCI": {
+            "value": 0.9947658980959142,
+            "lo": 0.9911826497309238,
+            "hi": 0.9962016483064265,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": 0.003579875474882729,
+          "pinballEvent": 0.010465370066132325,
+          "peakLevelErrMed": -0.0022305836066394136,
+          "peakTimeErrMed": 60,
+          "bandCoverageAll": 0.9268628350481682,
+          "bandCoverageEvent": 0.8783289817232376,
+          "bandNAll": 15259,
+          "bandNEvent": 1915,
+          "csi": {
+            "yellow": 0.9916317991631799,
+            "yellowCounts": {
+              "hits": 237,
+              "misses": 2,
+              "falseAlarms": 0
+            },
+            "orange": 0.7307692307692307,
+            "orangeCounts": {
+              "hits": 19,
+              "misses": 6,
+              "falseAlarms": 1
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.9916317991631799,
+            "orange": 0.76,
+            "red": null
+          },
+          "far": {
+            "yellow": 0,
+            "orange": 0.05,
+            "red": null
+          }
+        },
+        "120": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.6601613659802235,
+          "skillAllPoly2": 0.4447267191554992,
+          "skillAllRidge": null,
+          "skillAllArx": 0.3435750221772833,
+          "skillEventPersist": 0.6668456111267673,
+          "skillEventPoly2": 0.42220333750580363,
+          "skillEventRidge": null,
+          "skillEventArx": 0.3466775528888394,
+          "skillEventPersistCI": {
+            "skill": 0.6668456111267671,
+            "lo": 0.6145939420502805,
+            "hi": 0.7389012268861598,
+            "nEvents": 9
+          },
+          "risingRmse": 0.1234423306517123,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.10949914659982547,
+            "lo": 0.08485976691315628,
+            "hi": 0.13395300545559805,
+            "nEvents": 9
+          },
+          "risingMinMed": -0.5599999999999994,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -0.6327125771626063,
+            "lo": -0.8688888888888888,
+            "hi": -0.40875848765854617,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.026625626902321124,
+          "fallingN": 830,
+          "phaseLagMin": 28.963857786299258,
+          "phaseLagMinDiscrete": 30,
+          "nseEvent": 0.9985746880301721,
+          "nseEventCI": {
+            "value": 0.9985746880301721,
+            "lo": 0.9980099533952033,
+            "hi": 0.9990238329443624,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.993340363320948,
+          "kgeEventR": 0.999306710386617,
+          "kgeEventAlpha": 1.0035221661234321,
+          "kgeEventBeta": 0.9943906813240914,
+          "kgeEventCI": {
+            "value": 0.9933403633209467,
+            "lo": 0.9896019103662299,
+            "hi": 0.9951271073039971,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": 0.004562274221078095,
+          "pinballEvent": 0.014853595469126396,
+          "peakLevelErrMed": 0.048262725901274894,
+          "peakTimeErrMed": 60,
+          "bandCoverageAll": 0.9275789749639534,
+          "bandCoverageEvent": 0.8600522193211488,
+          "bandNAll": 15258,
+          "bandNEvent": 1915,
+          "csi": {
+            "yellow": 0.9875,
+            "yellowCounts": {
+              "hits": 237,
+              "misses": 2,
+              "falseAlarms": 1
+            },
+            "orange": 0.72,
+            "orangeCounts": {
+              "hits": 18,
+              "misses": 7,
+              "falseAlarms": 0
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.9916317991631799,
+            "orange": 0.72,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.004201680672268907,
+            "orange": 0,
+            "red": null
+          }
+        },
+        "150": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.6415987670978214,
+          "skillAllPoly2": 0.4916594867296342,
+          "skillAllRidge": null,
+          "skillAllArx": 0.34284757929987497,
+          "skillEventPersist": 0.6440654069599835,
+          "skillEventPoly2": 0.468348583810854,
+          "skillEventRidge": null,
+          "skillEventArx": 0.33911248054880316,
+          "skillEventPersistCI": {
+            "skill": 0.6440654069599824,
+            "lo": 0.5913227604734963,
+            "hi": 0.7168679316142295,
+            "nEvents": 9
+          },
+          "risingRmse": 0.16409139553311544,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.1470768271791043,
+            "lo": 0.11443647123325304,
+            "hi": 0.17860043323783445,
+            "nEvents": 9
+          },
+          "risingMinMed": -0.7499999999999996,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -0.8345120784954052,
+            "lo": -1.124512078495405,
+            "hi": -0.5557584577084378,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.03088746945417742,
+          "fallingN": 830,
+          "phaseLagMin": 36.32870584504337,
+          "phaseLagMinDiscrete": 30,
+          "nseEvent": 0.9974957801073192,
+          "nseEventCI": {
+            "value": 0.9974957801073192,
+            "lo": 0.9965298250492967,
+            "hi": 0.9982581267358765,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9907844479347908,
+          "kgeEventR": 0.9987840240120506,
+          "kgeEventAlpha": 1.0040105021053578,
+          "kgeEventBeta": 0.9917924622982144,
+          "kgeEventCI": {
+            "value": 0.990784447934793,
+            "lo": 0.9860593113952739,
+            "hi": 0.9924672410364287,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": 0.005469439345690365,
+          "pinballEvent": 0.018685312490642425,
+          "peakLevelErrMed": 0.056580927491875155,
+          "peakTimeErrMed": 150,
+          "bandCoverageAll": 0.9168960545287718,
+          "bandCoverageEvent": 0.8449086161879895,
+          "bandNAll": 15258,
+          "bandNEvent": 1915,
+          "csi": {
+            "yellow": 0.9752066115702479,
+            "yellowCounts": {
+              "hits": 236,
+              "misses": 3,
+              "falseAlarms": 3
+            },
+            "orange": 0.68,
+            "orangeCounts": {
+              "hits": 17,
+              "misses": 8,
+              "falseAlarms": 0
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.9874476987447699,
+            "orange": 0.68,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.012552301255230125,
+            "orange": 0,
+            "red": null
+          }
+        },
+        "180": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.623077012873178,
+          "skillAllPoly2": 0.5296821461182106,
+          "skillAllRidge": null,
+          "skillAllArx": 0.3417824100520245,
+          "skillEventPersist": 0.6230704870811334,
+          "skillEventPoly2": 0.5069754895010059,
+          "skillEventRidge": null,
+          "skillEventArx": 0.333832638686532,
+          "skillEventPersistCI": {
+            "skill": 0.6230704870811329,
+            "lo": 0.5738332769501578,
+            "hi": 0.6932916179470832,
+            "nEvents": 9
+          },
+          "risingRmse": 0.2078069897193192,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.18872177839805918,
+            "lo": 0.1455656071424508,
+            "hi": 0.22849843889175953,
+            "nEvents": 9
+          },
+          "risingMinMed": -0.9499999999999995,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -1.0138945191653406,
+            "lo": -1.356801934768588,
+            "hi": -0.6871602184477132,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.02908395876436134,
+          "fallingN": 830,
+          "phaseLagMin": 46.16151753186611,
+          "phaseLagMinDiscrete": 60,
+          "nseEvent": 0.9960208166685474,
+          "nseEventCI": {
+            "value": 0.9960208166685474,
+            "lo": 0.9946699796029334,
+            "hi": 0.9970623388853197,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9846034905866036,
+          "kgeEventR": 0.9981056117336035,
+          "kgeEventAlpha": 1.0051674377215312,
+          "kgeEventBeta": 0.9856208003488706,
+          "kgeEventCI": {
+            "value": 0.984603490586601,
+            "lo": 0.9735402351905008,
+            "hi": 0.9884428012627674,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": 0.006514878168166068,
+          "pinballEvent": 0.02336618185225111,
+          "peakLevelErrMed": 0.06434559700998399,
+          "peakTimeErrMed": 30,
+          "bandCoverageAll": 0.9255472538995937,
+          "bandCoverageEvent": 0.8417754569190601,
+          "bandNAll": 15258,
+          "bandNEvent": 1915,
+          "csi": {
+            "yellow": 0.9833333333333333,
+            "yellowCounts": {
+              "hits": 236,
+              "misses": 3,
+              "falseAlarms": 1
+            },
+            "orange": 0.5333333333333333,
+            "orangeCounts": {
+              "hits": 16,
+              "misses": 9,
+              "falseAlarms": 5
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.9874476987447699,
+            "orange": 0.64,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.004219409282700422,
+            "orange": 0.23809523809523808,
+            "red": null
+          }
+        },
+        "210": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.6051565919464701,
+          "skillAllPoly2": 0.5614686372984933,
+          "skillAllRidge": null,
+          "skillAllArx": 0.34028299609968293,
+          "skillEventPersist": 0.6038460919285866,
+          "skillEventPoly2": 0.5400929134210092,
+          "skillEventRidge": null,
+          "skillEventArx": 0.330162446261843,
+          "skillEventPersistCI": {
+            "skill": 0.603846091928587,
+            "lo": 0.5541687454200419,
+            "hi": 0.6725272341653143,
+            "nEvents": 9
+          },
+          "risingRmse": 0.25146554197756327,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.23065786194005422,
+            "lo": 0.1809547409580569,
+            "hi": 0.27556801009690157,
+            "nEvents": 9
+          },
+          "risingMinMed": -1.1399999999999992,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -1.1883680103506717,
+            "lo": -1.5699999999999998,
+            "hi": -0.8304662250238763,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.042443547160014104,
+          "fallingN": 830,
+          "phaseLagMin": 62.36943887515696,
+          "phaseLagMinDiscrete": 60,
+          "nseEvent": 0.9941184097591077,
+          "nseEventCI": {
+            "value": 0.9941184097591077,
+            "lo": 0.9921868798382678,
+            "hi": 0.9955082673822531,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.983444594545041,
+          "kgeEventR": 0.99717614494683,
+          "kgeEventAlpha": 1.0061927095240097,
+          "kgeEventBeta": 0.9849083585661462,
+          "kgeEventCI": {
+            "value": 0.983444594545041,
+            "lo": 0.9721271773696897,
+            "hi": 0.9881272414103673,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": 0.007622882554923526,
+          "pinballEvent": 0.028927508899318423,
+          "peakLevelErrMed": 0.021240745207423473,
+          "peakTimeErrMed": 120,
+          "bandCoverageAll": 0.9081137763796041,
+          "bandCoverageEvent": 0.8234986945169713,
+          "bandNAll": 15258,
+          "bandNEvent": 1915,
+          "csi": {
+            "yellow": 0.9549180327868853,
+            "yellowCounts": {
+              "hits": 233,
+              "misses": 6,
+              "falseAlarms": 5
+            },
+            "orange": 0.6,
+            "orangeCounts": {
+              "hits": 15,
+              "misses": 10,
+              "falseAlarms": 0
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.9748953974895398,
+            "orange": 0.6,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.02100840336134454,
+            "orange": 0,
+            "red": null
+          }
+        },
+        "240": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.5899224954738271,
+          "skillAllPoly2": 0.5905469040204624,
+          "skillAllRidge": null,
+          "skillAllArx": 0.34154142146181377,
+          "skillEventPersist": 0.5876721222210712,
+          "skillEventPoly2": 0.5705035202057366,
+          "skillEventRidge": null,
+          "skillEventArx": 0.32958886648709873,
+          "skillEventPersistCI": {
+            "skill": 0.5876721222210715,
+            "lo": 0.5421747082715092,
+            "hi": 0.6519500195998086,
+            "nEvents": 9
+          },
+          "risingRmse": 0.2968465772057549,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.27605021516628436,
+            "lo": 0.21669920612943916,
+            "hi": 0.32924709647760736,
+            "nEvents": 9
+          },
+          "risingMinMed": -1.3599999999999994,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -1.3530582973827865,
+            "lo": -1.759724964049453,
+            "hi": -0.9627832614322398,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.04372520851828706,
+          "fallingN": 830,
+          "phaseLagMin": 69.71042462485191,
+          "phaseLagMinDiscrete": 60,
+          "nseEvent": 0.9918231517547869,
+          "nseEventCI": {
+            "value": 0.9918231517547869,
+            "lo": 0.9892446085272295,
+            "hi": 0.9934925932189863,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9743918295980019,
+          "kgeEventR": 0.9961547656369825,
+          "kgeEventAlpha": 1.003395452021316,
+          "kgeEventBeta": 0.974910889421859,
+          "kgeEventCI": {
+            "value": 0.9743918295980025,
+            "lo": 0.9605702738053904,
+            "hi": 0.9790561800378174,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": 0.008935805656005125,
+          "pinballEvent": 0.03430404734122155,
+          "peakLevelErrMed": 0.03900837353595854,
+          "peakTimeErrMed": 90,
+          "bandCoverageAll": 0.8944160440424695,
+          "bandCoverageEvent": 0.7942558746736292,
+          "bandNAll": 15258,
+          "bandNEvent": 1915,
+          "csi": {
+            "yellow": 0.975,
+            "yellowCounts": {
+              "hits": 234,
+              "misses": 5,
+              "falseAlarms": 1
+            },
+            "orange": 0.48484848484848486,
+            "orangeCounts": {
+              "hits": 16,
+              "misses": 9,
+              "falseAlarms": 8
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.9790794979079498,
+            "orange": 0.64,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.00425531914893617,
+            "orange": 0.3333333333333333,
+            "red": null
+          }
+        },
+        "270": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.5737930597259165,
+          "skillAllPoly2": 0.6141725965056364,
+          "skillAllRidge": null,
+          "skillAllArx": 0.33932610006034425,
+          "skillEventPersist": 0.5703275416138454,
+          "skillEventPoly2": 0.5948046342172453,
+          "skillEventRidge": null,
+          "skillEventArx": 0.3255786184936438,
+          "skillEventPersistCI": {
+            "skill": 0.5703275416138445,
+            "lo": 0.5268769869134892,
+            "hi": 0.6308210538573579,
+            "nEvents": 9
+          },
+          "risingRmse": 0.3448090501079908,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.3236288209877527,
+            "lo": 0.25689053311591337,
+            "hi": 0.3831984564846808,
+            "nEvents": 9
+          },
+          "risingMinMed": -1.5199999999999996,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -1.501705813077304,
+            "lo": -1.9304935517810462,
+            "hi": -1.087856070599053,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.04682490186449844,
+          "fallingN": 830,
+          "phaseLagMin": 85.47890038407468,
+          "phaseLagMinDiscrete": 90,
+          "nseEvent": 0.9889631130089712,
+          "nseEventCI": {
+            "value": 0.9889631130089712,
+            "lo": 0.9855523493861227,
+            "hi": 0.991012532041535,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9711353848851039,
+          "kgeEventR": 0.9948155595448792,
+          "kgeEventAlpha": 1.0070341977253094,
+          "kgeEventBeta": 0.9724898628636707,
+          "kgeEventCI": {
+            "value": 0.9711353848851001,
+            "lo": 0.9546819858905445,
+            "hi": 0.9767946600361777,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": 0.010122180780632744,
+          "pinballEvent": 0.04046991499095207,
+          "peakLevelErrMed": 0.04727455950323378,
+          "peakTimeErrMed": 60,
+          "bandCoverageAll": 0.8899593655787128,
+          "bandCoverageEvent": 0.768668407310705,
+          "bandNAll": 15258,
+          "bandNEvent": 1915,
+          "csi": {
+            "yellow": 0.9506172839506173,
+            "yellowCounts": {
+              "hits": 231,
+              "misses": 8,
+              "falseAlarms": 4
+            },
+            "orange": 0.375,
+            "orangeCounts": {
+              "hits": 12,
+              "misses": 13,
+              "falseAlarms": 7
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.9665271966527197,
+            "orange": 0.48,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.01702127659574468,
+            "orange": 0.3684210526315789,
+            "red": null
+          }
+        },
+        "300": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.5665771045169499,
+          "skillAllPoly2": 0.6417900041955318,
+          "skillAllRidge": null,
+          "skillAllArx": 0.3492883438216947,
+          "skillEventPersist": 0.562310719804026,
+          "skillEventPoly2": 0.6235301093151986,
+          "skillEventRidge": null,
+          "skillEventArx": 0.33431606459185825,
+          "skillEventPersistCI": {
+            "skill": 0.5623107198040252,
+            "lo": 0.5231256830856127,
+            "hi": 0.6180642570136405,
+            "nEvents": 9
+          },
+          "risingRmse": 0.3855260577181379,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.36437384688805174,
+            "lo": 0.28915714992028263,
+            "hi": 0.43265097601877156,
+            "nEvents": 9
+          },
+          "risingMinMed": -1.5999999999999996,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -1.6278576175087147,
+            "lo": -2.078888888888889,
+            "hi": -1.1872400581786506,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.05809016696623737,
+          "fallingN": 830,
+          "phaseLagMin": 97.014971808325,
+          "phaseLagMinDiscrete": 90,
+          "nseEvent": 0.9861179390237236,
+          "nseEventCI": {
+            "value": 0.9861179390237236,
+            "lo": 0.9818045733349307,
+            "hi": 0.9885713297505538,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9719402183673107,
+          "kgeEventR": 0.9934257531340823,
+          "kgeEventAlpha": 1.0117087962561775,
+          "kgeEventBeta": 0.975361925528737,
+          "kgeEventCI": {
+            "value": 0.9719402183673105,
+            "lo": 0.9543343721278236,
+            "hi": 0.977555961234467,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": 0.011190055602568732,
+          "pinballEvent": 0.044575513981549804,
+          "peakLevelErrMed": 0.0795664668001681,
+          "peakTimeErrMed": 30,
+          "bandCoverageAll": 0.8630226766286538,
+          "bandCoverageEvent": 0.7906005221932115,
+          "bandNAll": 15258,
+          "bandNEvent": 1915,
+          "csi": {
+            "yellow": 0.9362549800796812,
+            "yellowCounts": {
+              "hits": 235,
+              "misses": 4,
+              "falseAlarms": 12
+            },
+            "orange": 0.5454545454545454,
+            "orangeCounts": {
+              "hits": 18,
+              "misses": 7,
+              "falseAlarms": 8
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.9832635983263598,
+            "orange": 0.72,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.048582995951417005,
+            "orange": 0.3076923076923077,
+            "red": null
+          }
+        },
+        "330": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.5533988793538378,
+          "skillAllPoly2": 0.6609747420311574,
+          "skillAllRidge": null,
+          "skillAllArx": 0.34848133736996256,
+          "skillEventPersist": 0.5474347858530249,
+          "skillEventPoly2": 0.6427067558624685,
+          "skillEventRidge": null,
+          "skillEventArx": 0.33099734273307846,
+          "skillEventPersistCI": {
+            "skill": 0.5474347858530245,
+            "lo": 0.5097992401591478,
+            "hi": 0.6017320237735968,
+            "nEvents": 9
+          },
+          "risingRmse": 0.4346166916642722,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.41172519952430775,
+            "lo": 0.3241424448217549,
+            "hi": 0.49292247356908636,
+            "nEvents": 9
+          },
+          "risingMinMed": -1.6599999999999995,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -1.7416661851591015,
+            "lo": -2.2022222222222214,
+            "hi": -1.2684558963596568,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.05781403170843847,
+          "fallingN": 830,
+          "phaseLagMin": 120,
+          "phaseLagMinDiscrete": 120,
+          "nseEvent": 0.9823710224392476,
+          "nseEventCI": {
+            "value": 0.9823710224392476,
+            "lo": 0.9769128701645688,
+            "hi": 0.9852935392831913,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.96477995342459,
+          "kgeEventR": 0.9916861805859121,
+          "kgeEventAlpha": 1.007421465101067,
+          "kgeEventBeta": 0.9665896132426213,
+          "kgeEventCI": {
+            "value": 0.9647799534245876,
+            "lo": 0.9430311137249575,
+            "hi": 0.9727771649667644,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": 0.01243980728499808,
+          "pinballEvent": 0.05194501864789001,
+          "peakLevelErrMed": 0.05168238549383508,
+          "peakTimeErrMed": 30,
+          "bandCoverageAll": 0.8842574387206711,
+          "bandCoverageEvent": 0.7796344647519582,
+          "bandNAll": 15258,
+          "bandNEvent": 1915,
+          "csi": {
+            "yellow": 0.9433198380566802,
+            "yellowCounts": {
+              "hits": 233,
+              "misses": 6,
+              "falseAlarms": 8
+            },
+            "orange": 0.2903225806451613,
+            "orangeCounts": {
+              "hits": 9,
+              "misses": 16,
+              "falseAlarms": 6
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.9748953974895398,
+            "orange": 0.36,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.03319502074688797,
+            "orange": 0.4,
+            "red": null
+          }
+        },
+        "360": {
+          "nAll": 15258,
+          "nEvent": 1915,
+          "nEvents": 9,
+          "skillAllPersist": 0.5452482487300061,
+          "skillAllPoly2": 0.6812742280013416,
+          "skillAllRidge": null,
+          "skillAllArx": 0.3537357821741134,
+          "skillEventPersist": 0.538880900633447,
+          "skillEventPoly2": 0.6640583971593322,
+          "skillEventRidge": null,
+          "skillEventArx": 0.3358435060553091,
+          "skillEventPersistCI": {
+            "skill": 0.5388809006334452,
+            "lo": 0.5042680765877225,
+            "hi": 0.5885955921300968,
+            "nEvents": 9
+          },
+          "risingRmse": 0.4776451311249523,
+          "risingN": 1085,
+          "risingRmseCI": {
+            "value": 0.4559712562624543,
+            "lo": 0.35965091266837024,
+            "hi": 0.546095754500821,
+            "nEvents": 9
+          },
+          "risingMinMed": -1.6899999999999995,
+          "risingMinN": 9,
+          "risingMinCI": {
+            "value": -1.8394439629368793,
+            "lo": -2.3078393000447215,
+            "hi": -1.3488879258737592,
+            "nEvents": 9
+          },
+          "fallingRmse": 0.06572145508841351,
+          "fallingN": 830,
+          "phaseLagMin": 120,
+          "phaseLagMinDiscrete": 120,
+          "nseEvent": 0.9786222664094739,
+          "nseEventCI": {
+            "value": 0.9786222664094738,
+            "lo": 0.9714730367490022,
+            "hi": 0.9821018837112625,
+            "nEvents": 9
+          },
+          "kgeEvent": 0.9580408504195662,
+          "kgeEventR": 0.9900705704900771,
+          "kgeEventAlpha": 1.012195783968937,
+          "kgeEventBeta": 0.9610996206123422,
+          "kgeEventCI": {
+            "value": 0.958040850419567,
+            "lo": 0.9308057430991099,
+            "hi": 0.9674116170909473,
+            "nEvents": 9
+          },
+          "crossingTimeErrMed": 0,
+          "crossingTimeErrCI": {
+            "value": 0,
+            "lo": 0,
+            "hi": 0,
+            "nEvents": 3
+          },
+          "crossingTimeN": 3,
+          "pinballAll": 0.01375056125652573,
+          "pinballEvent": 0.05745271841945635,
+          "peakLevelErrMed": 0.08042089945208009,
+          "peakTimeErrMed": 0,
+          "bandCoverageAll": 0.8779001179709005,
+          "bandCoverageEvent": 0.7738903394255875,
+          "bandNAll": 15258,
+          "bandNEvent": 1915,
+          "csi": {
+            "yellow": 0.9554655870445344,
+            "yellowCounts": {
+              "hits": 236,
+              "misses": 3,
+              "falseAlarms": 8
+            },
+            "orange": 0.25806451612903225,
+            "orangeCounts": {
+              "hits": 8,
+              "misses": 17,
+              "falseAlarms": 6
+            },
+            "red": null,
+            "redCounts": {
+              "hits": 0,
+              "misses": 0,
+              "falseAlarms": 0
+            }
+          },
+          "pod": {
+            "yellow": 0.9874476987447699,
+            "orange": 0.32,
+            "red": null
+          },
+          "far": {
+            "yellow": 0.03278688524590164,
+            "orange": 0.42857142857142855,
+            "red": null
+          }
+        }
+      }
+    }
+  },
+  "yearFolds": {},
+  "generatedAt": "2026-11-20T10:18:44.351Z",
+  "elapsedSec": 106.691
+}

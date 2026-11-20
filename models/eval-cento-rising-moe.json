@@ -1,0 +1,67 @@
+{
+  "kind": "ab_rising_moe",
+  "generatedAt": "2026-11-20T09:58:36.587Z",
+  "risingPath": "models/cento-dnn-rising.json",
+  "risingSkill120": 0.581846,
+  "risingReliable": true,
+  "risingOnly": true,
+  "prod": {
+    "120": {
+      "risingRmse": 0.1207360341249646,
+      "fallingRmse": 0.020886974648568972,
+      "risingMinMed": -0.5599999999999994,
+      "risingBias": -0.026931194615352413,
+      "peakErrMed": 0.018342631903272455,
+      "nRising": 542,
+      "nFalling": 373
+    },
+    "360": {
+      "risingRmse": 0.47487515018460574,
+      "fallingRmse": 0.06729789054838362,
+      "risingMinMed": -1.6899999999999995,
+      "risingBias": -0.14613073621223613,
+      "peakErrMed": 0.014532292384125789,
+      "nRising": 542,
+      "nFalling": 369
+    },
+    "label": "prod",
+    "events": 9
+  },
+  "moe": {
+    "120": {
+      "risingRmse": 0.11822307389770136,
+      "fallingRmse": 0.02172069659216028,
+      "risingMinMed": -0.5599999999999994,
+      "risingBias": -0.025279408739481434,
+      "peakErrMed": 0.02155377764387678,
+      "nRising": 542,
+      "nFalling": 373
+    },
+    "360": {
+      "risingRmse": 0.47306027992816535,
+      "fallingRmse": 0.0684365549828927,
+      "risingMinMed": -1.6899999999999995,
+      "risingBias": -0.1369150344680462,
+      "peakErrMed": 0.014532292384125789,
+      "nRising": 542,
+      "nFalling": 369
+    },
+    "label": "moe",
+    "events": 9
+  },
+  "gate": {
+    "120": {
+      "deltaRisingMin": 0,
+      "fallingRel": 0.03991587856159097,
+      "passRisingMin": false,
+      "passFalling": true
+    },
+    "360": {
+      "deltaRisingMin": 0,
+      "fallingRel": 0.01691976412976035,
+      "passRisingMin": false,
+      "passFalling": true
+    }
+  },
+  "disclaimer": "Sperimentale: non operativo, non allertistico."
+}

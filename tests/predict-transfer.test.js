@@ -134,6 +134,26 @@ test('forkAround builds symmetric min/med/max', () => {
     assert.equal(P.forkAround(null, 1), null);
 });
 
+test('detectRisingRegime and exceedanceFromBand (M2 helpers)', () => {
+    const now = Date.parse('2026-11-14T01:00:00Z');
+    const mk = (id, slope) => {
+        const timeSeries = [];
+        for (let i = 0; i < 12; i++) {
+            timeSeries.push({ time: new Date(now - (11 - i) * 1800000), value: 1 + slope * i });
+        }
+        return { id, name: id, timeSeries };
+    };
+    const rising = P.detectRisingRegime(mk('Cento', 0.1), [mk('Forcelli', 0.05)], new Date(now));
+    assert.equal(rising.active, true);
+    assert.ok(rising.downD1 > 0);
+    const falling = P.detectRisingRegime(mk('Cento', -0.1), [mk('Forcelli', 0.05)], new Date(now));
+    assert.equal(falling.active, false);
+    const fc = [{ time: new Date(now + 7200000), min: 4, med: 5, max: 6 }];
+    const p = P.exceedanceFromBand(fc, now + 7200000, 5.5);
+    assert.ok(p > 0.2 && p < 0.4);
+    assert.ok(Math.abs(P.normalCdf(0) - 0.5) < 1e-3);
+});
+
 test('offline dual-regime node picks high regime above threshold', () => {
     const start = new Date('2026-11-11T00:00:00Z');
     const now = new Date('2026-11-11T12:00:00Z');

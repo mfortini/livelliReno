@@ -87,6 +87,12 @@
         .edge-card h3 { font-size: 1rem; margin: 0 0 .35rem; }
         .edge-meta { font-size: .78rem; color: var(--muted); line-height: 1.5; margin: 0 0 .65rem; }
         .edge-meta strong { color: var(--ink); }
+        .rising-panel {
+            font-size: .78rem; line-height: 1.45; margin: 0 0 .65rem; padding: .45rem .55rem;
+            border: 1px solid #e2c9a8; background: #fff8f0; color: var(--ink); border-radius: 2px;
+        }
+        .rising-panel[hidden] { display: none !important; }
+        .rising-panel strong { color: #8a4b12; }
         .fork-table { width: 100%; border-collapse: collapse; font-size: .78rem; font-variant-numeric: tabular-nums; margin-bottom: .55rem; }
         .fork-table th, .fork-table td { padding: .3rem .35rem; border-bottom: 1px solid #eef3f5; text-align: right; }
         .fork-table th:first-child, .fork-table td:first-child { text-align: left; }
@@ -314,7 +320,7 @@
         });
     }
 
-    function drawStationPlot(elementId, down, prediction, hindcast, bandHours) {
+    function drawStationPlot(elementId, down, prediction, hindcast, bandHours, options = {}) {
         const el = document.getElementById(elementId);
         if (!el || !window.Plotly || !prediction?.ok) return;
         const hours = bandHours || bandHoursFor(null, prediction);
@@ -335,6 +341,7 @@
         const band = bridge.concat(forecast);
         const solid = band.filter(p => +p.time <= reliableEnd + 1);
         const fadeTail = band.filter(p => +p.time >= reliableEnd - 1);
+        const emphasizeQ90 = !!options.emphasizeQ90;
         // Widen fade segment slightly so uncertainty grows past the reliable cut.
         const fade = fadeTail.map((p, i) => {
             if (!i || p.regime === 'anchor') return p;
@@ -360,9 +367,15 @@
             { x: solid.map(p => +p.time), y: solid.map(p => p.min), type: 'scatter', mode: 'lines', fill: 'tonexty', fillcolor: 'rgba(198,40,40,.18)', line: { width: 0 }, hoverinfo: 'skip', showlegend: false },
             {
                 x: solid.map(p => +p.time), y: solid.map(p => p.med), type: 'scatter', mode: 'lines',
-                name: prediction.probableLabel || 'Più probabile', line: { color: FORECAST_RED, width: 2.75 }
+                name: prediction.probableLabel || 'Più probabile', line: { color: FORECAST_RED, width: emphasizeQ90 ? 1.75 : 2.75 }
             }
         ];
+        if (emphasizeQ90) {
+            traces.push({
+                x: solid.map(p => +p.time), y: solid.map(p => p.max), type: 'scatter', mode: 'lines',
+                name: 'Riferimento alto (q90)', line: { color: '#b35c00', width: 2.75 }
+            });
+        }
         if (fade.length > 1) {
             traces.push(
                 { x: fade.map(p => +p.time), y: fade.map(p => p.max), type: 'scatter', mode: 'lines', line: { width: 0 }, hoverinfo: 'skip', showlegend: false },
@@ -548,6 +561,32 @@
         return `da <strong>${upsLabel}</strong><br>lag ${formatLags(prediction)} · r=${prediction.r == null ? 'n/d' : prediction.r.toFixed(2)} · RMSE ${number(prediction.rmse)} m · fonte <strong>${prediction.source}</strong>${prediction.kind ? ' · ' + prediction.kind : ''}${skillLabel}${ciLabel}${bandLabel}${degLabel}<br>orizzonte pieno ${formatHorizonHours(reliableH)} h · coda sfumata fino a ${formatHorizonHours(hours)} h${prediction.reason ? '<br>' + prediction.reason : ''}`;
     }
 
+    function stationThresholds(sensor) {
+        const levels = sensor?.levels || {};
+        const thr = {
+            yellow: Number(levels.yellow),
+            orange: Number(levels.orange),
+            red: Number(levels.red)
+        };
+        if (![thr.yellow, thr.orange, thr.red].some(Number.isFinite)) return null;
+        return thr;
+    }
+
+    function risingPanelHtml(downstream, state) {
+        if (downstream !== 'Cento' || !state?.prediction?.ok) return '';
+        const rising = P.detectRisingRegime(state.down, state.ups, renderTime);
+        if (!rising.active) return '';
+        const thr = stationThresholds(state.down) || { yellow: 5.5, orange: 7, red: 8.7 };
+        const rows = P.risingExceedanceSummary(state.prediction.forecast || [], thr, renderTime, [2, 4, 6]);
+        const pct = (v) => v == null || !Number.isFinite(v) ? 'n/d' : `${Math.round(100 * v)}%`;
+        const line = rows.map(r => {
+            const p = r.probs || {};
+            return `+${r.horizonHours}h G ${pct(p.yellow)} / A ${pct(p.orange)} / R ${pct(p.red)}`;
+        }).join(' · ');
+        return `<strong>Regime salita</strong> — riferimento operativo sul bordo alto (q90). `
+            + `Indizio empirico di superamento soglia (non allerta): ${line}.`;
+    }
+
     function fillForkTable(table, prediction) {
         let body = table.querySelector('tbody');
         if (!body) {
@@ -569,11 +608,27 @@
         const compareEl = document.getElementById(`compare-${id}`);
         const residEl = document.getElementById(`resid-${id}`);
         const note = document.getElementById(`hindcast-note-${id}`);
+        const risingEl = document.getElementById(`rising-${id}`);
         const hc = state.showHindcast ? state.hindcast : null;
         const bandH = state.bandHours || bandHoursFor(null, state.prediction);
         const hindcastH = hc?.horizonHours || HINDCAST_HORIZON_HOURS;
+        const rising = downstream === 'Cento'
+            ? P.detectRisingRegime(state.down, state.ups, renderTime)
+            : { active: false };
+        if (risingEl) {
+            const html = risingPanelHtml(downstream, state);
+            if (html) {
+                risingEl.hidden = false;
+                risingEl.innerHTML = html;
+            } else {
+                risingEl.hidden = true;
+                risingEl.textContent = '';
+            }
+        }
         if (visiblePlots.has(downstream) || !plotObserver) {
-            drawStationPlot(`plot-${id}`, state.down, state.prediction, hc, bandH);
+            drawStationPlot(`plot-${id}`, state.down, state.prediction, hc, bandH, {
+                emphasizeQ90: !!(rising.active && coeffs?.nodes?.[downstream]?.quantiles)
+            });
         }
         if (state.showHindcast && hc?.ok) {
             if (compareEl) {
@@ -752,6 +807,11 @@
             meta.className = 'edge-meta';
             meta.innerHTML = predictionMetaHtml(node, prediction, nodeModel, hours, reliableH);
             card.appendChild(meta);
+            const risingPanel = document.createElement('p');
+            risingPanel.className = 'rising-panel';
+            risingPanel.id = `rising-${card.id}`;
+            risingPanel.hidden = true;
+            card.appendChild(risingPanel);
             const table = document.createElement('table');
             table.className = 'fork-table';
             table.innerHTML = '<thead><tr><th>Ora</th><th>Min</th><th>Med</th><th>Max</th></tr></thead>';
@@ -946,6 +1006,12 @@
                 P.softMergeCentoBands(fetchFn, coeffs).then(ok => {
                     if (ok) refreshCard('Cento');
                 }).catch(() => { /* banda residua già in pagina */ });
+                P.softMergeCentoRisingInflate(fetchFn, coeffs).then(ok => {
+                    if (ok) refreshCard('Cento');
+                }).catch(() => { /* inflate salita opzionale */ });
+                P.softMergeCentoRisingMoe(fetchFn, coeffs).then(ok => {
+                    if (ok) refreshCard('Cento');
+                }).catch(() => { /* MoE salita opzionale */ });
                 P.softMergeCentoCrossing(fetchFn, coeffs).then(ok => {
                     if (ok) refreshCard('Cento');
                 }).catch(() => { /* crossing opzionale */ });

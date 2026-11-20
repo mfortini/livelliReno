@@ -279,6 +279,12 @@ if (compareNode) {
     const mlpQ75 = fs.existsSync(mlpQ75Path) ? JSON.parse(fs.readFileSync(mlpQ75Path, 'utf8')) : null;
     const mlpEw4Path = path.resolve(root, opt('mlp-ew4', 'models/cento-dnn-ew4.json'));
     const mlpEw4 = fs.existsSync(mlpEw4Path) ? JSON.parse(fs.readFileSync(mlpEw4Path, 'utf8')) : null;
+    const mlpRuw2Path = path.resolve(root, opt('mlp-ruw2', 'models/cento-dnn-ruw2.json'));
+    const mlpRuw3Path = path.resolve(root, opt('mlp-ruw3', 'models/cento-dnn-ruw3.json'));
+    const mlpRuw4Path = path.resolve(root, opt('mlp-ruw4', 'models/cento-dnn-ruw4.json'));
+    const mlpRuw2 = fs.existsSync(mlpRuw2Path) ? JSON.parse(fs.readFileSync(mlpRuw2Path, 'utf8')) : null;
+    const mlpRuw3 = fs.existsSync(mlpRuw3Path) ? JSON.parse(fs.readFileSync(mlpRuw3Path, 'utf8')) : null;
+    const mlpRuw4 = fs.existsSync(mlpRuw4Path) ? JSON.parse(fs.readFileSync(mlpRuw4Path, 'utf8')) : null;
     const mlpTemporalLinPath = path.resolve(root, opt('mlp-temporal-lin', 'models/experiments/cento-temporal-linear-5min-dnn.json'));
     const mlpTemporalPchipPath = path.resolve(root, opt('mlp-temporal-pchip', 'models/experiments/cento-temporal-pchip-5min-dnn.json'));
     const mlpTemporalLin = fs.existsSync(mlpTemporalLinPath) ? JSON.parse(fs.readFileSync(mlpTemporalLinPath, 'utf8')) : null;
@@ -316,6 +322,21 @@ if (compareNode) {
             note: 'pinball q75: timing-oriented upper quantile, biased high in calm'
         } : null,
         mlp_ew4: mlpEw4 ? { coeffs: { nodes: { [compareNode]: force(mlpEw4) } }, smooth: 0 } : null,
+        mlp_ruw2: mlpRuw2 ? {
+            coeffs: { nodes: { [compareNode]: force(mlpRuw2) } },
+            smooth: 0,
+            note: 'rising-under-weight=2 on Δy>0; M1 asymmetric MSE'
+        } : null,
+        mlp_ruw3: mlpRuw3 ? {
+            coeffs: { nodes: { [compareNode]: force(mlpRuw3) } },
+            smooth: 0,
+            note: 'rising-under-weight=3 on Δy>0; M1 asymmetric MSE'
+        } : null,
+        mlp_ruw4: mlpRuw4 ? {
+            coeffs: { nodes: { [compareNode]: force(mlpRuw4) } },
+            smooth: 0,
+            note: 'rising-under-weight=4 on Δy>0; M1 asymmetric MSE'
+        } : null,
         mlp_temporal_lin: mlpTemporalLin ? { coeffs: { nodes: { [compareNode]: force(mlpTemporalLin) } }, smooth: 0,
             note: 'experimental causal linear 5min input; not promoted' } : null,
         mlp_temporal_pchip: mlpTemporalPchip ? { coeffs: { nodes: { [compareNode]: force(mlpTemporalPchip) } }, smooth: 0,

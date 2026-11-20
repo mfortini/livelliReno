@@ -105,6 +105,7 @@ test('formatEvalMarkdown includes station and model rows', () => {
                         skillEventRidge: 0.05,
                         skillEventArx: 0.2,
                         risingRmse: 0.1,
+                        risingMinMed: -0.35,
                         fallingRmse: 0.02,
                         phaseLagMin: 28.5,
                         csi: { yellow: 0.7, orange: 0.5, red: 0.2 },
@@ -125,6 +126,8 @@ test('formatEvalMarkdown includes station and model rows', () => {
     assert.match(md, /CSI/);
     assert.match(md, /NSE evt/);
     assert.match(md, /KGE evt/);
+    assert.match(md, /risingMin med/);
+    assert.match(md, /-0\.35/);
 });
 
 test('fitArx recovers a linear relation', () => {

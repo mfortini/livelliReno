@@ -1,0 +1,14 @@
+{
+  "kind": "cento_rising_band_inflate",
+  "version": 1,
+  "station": "Cento",
+  "upperInflate": 2,
+  "lowerInflate": 1.2,
+  "targetCoverage": 0.85,
+  "risingCoverageBefore": 0.7562922038060159,
+  "risingCoverageAfter": 0.850828729281768,
+  "calibratedFrom": "2026-01-01T00:00:00.000Z",
+  "nEvents": 9,
+  "generatedAt": "2026-11-20T09:23:15.028Z",
+  "disclaimer": "Sperimentale: non operativo, non allertistico."
+}

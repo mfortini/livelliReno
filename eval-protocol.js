@@ -662,8 +662,8 @@ function formatEvalMarkdown(table) {
     for (const [station, models] of Object.entries(table.stations || {})) {
         lines.push(`## ${station}`);
         lines.push('');
-        lines.push('| Modello | h (′) | skill all /pers | skill evt /pers | CI90 evt | skill evt /poly2 | skill evt /ridge | skill evt /ARX | rising RMSE | falling RMSE | phaseLag′ | NSE evt | KGE evt | CSI y/o/r | cross err med (′) | pinball | peak err med (m) | peak time med (′) | n evt |');
-        lines.push('|---|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|---:|---:|---:|');
+        lines.push('| Modello | h (′) | skill all /pers | skill evt /pers | CI90 evt | skill evt /poly2 | skill evt /ridge | skill evt /ARX | rising RMSE | risingMin med | falling RMSE | phaseLag′ | NSE evt | KGE evt | CSI y/o/r | cross err med (′) | pinball | peak err med (m) | peak time med (′) | n evt |');
+        lines.push('|---|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|---:|---:|---:|');
         for (const [model, horizons] of Object.entries(models)) {
             for (const [hMin, m] of Object.entries(horizons)) {
                 const ci = m.skillEventPersistCI;
@@ -673,7 +673,7 @@ function formatEvalMarkdown(table) {
                 const csi = m.csi || {};
                 const csiStr = `${fmt(csi.yellow)}/${fmt(csi.orange)}/${fmt(csi.red)}`;
                 lines.push(
-                    `| ${model} | ${hMin} | ${fmt(m.skillAllPersist)} | ${fmt(m.skillEventPersist)} | ${ciStr} | ${fmt(m.skillEventPoly2)} | ${fmt(m.skillEventRidge)} | ${fmt(m.skillEventArx)} | ${fmt(m.risingRmse)} | ${fmt(m.fallingRmse)} | ${fmt(m.phaseLagMin, 1)} | ${fmt(m.nseEvent)} | ${fmt(m.kgeEvent)} | ${csiStr} | ${fmt(m.crossingTimeErrMed, 0)} | ${fmt(m.pinballEvent)} | ${fmt(m.peakLevelErrMed)} | ${fmt(m.peakTimeErrMed, 0)} | ${m.nEvents ?? 'n/d'} |`
+                    `| ${model} | ${hMin} | ${fmt(m.skillAllPersist)} | ${fmt(m.skillEventPersist)} | ${ciStr} | ${fmt(m.skillEventPoly2)} | ${fmt(m.skillEventRidge)} | ${fmt(m.skillEventArx)} | ${fmt(m.risingRmse)} | ${fmt(m.risingMinMed)} | ${fmt(m.fallingRmse)} | ${fmt(m.phaseLagMin, 1)} | ${fmt(m.nseEvent)} | ${fmt(m.kgeEvent)} | ${csiStr} | ${fmt(m.crossingTimeErrMed, 0)} | ${fmt(m.pinballEvent)} | ${fmt(m.peakLevelErrMed)} | ${fmt(m.peakTimeErrMed, 0)} | ${m.nEvents ?? 'n/d'} |`
                 );
             }
         }
