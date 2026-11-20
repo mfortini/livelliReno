@@ -108,6 +108,8 @@ function emptyHorizonAcc() {
         pinballAll: { n: 0, sum: 0 },
         pinballEvent: { n: 0, sum: 0 },
         crossingTimeErrs: [],
+        peakLevelErrs: [],
+        peakTimeErrs: [],
         perEvent: new Map() // eventKey -> metrics
     };
 }
@@ -116,10 +118,13 @@ function ensureEvent(acc, key) {
     if (!acc.perEvent.has(key)) {
         acc.perEvent.set(key, {
             n: 0, seModel: 0, sePersist: 0, sePoly2: 0, seRidge: 0, seArx: 0,
-            rising: { n: 0, se: 0 }, falling: { n: 0, se: 0 },
+            rising: { n: 0, se: 0, minResidual: null },
+            falling: { n: 0, se: 0 },
             pinball: { n: 0, sum: 0 },
             pairs: EP.emptyPairStats(),
-            crossingTimeErrs: []
+            crossingTimeErrs: [],
+            peakLevelErr: null,
+            peakTimeErr: null
         });
     }
     return acc.perEvent.get(key);
@@ -372,6 +377,14 @@ function finalizeModel(accByH, seed) {
         }
         const risingRmse = EP.rmseOf(acc.rising?.se || 0, acc.rising?.n || 0);
         const fallingRmse = EP.rmseOf(acc.falling?.se || 0, acc.falling?.n || 0);
+        const risingMinResiduals = eventList
+            .map(e => e.rising?.minResidual)
+            .filter(Number.isFinite);
+        const risingMinMed = EP.median(risingMinResiduals);
+        const risingMinCi = EP.bootstrapMetricCI(
+            risingMinResiduals.map(v => ({ value: v })),
+            { seed: seed + 4, draws: 1000 }
+        );
         const risingCi = EP.bootstrapMetricCI(
             eventList.map(e => ({
                 value: e.rising?.n ? Math.sqrt(e.rising.se / e.rising.n) : null
@@ -404,6 +417,9 @@ function finalizeModel(accByH, seed) {
             risingRmse,
             risingN: acc.rising?.n || 0,
             risingRmseCI: risingCi,
+            risingMinMed,
+            risingMinN: risingMinResiduals.length,
+            risingMinCI: risingMinCi,
             fallingRmse,
             fallingN: acc.falling?.n || 0,
             phaseLagMin: lag.phaseLagMin,
@@ -448,7 +464,10 @@ function exportPerEvent(accByH, node, model) {
                 rmse: EP.rmseOf(ev.seModel, ev.n),
                 skillPersist: EP.skillFromRmse(EP.rmseOf(ev.seModel, ev.n), EP.rmseOf(ev.sePersist, ev.n)),
                 risingRmse: ev.rising?.n ? Math.sqrt(ev.rising.se / ev.rising.n) : null,
+                risingMin: Number.isFinite(ev.rising?.minResidual) ? ev.rising.minResidual : null,
                 fallingRmse: ev.falling?.n ? Math.sqrt(ev.falling.se / ev.falling.n) : null,
+                peakLevelErr: Number.isFinite(ev.peakLevelErr) ? ev.peakLevelErr : null,
+                peakTimeErr: Number.isFinite(ev.peakTimeErr) ? ev.peakTimeErr : null,
                 nse: EP.nseFromPairStats(ev.pairs),
                 kge: EP.kgeFromPairStats(ev.pairs)?.kge ?? null,
                 pinball: ev.pinball?.n ? ev.pinball.sum / ev.pinball.n : null,
@@ -769,11 +788,17 @@ function run(options = {}) {
                         accumulate(pev, pred, actual, persist, poly2, ridge, arx);
                         EP.accumulatePair(pev.pairs, pred, actual);
                         const limb = now < activeEvent.peakTime ? 'rising' : 'falling';
-                        const err2 = (pred - actual) ** 2;
+                        const residual = pred - actual;
+                        const err2 = residual ** 2;
                         acc[limb].n++;
                         acc[limb].se += err2;
                         pev[limb].n++;
                         pev[limb].se += err2;
+                        if (limb === 'rising') {
+                            if (pev.rising.minResidual == null || residual < pev.rising.minResidual) {
+                                pev.rising.minResidual = residual;
+                            }
+                        }
                         if (band) accumulatePinball(pev.pinball, actual, band);
                     }
                 }
@@ -834,6 +859,9 @@ function run(options = {}) {
                     if (pe) {
                         stats[key][h].peakLevelErrs.push(pe.levelErr);
                         stats[key][h].peakTimeErrs.push(pe.timeErrMin);
+                        const pevPeak = ensureEvent(stats[key][h], ev.key);
+                        pevPeak.peakLevelErr = pe.levelErr;
+                        pevPeak.peakTimeErr = pe.timeErrMin;
                     }
                     // Crossing-time error vs yellow (and orange/red if crossed) for events that cross
                     if (thresholds) {

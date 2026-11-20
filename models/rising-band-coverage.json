@@ -1,0 +1,46 @@
+{
+  "kind": "rising_band_coverage",
+  "station": "Cento",
+  "from": "2026-01-01T00:00:00.000Z",
+  "nEvents": 9,
+  "bands": "models/cento-dnn-bands.json",
+  "risingCoverage": 0.7562922038060159,
+  "fallingCoverage": 0.9596774193548387,
+  "risingN": 1629,
+  "fallingN": 1116,
+  "byHorizonMin": {
+    "120": {
+      "rising": 0.8250460405156538,
+      "falling": 0.9732620320855615,
+      "risingN": 543,
+      "fallingN": 374
+    },
+    "240": {
+      "rising": 0.7513812154696132,
+      "falling": 0.9543010752688172,
+      "risingN": 543,
+      "fallingN": 372
+    },
+    "360": {
+      "rising": 0.6924493554327809,
+      "falling": 0.9513513513513514,
+      "risingN": 543,
+      "fallingN": 370
+    }
+  },
+  "gate": {
+    "targetRising": 0.85,
+    "pass": false
+  },
+  "generatedAt": "2026-11-20T09:23:11.508Z",
+  "disclaimer": "Sperimentale: non operativo, non allertistico.",
+  "risingInflate": {
+    "upperInflate": 2,
+    "lowerInflate": 1.2,
+    "risingCoverageAfter": 0.850828729281768,
+    "gatePassAfter": true,
+    "nSamples": 1629,
+    "note": "Regime salita: hi′=med+(hi−med)·u, lo′=med−(med−lo)·l"
+  },
+  "inflatePath": "models/cento-rising-band-inflate.json"
+}

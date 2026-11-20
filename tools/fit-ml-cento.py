@@ -771,6 +771,7 @@ def train_dnn(
     val_m: np.ndarray,
     quantile: float | None = None,
     event_weight: float = 1.0,
+    rising_under_weight: float = 1.0,
 ) -> tuple[MLP, np.ndarray, dict]:
     torch.manual_seed(DNN_SEED)
     np.random.seed(DNN_SEED)
@@ -791,10 +792,12 @@ def train_dnn(
 
     n_tr, n_va = int(train_m.sum()), int(val_m.sum())
     n_batch = max(1, (n_tr + DNN_BATCH - 1) // DNN_BATCH)
+    ruw = float(rising_under_weight) if rising_under_weight else 1.0
     log(
         f"DNN start: in={X_std.shape[1]} hidden={list(DNN_HIDDEN)} "
         f"train={n_tr} val={n_va} batch={DNN_BATCH} (~{n_batch}/epoch) "
         f"epochs≤{DNN_EPOCHS} patience={DNN_PATIENCE} device={device}"
+        + (f" risingUnderWeight={ruw:g}" if ruw != 1.0 else "")
     )
     t0 = time.perf_counter()
 
@@ -819,6 +822,13 @@ def train_dnn(
             elem = torch.maximum(float(quantile) * err, (float(quantile) - 1.0) * err)
         else:
             elem = (pred - target) ** 2
+            # Rising-only asymmetric MSE: when Δy>0 (rising), under-predictions
+            # (pred < target) cost rising_under_weight×; falling / over-pred unchanged.
+            if ruw != 1.0:
+                rising = target > 0
+                under = pred < target
+                scale = torch.where(rising & under, torch.full_like(elem, ruw), torch.ones_like(elem))
+                elem = elem * scale
         if weight is None:
             return elem.mean()
         return (elem * weight).sum() / weight.sum()
@@ -1151,6 +1161,20 @@ def main() -> None:
         help="Peso extra per i campioni di train con |Δy| ≥ 0.10 m (default 1 = nessun peso)",
     )
     parser.add_argument(
+        "--rising-under-weight",
+        type=float,
+        default=1.0,
+        help=(
+            "Su campioni rising (Δy>0), moltiplica la MSE quando pred<target "
+            "(sottostima). Default 1 = MSE simmetrica; tipico A/B: 2, 3, 4"
+        ),
+    )
+    parser.add_argument(
+        "--rising-only",
+        action="store_true",
+        help="M3 MoE: restringe il train a campioni Δy>0 (esperto salita); val/hold restano pieni",
+    )
+    parser.add_argument(
         "--align-window",
         type=int,
         default=16,
@@ -1275,6 +1299,10 @@ def main() -> None:
         tag = f"{tag}-q{int(round(args.quantile * 100))}"
     if args.event_weight != 1.0:
         tag = f"{tag}-ew{args.event_weight:g}"
+    if args.rising_under_weight != 1.0:
+        tag = f"{tag}-ruw{args.rising_under_weight:g}"
+    if args.rising_only:
+        tag = f"{tag}-rising"
     if args.export_dnn is None:
         args.export_dnn = ROOT / "models" / f"cento-dnn-{tag}.json"
     if args.out is None:
@@ -1531,6 +1559,14 @@ def main() -> None:
         train_m, val_m, hold_m = split_masks(
             index, mode=args.split, holdout_from=holdout_from
         )
+        if args.rising_only:
+            rising_m = np.asarray(y_delta, dtype=float) > 0
+            n_before = int(train_m.sum())
+            train_m = train_m & rising_m
+            log(
+                f"rising-only train: {int(train_m.sum())}/{n_before} "
+                f"({100.0 * int(train_m.sum()) / max(1, n_before):.1f}% kept)"
+            )
         if args.flood_only and flood_events:
             flood_m = flood_window_mask(index, flood_events)
             # Calm out of train loss; keep val/hold full for FAR / calm checks in eval.
@@ -1599,7 +1635,13 @@ def main() -> None:
         log("Standardize features on train…")
         X_std, stats = standardize_features(X, feat_cols_h, train_m)
         model, dnn_pred, dnn_hist = train_dnn(
-            X_std, y, fit_train, fit_val, quantile=args.quantile, event_weight=args.event_weight
+            X_std,
+            y,
+            fit_train,
+            fit_val,
+            quantile=args.quantile,
+            event_weight=args.event_weight,
+            rising_under_weight=args.rising_under_weight,
         )
         dnn_pred_m = (
             dnn_pred + baseline_delta if baseline_delta is not None else dnn_pred
@@ -1698,6 +1740,7 @@ def main() -> None:
         "holdoutFrom": holdout_from,
         "quantile": args.quantile,
         "eventWeight": args.event_weight,
+        "risingUnderWeight": args.rising_under_weight,
         "chiusaWeir": bool(args.chiusa_weir) and not bool(args.no_chiusa),
         "weirCrest": weir_crest_used,
         "targetMode": (
@@ -1725,18 +1768,27 @@ def main() -> None:
         "reliable": reliable,
         "trainedAt": trained_at,
         "quantile": args.quantile,
+        "risingUnderWeight": args.rising_under_weight,
+        "risingOnly": bool(args.rising_only),
         "floodOnly": bool(args.flood_only),
         "thresholdOn": "event_or_move",
         "holdoutBaseline": "poly2",
         "note": (
-            f"featureSet={args.feature_set}; acceptors valle; "
-            "headroom = soglia_gialla − livello; "
-            "ratio = livello / soglia_gialla; "
-            "chain = livello_monte_catena − livello_valle; "
-            "d1/d2 = derivate 1ª/2ª da OLS quadratico locale (3–4 punti); "
-            "holdout skill vs poly2."
-            if acceptors else
-            "Ablation without valle acceptors; d1/d2 da OLS quadratico; holdout vs poly2."
+            (
+                f"featureSet={args.feature_set}; acceptors valle; "
+                "headroom = soglia_gialla − livello; "
+                "ratio = livello / soglia_gialla; "
+                "chain = livello_monte_catena − livello_valle; "
+                "d1/d2 = derivate 1ª/2ª da OLS quadratico locale (3–4 punti); "
+                "holdout skill vs poly2."
+                if acceptors else
+                "Ablation without valle acceptors; d1/d2 da OLS quadratico; holdout vs poly2."
+            )
+            + (
+                f" Rising-under-weight={args.rising_under_weight:g} on Δy>0."
+                if args.rising_under_weight != 1.0
+                else ""
+            )
         ),
     }
 

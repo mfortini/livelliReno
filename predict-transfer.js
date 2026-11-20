@@ -1447,7 +1447,14 @@
             trainedAt: typeof node.trainedAt === 'string' ? node.trainedAt : null,
             crossingTime: node.crossingTime && typeof node.crossingTime === 'object' ? node.crossingTime : null,
             quantiles: Array.isArray(node.quantiles) ? node.quantiles.slice() : null,
-            bandSource: typeof node.bandSource === 'string' ? node.bandSource : null
+            bandSource: typeof node.bandSource === 'string' ? node.bandSource : null,
+            risingBand: node.risingBand && typeof node.risingBand === 'object' ? {
+                upperInflate: Number(node.risingBand.upperInflate),
+                lowerInflate: Number(node.risingBand.lowerInflate),
+                targetCoverage: node.risingBand.targetCoverage,
+                source: node.risingBand.source
+            } : null,
+            moeRising: node.moeRising && typeof node.moeRising === 'object' ? node.moeRising : null
         };
     }
 
@@ -3072,6 +3079,44 @@
                     gatedOff: warped.gatedOff === true || !gated
                 };
             }
+            // M3 MoE: if a rising-only expert is attached and limb is rising, swap forecast.
+            let moeMeta = null;
+            const moeRaw = options.coeffs?.nodes?.[downstream?.id || options.downstreamId]?.moeRising
+                || offlineNode.moeRising;
+            const risingGate = detectRisingRegime(downstream, list, now, { stepMs });
+            if (offlineNode.kind === 'window_delta_mlp' && moeRaw && risingGate.active) {
+                const moeModel = parseWindowMlpNode({ ...moeRaw, reliable: true });
+                if (moeModel) {
+                    const moeRawForecast = forecastWindowMlp(moeModel, sensorMap, rainSensors, horizonHours, now, stepMs, {
+                        anchor, maxStep, downstream, smooth: options.smooth
+                    });
+                    if (moeRawForecast.length) {
+                        forecast = moeRawForecast.map(point => {
+                            const lo = finite(point.spreadLow) ? point.spreadLow : moeModel.spreadLow;
+                            const hi = finite(point.spreadHigh) ? point.spreadHigh : moeModel.spreadHigh;
+                            const fork = forkAround(point.value, lo, hi);
+                            return fork
+                                ? { time: point.time, value: fork.med, min: fork.min, med: fork.med, max: fork.max }
+                                : { time: point.time, value: point.value, min: point.value, med: point.value, max: point.value };
+                        });
+                        moeMeta = { active: true, source: 'moeRising', downD1: risingGate.downD1 };
+                    }
+                }
+            }
+            // M2: widen upper band only while rising (calibrated coverage ≥85%).
+            let risingBandMeta = null;
+            const risingInflate = offlineNode.risingBand?.upperInflate;
+            const risingLower = offlineNode.risingBand?.lowerInflate;
+            if (offlineNode.kind === 'window_delta_mlp' && (risingInflate > 1 || risingLower > 1) && risingGate.active) {
+                forecast = applyRisingUpperInflate(forecast, risingInflate || 1, risingLower || 1);
+                risingBandMeta = {
+                    active: true,
+                    upperInflate: risingInflate || 1,
+                    lowerInflate: risingLower || 1,
+                    downD1: risingGate.downD1,
+                    upstreamRising: risingGate.upstreamRising
+                };
+            }
             return {
                 ok: true,
                 maxHorizonMinutes,
@@ -3093,6 +3138,8 @@
                 bias: onlineCorr ? onlineCorr.bias : null,
                 phaseShiftMin: onlineCorr ? onlineCorr.phaseShiftMin : null,
                 crossing: crossingMeta,
+                risingBand: risingBandMeta,
+                moeRising: moeMeta,
                 probableLabel: crossingMeta?.warped ? 'più probabile' : null,
                 maxStep,
                 predicted: [],
@@ -3510,6 +3557,62 @@
         }
     }
 
+    async function softMergeCentoRisingMoe(fetcher, data) {
+        try {
+            const res = await fetcher('models/cento-dnn-rising.json');
+            if (!res?.ok) return false;
+            const doc = await res.json();
+            if (!doc?.horizons || doc.kind !== 'window_delta_mlp') return false;
+            if (doc.reliable !== true) return false;
+            if (!data.nodes?.Cento || data.nodes.Cento.kind !== 'window_delta_mlp') return false;
+            data.nodes.Cento = { ...data.nodes.Cento, moeRising: doc };
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    async function softMergeCentoRisingInflate(fetcher, data) {
+        try {
+            const res = await fetcher('models/cento-rising-band-inflate.json');
+            if (!res?.ok) return false;
+            const doc = await res.json();
+            const inflate = Number(doc?.upperInflate);
+            if (!(inflate > 1) || !data.nodes?.Cento) return false;
+            if (data.nodes.Cento.kind !== 'window_delta_mlp') return false;
+            const lower = Number(doc?.lowerInflate);
+            data.nodes.Cento = {
+                ...data.nodes.Cento,
+                risingBand: {
+                    upperInflate: inflate,
+                    lowerInflate: lower > 1 ? lower : 1,
+                    targetCoverage: doc.targetCoverage ?? 0.85,
+                    source: 'cento-rising-band-inflate'
+                }
+            };
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    function applyRisingUpperInflate(forecast, upperInflate, lowerInflate = 1) {
+        const ku = Number(upperInflate);
+        const kl = Number(lowerInflate);
+        if ((!Number.isFinite(ku) || ku <= 1) && (!Number.isFinite(kl) || kl <= 1)) return forecast;
+        if (!Array.isArray(forecast)) return forecast;
+        return forecast.map(p => {
+            if (!p || p.regime === 'anchor') return p;
+            const med = p.med ?? p.value;
+            if (!finite(med)) return p;
+            let max = p.max;
+            let min = p.min;
+            if (finite(max) && ku > 1) max = med + (max - med) * ku;
+            if (finite(min) && kl > 1) min = med - (med - min) * kl;
+            return { ...p, max, min };
+        });
+    }
+
     async function softMergeCentoCrossing(fetcher, data) {
         try {
             // Prefer discrete hazard (WP2); fall back to M9 pinball export.
@@ -3544,6 +3647,87 @@
         }
     }
 
+    /** Causal rising-limb gate: local d1>0 and at least one upstream d1>0. */
+    function detectRisingRegime(downstream, upstreams, now = new Date(), options = {}) {
+        const stepMs = options.stepMs || DEFAULT_STEP_MS;
+        const nPoints = options.polyPoints || 6;
+        const nowMs = +now;
+        const downSeries = downstream?.timeSeries;
+        const downD = localPolyDerivatives(downSeries, nowMs, stepMs, nPoints);
+        const centoRising = finite(downD.d1) && downD.d1 > 0;
+        const ups = Array.isArray(upstreams) ? upstreams : [];
+        let upstreamRising = 0;
+        const details = [];
+        for (const up of ups) {
+            const d = localPolyDerivatives(up?.timeSeries, nowMs, stepMs, nPoints);
+            const rising = finite(d.d1) && d.d1 > 0;
+            if (rising) upstreamRising++;
+            details.push({ id: up?.id || up?.name || null, d1: d.d1, rising });
+        }
+        const active = centoRising && upstreamRising > 0;
+        return {
+            active,
+            downD1: downD.d1,
+            upstreamRising,
+            upstreamTotal: ups.length,
+            details
+        };
+    }
+
+    function normalCdf(z) {
+        // Abramowitz–Stegun 26.2.17 approximation.
+        const x = Number(z);
+        if (!Number.isFinite(x)) return null;
+        const t = 1 / (1 + 0.2316419 * Math.abs(x));
+        const d = 0.3989422804014327 * Math.exp(-0.5 * x * x);
+        const p = d * t * (0.319381530 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429))));
+        return x >= 0 ? 1 - p : p;
+    }
+
+    /**
+     * P(Y > thr) from forecast band at absolute time targetMs.
+     * Uses med ± (max−min)/(2·z90) as Normal, with z90 = Φ⁻¹(0.9).
+     */
+    function exceedanceFromBand(forecast, targetMs, thr, stepMs = DEFAULT_STEP_MS) {
+        if (!Number.isFinite(thr) || !Array.isArray(forecast)) return null;
+        let best = null;
+        let bestDist = Infinity;
+        for (const p of forecast) {
+            if (!p || p.regime === 'anchor') continue;
+            const dist = Math.abs(+p.time - targetMs);
+            if (dist < bestDist) {
+                best = p;
+                bestDist = dist;
+            }
+        }
+        if (!best || bestDist > stepMs) return null;
+        const med = best.med ?? best.value;
+        const lo = best.min;
+        const hi = best.max;
+        if (!finite(med) || !finite(lo) || !finite(hi)) return null;
+        if (hi <= lo + 1e-9) return med > thr ? 1 : 0;
+        const z90 = 1.2815515655446004;
+        const sigma = (hi - lo) / (2 * z90);
+        if (!(sigma > 0)) return med > thr ? 1 : 0;
+        const p = 1 - normalCdf((thr - med) / sigma);
+        return Math.max(0, Math.min(1, p));
+    }
+
+    function risingExceedanceSummary(forecast, thresholds, now = new Date(), horizonsHours = [2, 4, 6]) {
+        const nowMs = +now;
+        const out = [];
+        const thrEntries = Object.entries(thresholds || {}).filter(([, v]) => Number.isFinite(v));
+        for (const h of horizonsHours) {
+            const targetMs = nowMs + h * HOUR;
+            const row = { horizonHours: h, probs: {} };
+            for (const [color, thr] of thrEntries) {
+                row.probs[color] = exceedanceFromBand(forecast, targetMs, thr);
+            }
+            out.push(row);
+        }
+        return out;
+    }
+
     async function loadCoeffs(fetcher, url = 'models/transfer-coeffs-runtime.json') {
         try {
             let response = await fetcher(url);
@@ -3574,12 +3758,14 @@
         muskingumWarmup, decodeMuskingumTheta, decodeKX, decodeRcTheta, rcStep, softplus, mlpForward, mlpForwardVec, seqDeltaForward,
         sampleAt, sampleNormLevel, buildMuskingumSeq, buildRcSeq, buildSeqChannelMatrix, standardizeSeqMatrix,
         buildWindowFeatureVector, lin3Extrapolate, poly2Extrapolate, localPolyDerivatives, standardizeWindowFeatures, nextHalfHourForks, forkAround, withFork, loadCoeffs,
-        softMergeCentoBands, softMergeCentoCrossing, softApplySkillGates,
+        softMergeCentoBands, softMergeCentoRisingInflate, softMergeCentoRisingMoe, softMergeCentoCrossing, softApplySkillGates,
+        applyRisingUpperInflate,
         seqGruUrl, seqSoftAdoptCandidates, pearson, residuals, estimateRecentBias, estimateMlpOnlineCorrection, applyMlpOnlineCorrection,
         driverIsHigh, basinRainAt, hindcastSeries,
         truncateSensor, seriesUntil, maxReliableHorizonMinutes, maxHorizonMinutesAvailable, estimatePredictedLag,
         reliableFromSkill, skillLoOf, mergeQuantileBands, mergeCrossingTime, predictCrossingTau, warpForecastByCrossing,
         applySkillGates, missingUpstreams, widenForecastBand,
+        detectRisingRegime, exceedanceFromBand, risingExceedanceSummary, normalCdf,
         TemporalSampling,
         DEFAULT_STEP_MS, FORK_K, SKILL_KEEP, SKILL_ENTER, SKILL_EXIT
     };
