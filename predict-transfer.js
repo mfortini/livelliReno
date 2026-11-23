@@ -897,6 +897,26 @@
         return { d1: null, d2: null };
     }
 
+    function localLin3Slope(series, endMs, stepMs, nPoints = 3, options = {}) {
+        // OLS y ≈ a0 + a1 x with x = -(n-1)..0 → d1=a1 (per step); no d2.
+        const sampleFn = options.sampleFn || ((s, t) => sampleAt(s, t));
+        const n = Math.max(2, Math.round(Number(nPoints) || 3));
+        const y = [];
+        for (let i = 0; i < n; i++) {
+            const v = sampleFn(series, endMs - (n - 1 - i) * stepMs);
+            if (!finite(v)) return { d1: null, d2: null };
+            y.push(v);
+        }
+        let sx = 0, sx2 = 0, sy = 0, sxy = 0;
+        for (let i = 0; i < n; i++) {
+            const xi = i - (n - 1);
+            sx += xi; sx2 += xi * xi; sy += y[i]; sxy += xi * y[i];
+        }
+        const det = n * sx2 - sx * sx;
+        if (!finite(det) || Math.abs(det) < 1e-12) return { d1: null, d2: null };
+        return { d1: (n * sxy - sx * sy) / det, d2: null };
+    }
+
     // upstreamLagAlign: upstream samples are re-indexed around the wave arrival.
     // mode 'shift': lag k reads x(t + h - tau_i - k·step) (window moved back).
     // mode 'augment': flat window untouched + a* block reads x(t + h - tau_i - j·step).
@@ -916,7 +936,8 @@
             return sparse.map((s) => Math.round(Number(s))).filter((s) => Number.isFinite(s) && s >= 0);
         }
         const per = Number(recipe?.stationLookbackSteps?.[station]);
-        const lb = Number.isFinite(per) && per > 0 ? Math.min(lookback, Math.round(per)) : lookback;
+        // Per-station L_i may exceed the node lookback default when lookback-τ cap is raised.
+        const lb = Number.isFinite(per) && per > 0 ? Math.round(per) : lookback;
         return Array.from({ length: Math.max(1, lb) }, (_, k) => k);
     }
 
@@ -926,7 +947,10 @@
         const useHeadroom = recipe?.useSogliaHeadroom === true;
         const useRatio = recipe?.useSogliaRatio === true;
         const usePolyD = recipe?.usePolyDerivatives !== false;
-        const polyPoints = Number(recipe?.polyDerivPoints) > 0 ? Number(recipe.polyDerivPoints) : 6;
+        const derivMode = recipe?.derivMode === 'lin3' ? 'lin3' : 'poly';
+        const polyPoints = Number(recipe?.polyDerivPoints) > 0
+            ? Number(recipe.polyDerivPoints)
+            : (derivMode === 'lin3' ? 3 : 6);
         const sogliaKind = recipe?.sogliaKind || 'yellow';
         const levelPrefix = useHeadroom ? `headroom_${sogliaKind}` : 'level';
         const ratioPrefix = `ratio_${sogliaKind}`;
@@ -994,9 +1018,11 @@
                 if (usePolyD) {
                     const { d1, d2 } = t === null
                         ? { d1: null, d2: null }
-                        : localPolyDerivatives(series, t, derivativeStepMs, polyPoints, { sampleFn: sampleFeature });
+                        : (derivMode === 'lin3'
+                            ? localLin3Slope(series, t, derivativeStepMs, polyPoints, { sampleFn: sampleFeature })
+                            : localPolyDerivatives(series, t, derivativeStepMs, polyPoints, { sampleFn: sampleFeature }));
                     values[`d1_${tag}_lag${k}`] = d1;
-                    values[`d2_${tag}_lag${k}`] = d2;
+                    if (derivMode !== 'lin3') values[`d2_${tag}_lag${k}`] = d2;
                 }
                 if (ratioOn) {
                     const r = finite(level) ? level / ref : null;
@@ -1036,9 +1062,11 @@
                 if (usePolyD) {
                     const { d1, d2 } = t === null
                         ? { d1: null, d2: null }
-                        : localPolyDerivatives(series, t, derivativeStepMs, polyPoints, { sampleFn: sampleFeature });
+                        : (derivMode === 'lin3'
+                            ? localLin3Slope(series, t, derivativeStepMs, polyPoints, { sampleFn: sampleFeature })
+                            : localPolyDerivatives(series, t, derivativeStepMs, polyPoints, { sampleFn: sampleFeature }));
                     values[`ad1_${tag}_lag${j}`] = d1;
-                    values[`ad2_${tag}_lag${j}`] = d2;
+                    if (derivMode !== 'lin3') values[`ad2_${tag}_lag${j}`] = d2;
                 }
             }
         }
@@ -3117,6 +3145,25 @@
                     upstreamRising: risingGate.upstreamRising
                 };
             }
+            // Peak-within-h upstream amplitude prior: lift mediana while rising (opt-in / adopt).
+            let upstreamAmpMeta = null;
+            const ampDoc = options.coeffs?.nodes?.[downstream?.id || options.downstreamId]?.upstreamAmplitude
+                || offlineNode.upstreamAmplitude;
+            const useAmp = ampDoc
+                && (options.useUpstreamAmplitude === true
+                    || (options.useUpstreamAmplitude !== false && ampDoc.adopt === true));
+            if (offlineNode.kind === 'window_delta_mlp' && useAmp && risingGate.active && finite(anchor?.value)) {
+                const lifted = applyUpstreamAmplitudeLift(
+                    forecast, ampDoc, sensorMap, anchor.value, +now, stepMs
+                );
+                forecast = lifted.forecast;
+                upstreamAmpMeta = {
+                    active: lifted.nLifted > 0,
+                    nLifted: lifted.nLifted,
+                    source: 'upstreamAmplitude',
+                    downD1: risingGate.downD1
+                };
+            }
             return {
                 ok: true,
                 maxHorizonMinutes,
@@ -3139,6 +3186,7 @@
                 phaseShiftMin: onlineCorr ? onlineCorr.phaseShiftMin : null,
                 crossing: crossingMeta,
                 risingBand: risingBandMeta,
+                upstreamAmplitude: upstreamAmpMeta,
                 moeRising: moeMeta,
                 probableLabel: crossingMeta?.warped ? 'più probabile' : null,
                 maxStep,
@@ -3596,6 +3644,103 @@
         }
     }
 
+    async function softMergeCentoUpstreamAmplitude(fetcher, data) {
+        try {
+            const res = await fetcher('models/cento-upstream-amplitude.json');
+            if (!res?.ok) return false;
+            const doc = await res.json();
+            if (doc?.kind !== 'cento_upstream_amplitude' || !doc.horizons) return false;
+            if (!data.nodes?.Cento || data.nodes.Cento.kind !== 'window_delta_mlp') return false;
+            data.nodes.Cento = { ...data.nodes.Cento, upstreamAmplitude: doc };
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    function seriesFromMap(sensorMap, name) {
+        const entry = sensorMap?.[name];
+        if (Array.isArray(entry)) return entry;
+        return entry?.timeSeries || null;
+    }
+
+    function buildUpstreamAmplitudeFeatures(sensorMap, ampDoc, nowMs) {
+        const names = ampDoc?.featureNames;
+        const ups = ampDoc?.upstreams;
+        if (!Array.isArray(names) || !Array.isArray(ups)) return null;
+        const centoSeries = seriesFromMap(sensorMap, 'Cento');
+        const y0 = sampleAt(centoSeries, nowMs);
+        if (!finite(y0)) return null;
+        const y2 = sampleAt(centoSeries, nowMs - 2 * HOUR);
+        const y6 = sampleAt(centoSeries, nowMs - 6 * HOUR);
+        const feat = {
+            bias: 1,
+            cento_y0: y0,
+            cento_d2h: finite(y2) ? y0 - y2 : 0,
+            cento_d6h: finite(y6) ? y0 - y6 : 0
+        };
+        for (const u of ups) {
+            const tag = String(u).replace(/\s+/g, '_');
+            const series = seriesFromMap(sensorMap, u);
+            const yu = sampleAt(series, nowMs);
+            if (!finite(yu)) return null;
+            const u2 = sampleAt(series, nowMs - 2 * HOUR);
+            const u6 = sampleAt(series, nowMs - 6 * HOUR);
+            feat[`${tag}_y`] = yu;
+            feat[`${tag}_d2h`] = finite(u2) ? yu - u2 : 0;
+            feat[`${tag}_d6h`] = finite(u6) ? yu - u6 : 0;
+        }
+        return names.map(n => finite(feat[n]) ? feat[n] : 0);
+    }
+
+    function predictUpstreamPeakDelta(ampDoc, sensorMap, nowMs, horizonMinutes) {
+        const block = ampDoc?.horizons?.[String(horizonMinutes)];
+        if (!block?.weights || !Array.isArray(block.weights)) return null;
+        const x = buildUpstreamAmplitudeFeatures(sensorMap, ampDoc, nowMs);
+        if (!x || x.length !== block.weights.length) return null;
+        let s = 0;
+        for (let i = 0; i < x.length; i++) s += x[i] * block.weights[i];
+        return s;
+    }
+
+    function applyUpstreamAmplitudeLift(forecast, ampDoc, sensorMap, y0, nowMs, stepMs = DEFAULT_STEP_MS) {
+        if (!Array.isArray(forecast) || !finite(y0)) return { forecast, nLifted: 0 };
+        const keys = Object.keys(ampDoc?.horizons || {}).map(Number).filter(Number.isFinite).sort((a, b) => a - b);
+        if (!keys.length) return { forecast, nLifted: 0 };
+        let nLifted = 0;
+        const out = forecast.map(p => {
+            if (!p || p.regime === 'anchor') return p;
+            const minutes = Math.round((+p.time - nowMs) / MINUTE);
+            if (!(minutes > 0)) return p;
+            // nearest horizon block ≤ minutes, else smallest
+            let h = keys[0];
+            for (const k of keys) {
+                if (k <= minutes) h = k;
+                else break;
+            }
+            if (minutes - h > 45 && keys.find(k => k >= minutes)) {
+                h = keys.find(k => k >= minutes);
+            }
+            const dHat = predictUpstreamPeakDelta(ampDoc, sensorMap, nowMs, h);
+            if (!finite(dHat)) return p;
+            const prior = y0 + Math.max(0, dHat);
+            const med = p.med ?? p.value;
+            if (!finite(med) || !(prior > med + 0.01)) return p;
+            nLifted++;
+            const hiSpread = finite(p.max) ? Math.max(0, p.max - med) : 0;
+            const loSpread = finite(p.min) ? Math.max(0, med - p.min) : 0;
+            return {
+                ...p,
+                value: prior,
+                med: prior,
+                max: prior + hiSpread,
+                min: prior - loSpread,
+                regime: 'amp_lift'
+            };
+        });
+        return { forecast: out, nLifted };
+    }
+
     function applyRisingUpperInflate(forecast, upperInflate, lowerInflate = 1) {
         const ku = Number(upperInflate);
         const kl = Number(lowerInflate);
@@ -3744,6 +3889,9 @@
             // Re-enable when a reliable hybrid is shipped alongside transfer-coeffs.
             // Fase 3: CI + isteresi reliable. Bande quantili Cento: softMergeCentoBands (opz., pesante).
             await softApplySkillGates(fetcher, data);
+            // M2 rising inflate is tiny — merge before first paint so salita UI/band work without waiting for q10/q90.
+            await softMergeCentoRisingInflate(fetcher, data);
+            await softMergeCentoUpstreamAmplitude(fetcher, data);
             return data;
         } catch {
             return null;
@@ -3757,9 +3905,10 @@
         parseWindowMlpNode, parseWindowSeqNode, parseBlendGruRidgeNode, parseMuskingumGruNode, parseRcGruNode, gruForward, conv1dForward, transformerForward, muskingumStep, muskingumCoeffs,
         muskingumWarmup, decodeMuskingumTheta, decodeKX, decodeRcTheta, rcStep, softplus, mlpForward, mlpForwardVec, seqDeltaForward,
         sampleAt, sampleNormLevel, buildMuskingumSeq, buildRcSeq, buildSeqChannelMatrix, standardizeSeqMatrix,
-        buildWindowFeatureVector, lin3Extrapolate, poly2Extrapolate, localPolyDerivatives, standardizeWindowFeatures, nextHalfHourForks, forkAround, withFork, loadCoeffs,
-        softMergeCentoBands, softMergeCentoRisingInflate, softMergeCentoRisingMoe, softMergeCentoCrossing, softApplySkillGates,
-        applyRisingUpperInflate,
+        buildWindowFeatureVector, lin3Extrapolate, poly2Extrapolate, localPolyDerivatives, localLin3Slope, standardizeWindowFeatures, nextHalfHourForks, forkAround, withFork, loadCoeffs,
+        softMergeCentoBands, softMergeCentoRisingInflate, softMergeCentoRisingMoe, softMergeCentoCrossing,
+        softMergeCentoUpstreamAmplitude, softApplySkillGates,
+        applyRisingUpperInflate, applyUpstreamAmplitudeLift, predictUpstreamPeakDelta,
         seqGruUrl, seqSoftAdoptCandidates, pearson, residuals, estimateRecentBias, estimateMlpOnlineCorrection, applyMlpOnlineCorrection,
         driverIsHigh, basinRainAt, hindcastSeries,
         truncateSensor, seriesUntil, maxReliableHorizonMinutes, maxHorizonMinutesAvailable, estimatePredictedLag,

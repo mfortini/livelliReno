@@ -373,7 +373,7 @@
         if (emphasizeQ90) {
             traces.push({
                 x: solid.map(p => +p.time), y: solid.map(p => p.max), type: 'scatter', mode: 'lines',
-                name: 'Riferimento alto (q90)', line: { color: '#b35c00', width: 2.75 }
+                name: 'Riferimento alto (bordo banda)', line: { color: '#b35c00', width: 2.75 }
             });
         }
         if (fade.length > 1) {
@@ -557,8 +557,11 @@
             ? ` · CI90 [${ci.lo.toFixed(2)}, ${ci.hi.toFixed(2)}]`
             : '';
         const bandLabel = nodeModel?.quantiles ? ' · banda q10–90' : '';
+        const risingBandLabel = prediction.risingBand?.active
+            ? ` · salita banda ×${Number(prediction.risingBand.upperInflate || 1).toFixed(1)}`
+            : '';
         const degLabel = prediction.degraded ? ' · <strong>degradata</strong>' : '';
-        return `da <strong>${upsLabel}</strong><br>lag ${formatLags(prediction)} · r=${prediction.r == null ? 'n/d' : prediction.r.toFixed(2)} · RMSE ${number(prediction.rmse)} m · fonte <strong>${prediction.source}</strong>${prediction.kind ? ' · ' + prediction.kind : ''}${skillLabel}${ciLabel}${bandLabel}${degLabel}<br>orizzonte pieno ${formatHorizonHours(reliableH)} h · coda sfumata fino a ${formatHorizonHours(hours)} h${prediction.reason ? '<br>' + prediction.reason : ''}`;
+        return `da <strong>${upsLabel}</strong><br>lag ${formatLags(prediction)} · r=${prediction.r == null ? 'n/d' : prediction.r.toFixed(2)} · RMSE ${number(prediction.rmse)} m · fonte <strong>${prediction.source}</strong>${prediction.kind ? ' · ' + prediction.kind : ''}${skillLabel}${ciLabel}${bandLabel}${risingBandLabel}${degLabel}<br>orizzonte pieno ${formatHorizonHours(reliableH)} h · coda sfumata fino a ${formatHorizonHours(hours)} h${prediction.reason ? '<br>' + prediction.reason : ''}`;
     }
 
     function stationThresholds(sensor) {
@@ -583,7 +586,17 @@
             const p = r.probs || {};
             return `+${r.horizonHours}h G ${pct(p.yellow)} / A ${pct(p.orange)} / R ${pct(p.red)}`;
         }).join(' · ');
-        return `<strong>Regime salita</strong> — riferimento operativo sul bordo alto (q90). `
+        const bandMeta = state.prediction.risingBand;
+        const inflateNote = bandMeta?.active && bandMeta.upperInflate > 1
+            ? ` Banda alta allargata ×${Number(bandMeta.upperInflate).toFixed(1)} (copertura salita).`
+            : '';
+        const ampNote = state.prediction.upstreamAmplitude?.active
+            ? ' Mediana sollevata da prior monte (picco entro h).'
+            : '';
+        const refNote = coeffs?.nodes?.Cento?.quantiles
+            ? 'riferimento operativo sul bordo alto (q90).'
+            : 'riferimento operativo sul bordo alto della banda.';
+        return `<strong>Regime salita</strong> — ${refNote}${inflateNote}${ampNote} `
             + `Indizio empirico di superamento soglia (non allerta): ${line}.`;
     }
 
@@ -626,8 +639,12 @@
             }
         }
         if (visiblePlots.has(downstream) || !plotObserver) {
+            // Emphasize upper edge while rising: q10/q90 soft-merge and/or M2 risingBand inflate.
+            const hasUpperRef = !!(coeffs?.nodes?.[downstream]?.quantiles
+                || coeffs?.nodes?.[downstream]?.risingBand?.upperInflate > 1
+                || state.prediction?.risingBand?.active);
             drawStationPlot(`plot-${id}`, state.down, state.prediction, hc, bandH, {
-                emphasizeQ90: !!(rising.active && coeffs?.nodes?.[downstream]?.quantiles)
+                emphasizeQ90: !!(rising.active && hasUpperRef)
             });
         }
         if (state.showHindcast && hc?.ok) {
@@ -1009,6 +1026,9 @@
                 P.softMergeCentoRisingInflate(fetchFn, coeffs).then(ok => {
                     if (ok) refreshCard('Cento');
                 }).catch(() => { /* inflate salita opzionale */ });
+                P.softMergeCentoUpstreamAmplitude(fetchFn, coeffs).then(ok => {
+                    if (ok) refreshCard('Cento');
+                }).catch(() => { /* prior ampiezza monte opzionale */ });
                 P.softMergeCentoRisingMoe(fetchFn, coeffs).then(ok => {
                     if (ok) refreshCard('Cento');
                 }).catch(() => { /* MoE salita opzionale */ });

@@ -154,6 +154,92 @@ test('detectRisingRegime and exceedanceFromBand (M2 helpers)', () => {
     assert.ok(Math.abs(P.normalCdf(0) - 0.5) < 1e-3);
 });
 
+test('applyRisingUpperInflate widens max/min around med', () => {
+    const pts = [
+        { time: new Date('2026-11-14T01:00:00Z'), med: 2, value: 2, min: 1.5, max: 2.5, regime: 'anchor' },
+        { time: new Date('2026-11-14T02:00:00Z'), med: 2, value: 2, min: 1.5, max: 2.5, regime: 'high' }
+    ];
+    const out = P.applyRisingUpperInflate(pts, 2, 1.2);
+    assert.equal(out[0].max, 2.5); // anchor untouched
+    assert.ok(Math.abs(out[1].max - 3) < 1e-9); // 2 + (2.5-2)*2
+    assert.ok(Math.abs(out[1].min - (2 - 0.5 * 1.2)) < 1e-9);
+});
+
+test('applyUpstreamAmplitudeLift raises med when prior is higher', () => {
+    const now = Date.parse('2026-11-14T01:00:00Z');
+    const amp = {
+        featureNames: ['bias', 'cento_y0'],
+        upstreams: [],
+        horizons: {
+            '120': { weights: [0.5, 0] } // dHat = 0.5 → prior = y0+0.5
+        }
+    };
+    const sensorMap = {
+        Cento: { timeSeries: [{ time: new Date(now), value: 1 }] }
+    };
+    const forecast = [
+        { time: new Date(now), med: 1, value: 1, min: 1, max: 1, regime: 'anchor' },
+        { time: new Date(now + 2 * 3600000), med: 1.1, value: 1.1, min: 1.0, max: 1.2, regime: 'high' }
+    ];
+    const { forecast: out, nLifted } = P.applyUpstreamAmplitudeLift(forecast, amp, sensorMap, 1, now);
+    assert.equal(nLifted, 1);
+    assert.ok(Math.abs(out[1].med - 1.5) < 1e-9);
+    assert.ok(out[1].max > out[1].med);
+});
+
+test('predictNode applies risingBand inflate when limb is rising', () => {
+    const STEP = 30 * 60 * 1000;
+    const start = new Date('2026-11-10T00:00:00Z');
+    const n = 60;
+    const values = Array.from({ length: n }, (_, i) => 1 + 0.04 * i);
+    const cento = sensor('Cento', values, start);
+    const forcelli = sensor('Forcelli', values.map(v => v + 0.5), start);
+    const now = cento.timeSeries.at(-1).time; // align with last sample for rising gate
+    const sensorMap = { Cento: cento, Forcelli: forcelli };
+    const stations = ['Cento', 'Forcelli'];
+    const recipe = { usePolyDerivatives: false };
+    const raw = P.buildWindowFeatureVector(sensorMap, stations, 4, +now, STEP, [], false, recipe, 0);
+    const featureNames = Object.keys(raw);
+    const mean = featureNames.map(() => 0);
+    const std = featureNames.map(() => 1);
+    const nIn = featureNames.length;
+    const layers = [
+        { W: Array.from({ length: 2 }, () => Array.from({ length: nIn }, () => 0)), b: [0, 0], activation: 'relu' },
+        { W: [[0, 0]], b: [0.2], activation: 'linear' }
+    ];
+    const block = { mean, std, layers, spreadLow: 0.1, spreadHigh: 0.1 };
+    const coeffs = {
+        nodes: {
+            Cento: {
+                kind: 'window_delta_mlp',
+                stations,
+                upstreams: ['Forcelli'],
+                lookbackSteps: 4,
+                stepMinutes: 30,
+                featureNames,
+                featureRecipe: recipe,
+                useRain: false,
+                reliable: true,
+                skill120: 0.5,
+                risingBand: { upperInflate: 2, lowerInflate: 1, source: 'test' },
+                horizons: {
+                    '30': block, '60': block, '90': block,
+                    '120': { ...block, validate: { skill: 0.5 } }
+                }
+            }
+        }
+    };
+    const pred = P.predictNode(cento, [forcelli], {
+        now, coeffs, horizonHours: 2, downstreamId: 'Cento', sensorMap, smooth: 0
+    });
+    assert.equal(pred.ok, true);
+    assert.equal(pred.risingBand?.active, true);
+    assert.equal(pred.risingBand?.upperInflate, 2);
+    const knot = pred.forecast.find(p => Number.isFinite(p.max) && Number.isFinite(p.med) && p.max > p.med + 1e-6);
+    assert.ok(knot);
+    assert.ok(knot.max - knot.med > 0.15); // inflated above raw spreadHigh 0.1
+});
+
 test('offline dual-regime node picks high regime above threshold', () => {
     const start = new Date('2026-11-11T00:00:00Z');
     const now = new Date('2026-11-11T12:00:00Z');
@@ -1229,6 +1315,57 @@ test('localPolyDerivatives recovers linear and quadratic kinematics', () => {
     const flat = Array.from({ length: 4 }, (_, i) => ({ time: new Date(+start + i * STEP), value: 3 }));
     const z = P.localPolyDerivatives(flat, end, STEP, 4);
     assert.ok(Math.abs(z.d1) < 1e-9 && Math.abs(z.d2) < 1e-9);
+});
+
+test('localLin3Slope recovers linear slope without d2', () => {
+    const start = new Date('2026-11-11T00:00:00Z');
+    // y = 1 + 0.2 t at t=0,1,2 → slope 0.2
+    const series = [0, 1, 2].map((t) => ({
+        time: new Date(+start + t * STEP),
+        value: 1 + 0.2 * t
+    }));
+    const end = +start + 2 * STEP;
+    const { d1, d2 } = P.localLin3Slope(series, end, STEP, 3);
+    assert.ok(Math.abs(d1 - 0.2) < 1e-9, `d1=${d1}`);
+    assert.equal(d2, null);
+});
+
+test('buildWindowFeatureVector lin3 emits d1 only', () => {
+    const start = new Date('2026-11-11T00:00:00Z');
+    const levels = Array.from({ length: 10 }, (_, i) => 1 + 0.1 * i);
+    const cento = sensor('Cento', levels, start);
+    const now = new Date(+start + 9 * STEP);
+    const values = P.buildWindowFeatureVector(
+        { Cento: cento },
+        ['Cento'],
+        2,
+        +now,
+        STEP,
+        [],
+        false,
+        { usePolyDerivatives: true, derivMode: 'lin3', polyDerivPoints: 3 }
+    );
+    assert.ok(Math.abs(values.d1_Cento_lag0 - 0.1) < 1e-6, `d1=${values.d1_Cento_lag0}`);
+    assert.equal(values.d2_Cento_lag0, undefined);
+});
+
+test('stationLookbackSteps may exceed lookback arg', () => {
+    const start = new Date('2026-11-11T00:00:00Z');
+    const levels = Array.from({ length: 20 }, (_, i) => 1 + 0.05 * i);
+    const cento = sensor('Cento', levels, start);
+    const now = new Date(+start + 19 * STEP);
+    const values = P.buildWindowFeatureVector(
+        { Cento: cento },
+        ['Cento'],
+        4,
+        +now,
+        STEP,
+        [],
+        false,
+        { usePolyDerivatives: false, stationLookbackSteps: { Cento: 8 } }
+    );
+    assert.ok(Number.isFinite(values.level_Cento_lag7));
+    assert.equal(values.level_Cento_lag8, undefined);
 });
 
 test('buildWindowFeatureVector emits d1/d2 poly derivative features', () => {
