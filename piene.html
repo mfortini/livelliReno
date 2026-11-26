@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Piene e modelli · Livelli Reno</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#123847">
+    <meta name="description" content="Valutazione sperimentale dei modelli su eventi di piena passati. Catalogo automatico, non allertistico, senza valore operativo.">
+    <style>
+        :root { --ink: #173747; --muted: #536b78; --accent: #086b78; --line: #dce6eb; --surface: #fff; --header-h: 10rem; }
+        * { box-sizing: border-box; }
+        html { overflow-anchor: none; }
+        body { margin: 0; background: #f3f7f9; color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+        a { color: #086575; text-underline-offset: .2em; }
+        :focus-visible { outline: 3px solid #007f95; outline-offset: 4px; }
+        .site-header {
+            position: sticky; top: 0; z-index: 1100;
+            padding: 1.35rem clamp(1rem, 4vw, 4rem) 1.1rem; background: #123847; color: #fff;
+            transition: padding .2s ease, box-shadow .2s ease;
+            overflow-anchor: none;
+        }
+        .site-header.is-compact { padding: .45rem clamp(1rem, 4vw, 3rem); box-shadow: 0 1px 12px #00000033; }
+        .header-inner { max-width: 1600px; margin: auto; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
+        .eyebrow { font-size: .75rem; letter-spacing: .14em; font-weight: 700; text-transform: uppercase; margin-bottom: .45rem; }
+        h1 { font-size: clamp(1.55rem, 2.8vw, 2.35rem); font-weight: 700; letter-spacing: -.04em; margin: 0 0 .4rem; transition: font-size .2s ease; }
+        .header-tagline { margin: 0; color: #d3e5ec; }
+        .site-header.is-compact .eyebrow,
+        .site-header.is-compact .header-tagline,
+        .site-header.is-compact .source-link { display: none; }
+        .site-header.is-compact h1 { font-size: 1.1rem; margin: 0; }
+        .site-header.is-compact .site-nav { margin-top: .35rem; }
+        .site-header.is-compact .site-nav a { min-height: 32px; padding: .28rem .65rem; font-size: .78rem; }
+        .source-link { color: #e5f7fc; border: 1px solid #6b8995; border-radius: .65rem; padding: .65rem .9rem; white-space: nowrap; text-decoration: none; }
+        .site-nav { display: flex; gap: .35rem; flex-wrap: wrap; margin-top: 1rem; }
+        .site-nav a { color: #d3e5ec; text-decoration: none; border: 1px solid #6b8995; border-radius: .55rem; padding: .45rem .85rem; font-size: .85rem; font-weight: 650; min-height: 40px; display: inline-flex; align-items: center; background: transparent; }
+        .site-nav a:hover { color: #fff; border-color: #b5e7ee; }
+        .site-nav a[aria-current="page"],
+        .site-nav a[aria-current="page"]:hover { background: #fff; color: #123847; border-color: #fff; }
+        .page-shell { max-width: 1280px; margin: auto; padding: 1.5rem clamp(1rem, 3vw, 3rem) 3rem; }
+        .experiment-banner {
+            background: #fff4e5; border: 2px solid #be5900; border-radius: .85rem;
+            padding: 1rem 1.15rem; margin-bottom: 1.25rem; color: #5c3a00;
+        }
+        .experiment-banner strong { display: block; font-size: 1.05rem; margin-bottom: .4rem; color: #8a4500; }
+        .experiment-banner p { margin: 0; font-size: .9rem; line-height: 1.55; }
+        .status-line { font-size: .8rem; color: var(--muted); margin-bottom: 1rem; }
+        section.panel { background: var(--surface); border: 1px solid var(--line); border-radius: .9rem; padding: 1.1rem 1.15rem; margin-bottom: 1.25rem; min-width: 0; }
+        section.panel h2 { font-size: 1.15rem; margin: 0 0 .55rem; }
+        section.panel .panel-intro { font-size: .85rem; color: var(--muted); line-height: 1.55; margin: 0 0 .8rem; max-width: 90ch; }
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .6rem; margin-bottom: .6rem; }
+        .stat-card { border: 1px solid var(--line); border-radius: .65rem; padding: .6rem .7rem; background: #f8fbfc; }
+        .stat-card .stat-label { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; font-weight: 700; }
+        .stat-card .stat-value { font-size: 1.25rem; font-weight: 700; font-variant-numeric: tabular-nums; margin-top: .15rem; }
+        .stat-card .stat-sub { font-size: .75rem; color: var(--muted); margin-top: .1rem; }
+        .caveat-note { font-size: .8rem; color: #8a4b12; background: #fff8f0; border: 1px solid #e2c9a8; border-radius: .45rem; padding: .5rem .65rem; line-height: 1.5; margin: .4rem 0 0; }
+        table.metrics { width: 100%; border-collapse: collapse; font-size: .8rem; font-variant-numeric: tabular-nums; }
+        table.metrics th, table.metrics td { padding: .35rem .45rem; border-bottom: 1px solid #eef3f5; text-align: right; white-space: nowrap; }
+        table.metrics th:first-child, table.metrics td:first-child { text-align: left; }
+        table.metrics th { color: var(--muted); font-weight: 600; font-size: .74rem; }
+        table.metrics tr.is-best td { background: #eef8f4; }
+        table.metrics tr.row-hidden { display: none; }
+        table.metrics td .badge-split { font-size: .68rem; font-weight: 700; border-radius: .35rem; padding: .1rem .4rem; }
+        .badge-test { background: #e5f2ff; color: #164e86; border: 1px solid #a9cbe8; }
+        .badge-train { background: #f0f0ee; color: #5c625f; border: 1px solid #cfceca; }
+        .toolbar-row { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; margin-bottom: .7rem; }
+        .toolbar-row label { font-size: .82rem; color: var(--muted); display: flex; align-items: center; gap: .35rem; }
+        .toolbar-row input, .toolbar-row select { min-height: 40px; border: 1px solid #c7d3dc; border-radius: 10px; padding: .4rem .65rem; font-size: .85rem; background: #fff; color: var(--ink); }
+        .btn-row button, .toggle-rows {
+            border: 1px solid var(--line); background: #fff; color: var(--ink); border-radius: .55rem;
+            padding: .35rem .75rem; font-size: .8rem; font-weight: 600; min-height: 36px; cursor: pointer;
+        }
+        .btn-row button[disabled] { opacity: .45; cursor: default; }
+        .toggle-rows[aria-expanded="true"] { background: #086575; border-color: #086575; color: #fff; }
+        .btn-row { display: flex; gap: .4rem; align-items: center; margin-top: .6rem; font-size: .8rem; color: var(--muted); }
+        .event-link { background: none; border: none; padding: 0; color: #086575; text-decoration: underline; text-underline-offset: .2em; cursor: pointer; font-size: inherit; }
+        #event-detail[hidden] { display: none !important; }
+        #event-plot { width: 100%; height: 380px; min-height: 380px; }
+        .detail-meta { font-size: .82rem; color: var(--muted); line-height: 1.55; margin: 0 0 .6rem; }
+        .detail-meta strong { color: var(--ink); }
+        details.metrics-help { font-size: .85rem; color: var(--muted); margin: 0 0 1rem; line-height: 1.6; }
+        details.metrics-help summary { cursor: pointer; font-weight: 600; color: var(--ink); }
+        details.metrics-help dt { font-weight: 700; color: var(--ink); margin-top: .5rem; }
+        details.metrics-help dd { margin: 0 0 .2rem; }
+        .source-notes { margin-top: 2rem; border-top: 1px solid var(--line); padding-top: 1.25rem; font-size: .8rem; color: var(--muted); line-height: 1.7; }
+        .source-notes h2 { font-size: 1rem; font-weight: 700; color: var(--ink); }
+        .table-scroll { overflow-x: auto; }
+        .mini-note { font-size: .75rem; color: var(--muted); margin-top: .4rem; }
+        [hidden] { display: none !important; }
+        @media (max-width: 900px) {
+            .header-inner { flex-direction: column; align-items: start; }
+            .site-header { padding: 1.25rem 1rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .site-header, .site-header h1 { transition: none; }
+        }
+    </style>
+</head>
+<body>
+<header class="site-header" id="site-header">
+    <div class="header-inner">
+        <div>
+            <p class="eyebrow">Osservatorio dei livelli · Bacino del Reno</p>
+            <h1>Piene e modelli.</h1>
+            <p class="header-tagline">Come sono andati i modelli sulle piene passate: valutazione sperimentale, non allertistica.</p>
+            <nav class="site-nav" aria-label="Sezioni principali">
+                <a href="index.html#osservazioni">Osservazioni</a>
+                <a href="predizioni.html">Predizioni (sperimentali)</a>
+                <a href="piene.html" aria-current="page">Piene e modelli</a>
+            </nav>
+        </div>
+        <div>
+            <a class="source-link" href="https://www.arpae.it/it/temi-ambientali/acqua/dati-acque/acque-superficiali/dati-idrometrici-in-tempo-reale-1">Dati originali ARPAE ↗</a>
+        </div>
+    </div>
+</header>
+
+<main class="page-shell">
+    <div class="experiment-banner" role="status">
+        <strong>Valutazione automatica — non allertistica, non operativa</strong>
+        <p>Questa pagina confronta modelli statistici su <em>eventi di piena passati</em>, individuati automaticamente sullo storico dei livelli. Non è un prodotto ARPAE o di Protezione civile, non certifica la bontà di nessuna previsione futura e non va usata per decisioni. Per allerte ufficiali consulta <a href="https://allertameteo.regione.emilia-romagna.it/">Allerta meteo Emilia-Romagna</a>.</p>
+    </div>
+
+    <details class="metrics-help">
+        <summary>Come leggere le metriche (spiegazione semplice)</summary>
+        <dl>
+            <dt>RMSE (errore quadratico medio, in metri)</dt>
+            <dd>Quanto sbaglia in media il modello sul livello. <strong>Più basso è, meglio è.</strong></dd>
+            <dt>Skill in evento (vs persistenza)</dt>
+            <dd>Confronto con la «persistenza» (il livello resta quello di ora). <strong>1 = perfetto, 0 = bravo quanto la persistenza, sotto 0 = peggio della persistenza.</strong></dd>
+            <dt>Ritardo di fase (minuti)</dt>
+            <dd>Di quanto il modello arriva in ritardo o in anticipo sul picco. <strong>Positivo = il modello è in ritardo</strong>, negativo = in anticipo.</dd>
+            <dt>NSE e KGE</dt>
+            <dd>Due indici classici di idrologia: vicino a 1 è molto buono, sotto 0 scarso.</dd>
+            <dt>POD / FAR / CSI</dt>
+            <dd>Per le soglie di allerta (gialla/arancione/rossa): quante volte il modello ha «preso» il superamento (POD, più alto meglio), quanti falsi allarmi (FAR, più basso meglio) e un indice combinato (CSI, più alto meglio).</dd>
+            <dt>Copertura banda</dt>
+            <dd>Quante volte il livello vero è finito dentro la banda di incertezza dichiarata. Vicino a 1 = banda ben calibrata.</dd>
+        </dl>
+    </details>
+
+    <p id="status-line" class="status-line" role="status">Caricamento valutazioni…</p>
+
+    <section class="panel" id="cento-summary" hidden>
+        <h2>Cento in sintesi</h2>
+        <p class="panel-intro">Numeri complessivi degli eventi di piena individuati a Cento e risultati del modello migliore all’orizzonte di 120 minuti.</p>
+        <div class="stat-grid" id="cento-stats"></div>
+        <p class="caveat-note" id="caveat-note" hidden></p>
+    </section>
+
+    <section class="panel" id="cento-models" hidden>
+        <h2>Confronto modelli a Cento</h2>
+        <p class="panel-intro">Metriche medie sugli eventi di test per ciascun modello, all’orizzonte scelto. La riga migliore (skill più alta, esclusa la persistenza) è evidenziata.</p>
+        <div class="toolbar-row">
+            <label for="horizon-select">Orizzonte
+                <select id="horizon-select"></select>
+            </label>
+        </div>
+        <div class="table-scroll">
+            <table class="metrics" id="models-table">
+                <thead>
+                    <tr>
+                        <th>Modello</th><th>Eventi</th><th>RMSE (m)</th><th>Skill</th><th>Skill IC 90%</th>
+                        <th>NSE</th><th>KGE</th><th>Ritardo fase (min)</th><th>RMSE monta</th><th>RMSE piena/decrescita</th>
+                        <th>Err. picco (m)</th><th>Err. ora picco (min)</th><th>Copertura banda</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <p class="mini-note">RMSE monta = errore in salita; RMSE piena/decrescita = errore in discesa. La persistenza è il riferimento: il suo skill è 0 per definizione.</p>
+    </section>
+
+    <section class="panel" id="cento-events" hidden>
+        <h2>Eventi di piena a Cento</h2>
+        <p class="panel-intro">Catalogo automatico degli eventi (criterio: alzata minima e picco oltre una soglia storica della stazione). Tocca un evento per vedere il dettaglio monte→valle allineato al picco.</p>
+        <div class="toolbar-row">
+            <label for="event-filter">Filtra
+                <input id="event-filter" type="search" autocomplete="off" placeholder="Data o testo…">
+            </label>
+            <label for="split-filter">Periodo
+                <select id="split-filter">
+                    <option value="">Tutti</option>
+                    <option value="test">Test</option>
+                    <option value="train">Train</option>
+                </select>
+            </label>
+        </div>
+        <div class="table-scroll">
+            <table class="metrics" id="events-table">
+                <thead>
+                    <tr><th>Picco</th><th>Livello picco (m)</th><th>Alzata Δ (m)</th><th>Periodo</th><th>Serie</th><th></th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="btn-row">
+            <button type="button" id="page-prev">← Precedenti</button>
+            <span id="page-info"></span>
+            <button type="button" id="page-next">Successivi →</button>
+        </div>
+    </section>
+
+    <section class="panel" id="event-detail" hidden>
+        <h2 id="event-detail-title">Dettaglio evento</h2>
+        <p class="detail-meta" id="event-detail-meta"></p>
+        <div id="event-plot" role="img" aria-label="Grafico monte-valle allineato al picco"></div>
+        <div class="table-scroll" style="margin-top:.8rem">
+            <table class="metrics" id="event-metrics-table">
+                <thead>
+                    <tr><th>Modello</th><th>RMSE (m)</th><th>Skill</th><th>NSE</th><th>KGE</th><th>RMSE monta</th><th>RMSE discesa</th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <p class="mini-note" id="event-note">Serie ricalibrate in ore relative al picco di Cento (0 = istante del picco). Grafico e serie vengono caricati solo quando apri un evento.</p>
+    </section>
+
+    <section class="panel" id="other-stations" hidden>
+        <h2>Altre stazioni a 120 minuti</h2>
+        <p class="panel-intro">Sintesi delle metriche a 120 minuti per le altre stazioni valutate. Di base è mostrata una riga per stazione (modello migliore per skill); il pulsante mostra tutte le righe.</p>
+        <div class="toolbar-row">
+            <button type="button" class="toggle-rows" id="toggle-all-rows" aria-expanded="false">Mostra tutte le righe</button>
+        </div>
+        <div class="table-scroll">
+            <table class="metrics" id="stations-table">
+                <thead>
+                    <tr>
+                        <th>Stazione · modello</th><th>Eventi</th><th>Skill</th><th>NSE</th><th>KGE</th>
+                        <th>Ritardo fase (min)</th><th>Err. picco (m)</th><th>POD g/a/r</th><th>FAR g/a/r</th><th>CSI g/a/r</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </section>
+
+    <footer class="source-notes">
+        <h2>Limiti e disclaimer</h2>
+        <p id="footer-disclaimer">Catalogo e metriche sono prodotti automaticamente a scopo di valutazione tecnica. Non sono un’allerta territoriale, non misurano la probabilità di piene future e non sostituiscono bollettini ufficiali, modelli idraulici o valutazioni di Protezione civile. Il superamento di una soglia in questi test non è mai un’allerta ufficiale.</p>
+    </footer>
+</main>
+
+<script src="asset-loader.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    // ---- asset loading: prefer shared RenoAssets, fallback to a tiny local loader
+    let plotlyPromise = null;
+    function loadPlotly() {
+        if (window.Plotly) return Promise.resolve(window.Plotly);
+        if (window.RenoAssets && typeof window.RenoAssets.loadPlotly === 'function') {
+            return window.RenoAssets.loadPlotly();
+        }
+        if (!plotlyPromise) {
+            plotlyPromise = new Promise((resolve, reject) => {
+                const s = document.createElement('script');
+                s.src = 'https://cdn.plot.ly/plotly-basic-2.35.2.min.js';
+                s.async = true;
+                s.onload = () => resolve(window.Plotly);
+                s.onerror = () => reject(new Error('Plotly non disponibile'));
+                document.head.appendChild(s);
+            });
+        }
+        return plotlyPromise;
+    }
+
+    // ---- formatting helpers (Europe/Rome, Italian style)
+    const nf2 = new Intl.NumberFormat('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const nf3 = new Intl.NumberFormat('it-IT', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+    function fmt(v, digits) {
+        if (v == null || !Number.isFinite(v)) return '—';
+        return digits === 3 ? nf3.format(v) : nf2.format(v);
+    }
+    function fmtInt(v) {
+        if (v == null || !Number.isFinite(v)) return '—';
+        return String(Math.round(v));
+    }
+    function fmtDateTime(iso) {
+        if (!iso) return '—';
+        return new Intl.DateTimeFormat('it-IT', {
+            timeZone: 'Europe/Rome', day: '2-digit', month: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+        }).format(new Date(iso));
+    }
+    function fmtDateShort(iso) {
+        if (!iso) return '—';
+        return new Intl.DateTimeFormat('it-IT', {
+            timeZone: 'Europe/Rome', day: '2-digit', month: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+        }).format(new Date(iso));
+    }
+
+    const MODEL_LABELS = {
+        persist: 'Persistenza (riferimento)',
+        poly2: 'Polinomio 2°',
+        arx: 'ARX lineare',
+        ridge: 'Ridge monte→valle',
+        prod: 'MLP produzione',
+        seq_gru: 'Sequenziale GRU',
+        seq_cnn: 'Sequenziale CNN',
+        muskingum_gru: 'Muskingum + GRU',
+        rc_gru: 'RC + GRU',
+        blend_gru_ridge: 'Miscela GRU/ridge'
+    };
+    function modelLabel(key) { return MODEL_LABELS[key] || key; }
+
+    // metric column indices in pack.metrics order
+    let pack = null;
+    let M = {};
+    let seriesPack = null;
+    let seriesPromise = null;
+    let responsesPack = null;
+    let responsesPromise = null;
+
+    const statusLine = document.getElementById('status-line');
+    function setStatus(msg) { statusLine.textContent = msg; }
+
+    function cell(si, mi, hi) {
+        const a = pack.agg[si];
+        if (!a || !a[mi] || !a[mi][hi]) return null;
+        return a[mi][hi];
+    }
+    function metric(arr, name) {
+        const i = M[name];
+        return arr ? arr[i] : null;
+    }
+
+    // ---- header shrink
+    const header = document.getElementById('site-header');
+    function updateHeader() {
+        const compact = window.scrollY > 20;
+        header.classList.toggle('is-compact', compact);
+        document.documentElement.style.setProperty('--header-h', header.offsetHeight + 'px');
+    }
+    window.addEventListener('scroll', updateHeader, { passive: true });
+    window.addEventListener('resize', updateHeader);
+
+    // ---- data boot
+    fetch('models/piene-runtime.json')
+        .then(r => {
+            if (!r.ok) throw new Error('pack non disponibile (' + r.status + ')');
+            return r.json();
+        })
+        .then(data => {
+            pack = data;
+            pack.metrics.forEach((m, i) => { M[m] = i; });
+            setStatus('');
+            statusLine.hidden = true;
+            renderAll();
+        })
+        .catch(err => setStatus('Impossibile caricare models/piene-runtime.json: ' + err.message));
+
+    function renderAll() {
+        if (pack.caveat) {
+            const cn = document.getElementById('caveat-note');
+            cn.textContent = 'Avvertenza: ' + pack.caveat;
+            cn.hidden = false;
+        }
+        renderCentoSummary();
+        renderModelsTable();
+        renderEventsTable();
+        renderStationsTable();
+        updateHeader();
+    }
+
+    // ---- 1) Cento summary
+    function bestCentoModel(hMin) {
+        const si = pack.stations.indexOf('Cento');
+        const hi = pack.horizons.indexOf(hMin);
+        let best = null;
+        pack.models.forEach((m, mi) => {
+            if (m === 'persist') return;
+            const arr = cell(si, mi, hi);
+            const skill = arr ? metric(arr, 'skillEventPersist') : null;
+            if (skill == null) return;
+            if (!best || skill > best.skill) best = { model: m, mi, arr, skill };
+        });
+        return best;
+    }
+
+    function renderCentoSummary() {
+        const sec = document.getElementById('cento-summary');
+        sec.hidden = false;
+        const grid = document.getElementById('cento-stats');
+        grid.innerHTML = '';
+        const info = pack.stationInfo.Cento || {};
+        const nEvents = pack.catalog.length;
+        const nTest = pack.catalog.filter(c => c.split === 'test').length;
+        const best = bestCentoModel(120);
+        const cards = [
+            { label: 'Eventi catalogati', value: fmtInt(nEvents), sub: info.maxPeak != null ? 'picco max storico ' + fmt(info.maxPeak) + ' m' : '' },
+            { label: 'Eventi di test', value: fmtInt(nTest), sub: pack.testFrom ? 'dal ' + fmtDateShort(pack.testFrom).slice(0, 10) : '' },
+        ];
+        if (best) {
+            cards.push(
+                { label: 'Modello migliore @120′', value: modelLabel(best.model), sub: 'per skill sugli eventi di test' },
+                { label: 'RMSE @120′', value: fmt(metric(best.arr, 'rmse')) + ' m', sub: 'errore medio, più basso meglio' },
+                { label: 'Skill @120′', value: fmt(best.skill), sub: 'IC90% ' + fmt(metric(best.arr, 'skillLo')) + ' – ' + fmt(metric(best.arr, 'skillHi')) },
+                { label: 'Ritardo di fase', value: fmtInt(metric(best.arr, 'phaseLagMin')) + ' min', sub: 'positivo = in ritardo' }
+            );
+        }
+        for (const c of cards) {
+            const div = document.createElement('div');
+            div.className = 'stat-card';
+            div.innerHTML = '<div class="stat-label"></div><div class="stat-value"></div><div class="stat-sub"></div>';
+            div.querySelector('.stat-label').textContent = c.label;
+            div.querySelector('.stat-value').textContent = c.value;
+            div.querySelector('.stat-sub').textContent = c.sub || '';
+            grid.appendChild(div);
+        }
+    }
+
+    // ---- 2) model comparison at selectable horizon
+    function renderModelsTable() {
+        const sec = document.getElementById('cento-models');
+        sec.hidden = false;
+        const sel = document.getElementById('horizon-select');
+        sel.innerHTML = '';
+        for (const h of pack.horizons) {
+            const opt = document.createElement('option');
+            opt.value = String(h);
+            opt.textContent = h + ' min';
+            if (h === 120) opt.selected = true;
+            sel.appendChild(opt);
+        }
+        sel.addEventListener('change', () => fillModelsTable(Number(sel.value)));
+        fillModelsTable(120);
+    }
+
+    function fillModelsTable(hMin) {
+        const si = pack.stations.indexOf('Cento');
+        const hi = pack.horizons.indexOf(hMin);
+        const tbody = document.querySelector('#models-table tbody');
+        tbody.innerHTML = '';
+        let bestMi = null;
+        let bestSkill = -Infinity;
+        pack.models.forEach((m, mi) => {
+            if (m === 'persist') return;
+            const arr = cell(si, mi, hi);
+            const sk = arr ? metric(arr, 'skillEventPersist') : null;
+            if (sk != null && sk > bestSkill) { bestSkill = sk; bestMi = mi; }
+        });
+        pack.models.forEach((m, mi) => {
+            const arr = cell(si, mi, hi);
+            if (!arr) return;
+            const tr = document.createElement('tr');
+            if (mi === bestMi) tr.className = 'is-best';
+            const lo = metric(arr, 'skillLo');
+            const hiCi = metric(arr, 'skillHi');
+            tr.innerHTML =
+                '<td>' + modelLabel(m) + '</td>' +
+                '<td>' + fmtInt(metric(arr, 'nEvents')) + '</td>' +
+                '<td>' + fmt(metric(arr, 'rmse'), 3) + '</td>' +
+                '<td>' + fmt(metric(arr, 'skillEventPersist')) + '</td>' +
+                '<td>' + (lo != null && hiCi != null ? fmt(lo) + ' – ' + fmt(hiCi) : '—') + '</td>' +
+                '<td>' + fmt(metric(arr, 'nseEvent')) + '</td>' +
+                '<td>' + fmt(metric(arr, 'kgeEvent')) + '</td>' +
+                '<td>' + fmtInt(metric(arr, 'phaseLagMin')) + '</td>' +
+                '<td>' + fmt(metric(arr, 'risingRmse'), 3) + '</td>' +
+                '<td>' + fmt(metric(arr, 'fallingRmse'), 3) + '</td>' +
+                '<td>' + fmt(metric(arr, 'peakLevelErrMed'), 3) + '</td>' +
+                '<td>' + fmtInt(metric(arr, 'peakTimeErrMed')) + '</td>' +
+                '<td>' + fmt(metric(arr, 'bandCoverageEvent')) + '</td>';
+            tbody.appendChild(tr);
+        });
+    }
+
+    // ---- 3) events table with filter + pagination
+    const PAGE_SIZE = 15;
+    let page = 0;
+    let filtered = [];
+
+    function renderEventsTable() {
+        document.getElementById('cento-events').hidden = false;
+        const input = document.getElementById('event-filter');
+        const splitSel = document.getElementById('split-filter');
+        input.addEventListener('input', () => { page = 0; fillEventsTable(); });
+        splitSel.addEventListener('change', () => { page = 0; fillEventsTable(); });
+        document.getElementById('page-prev').addEventListener('click', () => { page = Math.max(0, page - 1); fillEventsTable(); });
+        document.getElementById('page-next').addEventListener('click', () => { page += 1; fillEventsTable(); });
+        fillEventsTable();
+    }
+
+    function fillEventsTable() {
+        const q = document.getElementById('event-filter').value.trim().toLowerCase();
+        const split = document.getElementById('split-filter').value;
+        filtered = pack.catalog.map((c, i) => ({ ...c, idx: i })).filter(c => {
+            if (split && c.split !== split) return false;
+            if (!q) return true;
+            const hay = (fmtDateTime(c.peakTime) + ' ' + c.peakTime + ' ' + c.split).toLowerCase();
+            return hay.includes(q);
+        });
+        const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+        if (page >= pages) page = pages - 1;
+        const rows = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+        const tbody = document.querySelector('#events-table tbody');
+        tbody.innerHTML = '';
+        for (const c of rows) {
+            const tr = document.createElement('tr');
+            const hasSeries = c.metaId != null && pack.seriesIds.includes(c.metaId);
+            const tdBtn = document.createElement('td');
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'event-link';
+            btn.textContent = 'Dettaglio';
+            btn.addEventListener('click', () => selectEvent(c.idx));
+            tdBtn.appendChild(btn);
+            tr.innerHTML =
+                '<td>' + fmtDateTime(c.peakTime) + '</td>' +
+                '<td>' + fmt(c.peakLevel) + '</td>' +
+                '<td>' + fmt(c.riseM) + '</td>' +
+                '<td><span class="badge-split ' + (c.split === 'test' ? 'badge-test' : 'badge-train') + '">' + c.split + '</span></td>' +
+                '<td>' + (hasSeries ? 'sì' : '—') + '</td>';
+            tr.appendChild(tdBtn);
+            tbody.appendChild(tr);
+        }
+        document.getElementById('page-info').textContent =
+            'pagina ' + (page + 1) + ' di ' + pages + ' · ' + filtered.length + ' eventi';
+        document.getElementById('page-prev').disabled = page <= 0;
+        document.getElementById('page-next').disabled = page >= pages - 1;
+    }
+
+    // ---- 4) event detail: lazy series + lazy Plotly
+    function loadSeries() {
+        if (seriesPack) return Promise.resolve(seriesPack);
+        if (!seriesPromise) {
+            seriesPromise = fetch('models/piene-cento-series.json')
+                .then(r => {
+                    if (!r.ok) throw new Error('serie non disponibili (' + r.status + ')');
+                    return r.json();
+                })
+                .then(d => { seriesPack = d; return d; });
+        }
+        return seriesPromise;
+    }
+
+    function loadResponses() {
+        if (responsesPack) return Promise.resolve(responsesPack);
+        if (!responsesPromise) {
+            responsesPromise = fetch('models/piene-cento-model-responses.json')
+                .then(r => {
+                    if (!r.ok) return null;
+                    return r.json();
+                })
+                .then(d => { responsesPack = d; return d; })
+                .catch(() => null);
+        }
+        return responsesPromise;
+    }
+
+    function clearEventPlot(message) {
+        const plotDiv = document.getElementById('event-plot');
+        if (window.Plotly && plotDiv.data && typeof window.Plotly.purge === 'function') {
+            window.Plotly.purge(plotDiv);
+        }
+        plotDiv.textContent = '';
+        const note = document.getElementById('event-note');
+        if (note) note.textContent = message;
+    }
+
+    function selectEvent(idx) {
+        const c = pack.catalog[idx];
+        if (!c) return;
+        const sec = document.getElementById('event-detail');
+        sec.hidden = false;
+        document.getElementById('event-detail-title').textContent =
+            'Evento del ' + fmtDateTime(c.peakTime);
+        const lagBits = c.perEventLag
+            ? Object.entries(c.perEventLag).map(([k, v]) => k + ' ' + (Number.isFinite(v) ? v + '′' : 'n/d')).join(' · ')
+            : '';
+        document.getElementById('event-detail-meta').innerHTML =
+            'Picco <strong>' + fmt(c.peakLevel) + ' m</strong> · alzata <strong>' + fmt(c.riseM) +
+            ' m</strong> · periodo <strong>' + c.split + '</strong>' +
+            (lagBits ? '<br>Ritardi stimati per stazione (min): ' + lagBits : '');
+        sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        fillEventMetrics(idx);
+
+        const note = document.getElementById('event-note');
+        if (note) note.textContent = 'Caricamento grafico…';
+        if (c.metaId == null || !pack.seriesIds.includes(c.metaId)) {
+            clearEventPlot('Serie monte-valle non disponibile: questo evento non è presente nel report monte-valle usato per il pack.');
+            return;
+        }
+        Promise.all([loadSeries(), loadResponses(), loadPlotly()])
+            .then(([sp, rp, Plotly]) => drawEventPlot(sp, Plotly, c, rp))
+            .catch(err => clearEventPlot('Grafico non disponibile: ' + err.message));
+    }
+
+    function drawEventPlot(sp, Plotly, c, rp) {
+        const ev = sp.events[String(c.metaId)];
+        const plotDiv = document.getElementById('event-plot');
+        if (!ev) { clearEventPlot('Serie non trovata per questo evento nel pack caricato.'); return; }
+        const x = sp.hours.slice(ev.off, ev.off + ev.n);
+        const centoObserved = ev.levels['0'] || [];
+        if (!centoObserved.some(Number.isFinite)) {
+            clearEventPlot('Evento presente nel catalogo, ma lo storico di Cento è insufficiente nella finestra del picco.');
+            return;
+        }
+        const colors = ['#c62828', '#1565c0', '#2e7d32', '#8e24aa', '#ef6c00', '#546e7a'];
+        const traces = [];
+        sp.stations.forEach((name, i) => {
+            const arr = ev.levels[String(i)];
+            if (!arr) return;
+            traces.push({
+                x, y: arr,
+                mode: 'lines',
+                name,
+                line: { color: colors[i % colors.length], width: i === 0 ? 3 : 1.6 },
+                connectgaps: false
+            });
+        });
+        const response = rp?.events?.[String(c.metaId)];
+        if (response?.pred?.some(Number.isFinite)) {
+            traces.push({
+                x, y: response.pred,
+                mode: 'lines',
+                name: 'MLP produzione @120′',
+                line: { color: '#ef6c00', width: 2.5, dash: 'dash' },
+                connectgaps: false
+            });
+        }
+        if (response?.base?.some(Number.isFinite)) {
+            traces.push({
+                x, y: response.base,
+                mode: 'lines',
+                name: 'Persistenza @120′',
+                line: { color: '#536b78', width: 1.4, dash: 'dot' },
+                opacity: .75,
+                connectgaps: false
+            });
+        }
+        const layout = {
+            margin: { t: 20, r: 16, b: 46, l: 52 },
+            xaxis: { title: 'Ore rispetto al picco di Cento', zeroline: true, zerolinecolor: '#c62828' },
+            yaxis: { title: 'Livello relativo (m)' },
+            legend: { orientation: 'h', y: -0.18 },
+            shapes: [{
+                type: 'line', x0: 0, x1: 0, yref: 'paper', y0: 0, y1: 1,
+                line: { color: '#c62828', width: 1, dash: 'dot' }
+            }]
+        };
+        Plotly.react(plotDiv, traces, layout, { responsive: true, displaylogo: false });
+        const note = document.getElementById('event-note');
+        if (note) {
+            note.textContent = response?.pred?.some(Number.isFinite)
+                ? 'Serie in ore relative al picco di Cento (0 = picco). MLP @120′ e persistenza @120′ sono hindcast causali: al tempo T usano solo dati fino a T−120 minuti.'
+                : 'Serie in ore relative al picco di Cento (0 = picco). Risposta del modello non disponibile per questo evento.';
+        }
+    }
+
+    function fillEventMetrics(idx) {
+        const hi = pack.horizons.indexOf(120);
+        const tbody = document.querySelector('#event-metrics-table tbody');
+        tbody.innerHTML = '';
+        const rows = pack.centoPerEvent.filter(r => r[0] === idx && r[2] === hi);
+        for (const r of rows) {
+            const tr = document.createElement('tr');
+            tr.innerHTML =
+                '<td>' + modelLabel(pack.models[r[1]]) + '</td>' +
+                '<td>' + fmt(r[4], 3) + '</td>' +
+                '<td>' + fmt(r[5]) + '</td>' +
+                '<td>' + fmt(r[8]) + '</td>' +
+                '<td>' + fmt(r[9]) + '</td>' +
+                '<td>' + fmt(r[6], 3) + '</td>' +
+                '<td>' + fmt(r[7], 3) + '</td>';
+            tbody.appendChild(tr);
+        }
+        document.getElementById('event-metrics-table').hidden = rows.length === 0;
+    }
+
+    // ---- 5) other stations at 120 min
+    function renderStationsTable() {
+        const sec = document.getElementById('other-stations');
+        sec.hidden = false;
+        const hi = pack.horizons.indexOf(120);
+        const tbody = document.querySelector('#stations-table tbody');
+        tbody.innerHTML = '';
+        const frag = document.createDocumentFragment();
+        const rowsData = [];
+        pack.stations.forEach((st, si) => {
+            if (st === 'Cento') return;
+            const byModel = pack.agg[si] || {};
+            const rows = [];
+            pack.models.forEach((m, mi) => {
+                const arr = byModel[mi] && byModel[mi][hi];
+                if (!arr) return;
+                rows.push({ m, arr, skill: metric(arr, 'skillEventPersist') });
+            });
+            if (!rows.length) return;
+            const nonPersist = rows.filter(r => r.m !== 'persist' && r.skill != null);
+            const best = nonPersist.sort((a, b) => b.skill - a.skill)[0] || rows[0];
+            for (const r of rows) {
+                rowsData.push({ st, m: r.m, arr: r.arr, primary: r === best });
+            }
+        });
+        function tripl(arr, base) {
+            const y = metric(arr, base + 'Y');
+            const o = metric(arr, base + 'O');
+            const r = metric(arr, base + 'R');
+            if (y == null && o == null && r == null) return '—';
+            return [y, o, r].map(v => v == null ? '—' : fmt(v)).join(' / ');
+        }
+        for (const rd of rowsData) {
+            const tr = document.createElement('tr');
+            if (!rd.primary) { tr.classList.add('row-hidden'); tr.style.display = 'none'; }
+            tr.innerHTML =
+                '<td>' + rd.st + ' · ' + modelLabel(rd.m) + '</td>' +
+                '<td>' + fmtInt(metric(rd.arr, 'nEvents')) + '</td>' +
+                '<td>' + fmt(metric(rd.arr, 'skillEventPersist')) + '</td>' +
+                '<td>' + fmt(metric(rd.arr, 'nseEvent')) + '</td>' +
+                '<td>' + fmt(metric(rd.arr, 'kgeEvent')) + '</td>' +
+                '<td>' + fmtInt(metric(rd.arr, 'phaseLagMin')) + '</td>' +
+                '<td>' + fmt(metric(rd.arr, 'peakLevelErrMed'), 3) + '</td>' +
+                '<td>' + tripl(rd.arr, 'pod') + '</td>' +
+                '<td>' + tripl(rd.arr, 'far') + '</td>' +
+                '<td>' + tripl(rd.arr, 'csi') + '</td>';
+            frag.appendChild(tr);
+        }
+        tbody.appendChild(frag);
+        const toggle = document.getElementById('toggle-all-rows');
+        toggle.addEventListener('click', () => {
+            const expanded = toggle.getAttribute('aria-expanded') === 'true';
+            toggle.setAttribute('aria-expanded', String(!expanded));
+            toggle.textContent = expanded ? 'Mostra tutte le righe' : 'Mostra meno righe';
+            tbody.querySelectorAll('tr.row-hidden').forEach(tr => {
+                tr.style.display = expanded ? 'none' : '';
+            });
+        });
+    }
+})();
+</script>
+</body>
+</html>

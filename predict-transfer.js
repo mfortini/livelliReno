@@ -191,16 +191,24 @@
     }
 
     // Longest horizon with event/validate skill ≥ SKILL_KEEP, clamped to [min, cap].
+    function packedHorizonEntries(model) {
+        const direct = model?.horizons;
+        if (direct && Object.keys(direct).length) return Object.entries(direct);
+        const meta = model?.packedWeights?.horizonMeta;
+        if (meta && Object.keys(meta).length) return Object.entries(meta);
+        return [];
+    }
+
     function maxReliableHorizonMinutes(model, options = {}) {
         const cap = finite(Number(options.capMinutes)) ? Number(options.capMinutes) : 720;
         const min = finite(Number(options.minMinutes)) ? Number(options.minMinutes) : 120;
         let best = min;
-        const horizons = model?.horizons;
-        if (!horizons) return Math.min(cap, Math.max(min, best));
-        for (const key of Object.keys(horizons)) {
+        const entries = packedHorizonEntries(model);
+        if (!entries.length) return Math.min(cap, Math.max(min, best));
+        for (const [key, block] of entries) {
             const minutes = Number(key);
             if (!Number.isFinite(minutes) || minutes > cap || minutes < 0) continue;
-            const skill = horizonBlockSkill(horizons[key]);
+            const skill = horizonBlockSkill(block);
             if (skill == null || skill < SKILL_KEEP) continue;
             if (minutes > best) best = minutes;
         }
@@ -210,10 +218,10 @@
     // Last knot available (for fade band beyond reliable cut).
     function maxHorizonMinutesAvailable(model, options = {}) {
         const cap = finite(Number(options.capMinutes)) ? Number(options.capMinutes) : 720;
-        const horizons = model?.horizons;
-        if (!horizons) return maxReliableHorizonMinutes(model, options);
+        const entries = packedHorizonEntries(model);
+        if (!entries.length) return maxReliableHorizonMinutes(model, options);
         let best = 0;
-        for (const key of Object.keys(horizons)) {
+        for (const [key] of entries) {
             const minutes = Number(key);
             if (!Number.isFinite(minutes) || minutes > cap || minutes < 0) continue;
             if (minutes > best) best = minutes;
@@ -755,12 +763,13 @@
         let cur = x.slice();
         for (const layer of layers || []) {
             const W = layer.W, b = layer.b;
-            if (!Array.isArray(W) || !Array.isArray(b) || W.length !== b.length) return null;
+            const arrayLike = value => Array.isArray(value) || ArrayBuffer.isView(value);
+            if (!arrayLike(W) || !arrayLike(b) || W.length !== b.length) return null;
             const next = new Array(b.length);
             for (let o = 0; o < b.length; o++) {
                 let sum = b[o];
                 const row = W[o];
-                if (!Array.isArray(row) || row.length !== cur.length) return null;
+                if (!arrayLike(row) || row.length !== cur.length) return null;
                 for (let i = 0; i < cur.length; i++) sum += row[i] * cur[i];
                 next[o] = layer.activation === 'relu' ? Math.max(0, sum) : sum;
             }
@@ -3593,7 +3602,9 @@
 
     async function softMergeCentoBands(fetcher, data) {
         try {
-            const res = await fetcher('models/cento-dnn-bands.json');
+            const manifest = data?.sidecars?.bands;
+            if (manifest && manifest.compatible !== true) return false;
+            const res = await fetcher(manifest?.url || 'models/cento-dnn-bands.json');
             if (!res?.ok) return false;
             const bands = await res.json();
             if (!bands?.horizons || !data.nodes?.Cento) return false;
@@ -3607,7 +3618,9 @@
 
     async function softMergeCentoRisingMoe(fetcher, data) {
         try {
-            const res = await fetcher('models/cento-dnn-rising.json');
+            const manifest = data?.sidecars?.risingMoe;
+            if (manifest && manifest.reliable !== true) return false;
+            const res = await fetcher(manifest?.url || 'models/cento-dnn-rising.json');
             if (!res?.ok) return false;
             const doc = await res.json();
             if (!doc?.horizons || doc.kind !== 'window_delta_mlp') return false;
@@ -3780,16 +3793,21 @@
         }
     }
 
-    async function softApplySkillGates(fetcher, data) {
+    async function fetchSkillGates(fetcher) {
         try {
             const res = await fetcher('models/skill-gates.json');
-            if (!res?.ok) return false;
-            const gates = await res.json();
-            applySkillGates(data, gates);
-            return true;
+            if (!res?.ok) return null;
+            return await res.json();
         } catch {
-            return false;
+            return null;
         }
+    }
+
+    async function softApplySkillGates(fetcher, data) {
+        const gates = await fetchSkillGates(fetcher);
+        if (!gates) return false;
+        applySkillGates(data, gates);
+        return true;
     }
 
     /** Causal rising-limb gate: local d1>0 and at least one upstream d1>0. */
@@ -3873,6 +3891,99 @@
         return out;
     }
 
+
+    function decodePackedMlp(input) {
+        const buffer = input instanceof ArrayBuffer
+            ? input
+            : (ArrayBuffer.isView(input) ? input.buffer.slice(input.byteOffset, input.byteOffset + input.byteLength) : null);
+        if (!buffer || buffer.byteLength < 12) return null;
+        const dv = new DataView(buffer);
+        const magic = String.fromCharCode(dv.getUint8(0), dv.getUint8(1), dv.getUint8(2), dv.getUint8(3));
+        if (magic !== 'RMLQ' || dv.getUint16(4, true) !== 1) return null;
+        const horizonCount = dv.getUint16(6, true);
+        const inputSize = dv.getUint32(8, true);
+        const end = buffer.byteLength;
+        let off = 12;
+        const need = n => {
+            if (off + n > end) throw new Error('packed MLP truncated');
+        };
+        const f32Array = n => {
+            need(4 * n);
+            const out = new Array(n);
+            for (let i = 0; i < n; i++, off += 4) out[i] = dv.getFloat32(off, true);
+            return out;
+        };
+        const activations = ['linear', 'relu'];
+        const horizons = {};
+        try {
+            for (let hIndex = 0; hIndex < horizonCount; hIndex++) {
+                need(8);
+                const horizon = dv.getUint32(off, true); off += 4;
+                const layerCount = dv.getUint16(off, true); off += 2;
+                off += 2;
+                const mean = f32Array(inputSize);
+                const std = f32Array(inputSize);
+                const layers = [];
+                for (let li = 0; li < layerCount; li++) {
+                    need(12);
+                    const outSize = dv.getUint32(off, true); off += 4;
+                    const inSize = dv.getUint32(off, true); off += 4;
+                    const activation = activations[dv.getUint8(off)] || 'linear'; off += 4;
+                    if (!outSize || !inSize || outSize > 4096 || inSize > 8192) throw new Error('packed MLP invalid layer shape');
+                    const b = f32Array(outSize);
+                    const scales = f32Array(outSize);
+                    need(2 * outSize * inSize);
+                    const W = new Array(outSize);
+                    for (let r = 0; r < outSize; r++) {
+                        const row = new Float32Array(inSize);
+                        const scale = scales[r] || 1;
+                        for (let c = 0; c < inSize; c++, off += 2) row[c] = dv.getInt16(off, true) * scale;
+                        W[r] = row;
+                    }
+                    layers.push({ W, b, activation });
+                }
+                horizons[String(horizon)] = { mean, std, layers };
+            }
+            if (off !== end) return null;
+            return { inputSize, horizons };
+        } catch {
+            return null;
+        }
+    }
+
+    async function hydratePackedMlpNode(fetcher, data, station = 'Cento', options = {}) {
+        try {
+            const node = data?.nodes?.[station];
+            const packed = node?.packedWeights;
+            if (!packed?.chunks) return false;
+            const part = options.part || 'initial';
+            const parts = part === 'all' ? Object.keys(packed.chunks) : [part];
+            let changed = false;
+            node.horizons = node.horizons || {};
+            for (const key of parts) {
+                const chunk = packed.chunks[key];
+                if (!chunk?.url || !Array.isArray(chunk.horizons)) continue;
+                if (chunk.horizons.every(h => node.horizons[String(h)]?.layers)) continue;
+                const res = await fetcher(chunk.url);
+                if (!res?.ok || typeof res.arrayBuffer !== 'function') continue;
+                const decoded = decodePackedMlp(await res.arrayBuffer());
+                if (!decoded || decoded.inputSize !== packed.inputSize) continue;
+                for (const h of chunk.horizons) {
+                    const block = decoded.horizons[String(h)];
+                    if (!block) continue;
+                    node.horizons[String(h)] = {
+                        ...(packed.horizonMeta?.[String(h)] || {}),
+                        ...block
+                    };
+                    changed = true;
+                }
+            }
+            return changed;
+        } catch {
+            return false;
+        }
+    }
+
     async function loadCoeffs(fetcher, url = 'models/transfer-coeffs-runtime.json') {
         try {
             let response = await fetcher(url);
@@ -3883,15 +3994,37 @@
             if (!response?.ok) return null;
             const data = await response.json();
             if (!(data?.edges || data?.nodes)) return null;
-            // Soft-adopt reliable seq GRU for MLP nodes + known ridge→GRU candidates only.
-            await Promise.all(seqSoftAdoptCandidates(data).map(name => softAdoptSeqGru(fetcher, data, name)));
+            // Skill gates first: they can make a station unusable regardless of model kind.
+            const gates = await fetchSkillGates(fetcher);
+            if (gates) applySkillGates(data, gates);
+            // Soft-adopt only seq exports marked reliable by the runtime pack. Without packed
+            // metadata (legacy runtime), retain the old probe behavior.
+            const candidates = seqSoftAdoptCandidates(data).filter(name => {
+                if (!data.seqAdopt) return true;
+                if (data.seqAdopt[name]?.reliable !== true) return false;
+                if (!gates) return true;
+                const gate = gates.stations?.[name];
+                const lo = finite(Number(gate?.skill120CI?.lo)) ? Number(gate.skill120CI.lo)
+                    : (finite(Number(gate?.skill120)) ? Number(gate.skill120) : null);
+                if (!finite(lo)) return true;
+                const exit = finite(Number(gates.skillExit)) ? Number(gates.skillExit) : SKILL_EXIT;
+                return lo >= exit;
+            });
+            await Promise.all(candidates.map(name => softAdoptSeqGru(fetcher, data, name)));
+            if (gates && candidates.length) {
+                for (const name of candidates) {
+                    const gated = applySkillGates({ nodes: { [name]: data.nodes[name] } }, gates).nodes[name];
+                    data.nodes[name] = gated;
+                }
+            }
             // Hybrid RC / Muskingum: both current exports are reliable:false — skip probe.
             // Re-enable when a reliable hybrid is shipped alongside transfer-coeffs.
-            // Fase 3: CI + isteresi reliable. Bande quantili Cento: softMergeCentoBands (opz., pesante).
-            await softApplySkillGates(fetcher, data);
             // M2 rising inflate is tiny — merge before first paint so salita UI/band work without waiting for q10/q90.
-            await softMergeCentoRisingInflate(fetcher, data);
-            await softMergeCentoUpstreamAmplitude(fetcher, data);
+            await Promise.all([
+                softMergeCentoRisingInflate(fetcher, data),
+                softMergeCentoUpstreamAmplitude(fetcher, data),
+                hydratePackedMlpNode(fetcher, data, 'Cento', { part: 'initial' })
+            ]);
             return data;
         } catch {
             return null;
@@ -3907,7 +4040,7 @@
         sampleAt, sampleNormLevel, buildMuskingumSeq, buildRcSeq, buildSeqChannelMatrix, standardizeSeqMatrix,
         buildWindowFeatureVector, lin3Extrapolate, poly2Extrapolate, localPolyDerivatives, localLin3Slope, standardizeWindowFeatures, nextHalfHourForks, forkAround, withFork, loadCoeffs,
         softMergeCentoBands, softMergeCentoRisingInflate, softMergeCentoRisingMoe, softMergeCentoCrossing,
-        softMergeCentoUpstreamAmplitude, softApplySkillGates,
+        softMergeCentoUpstreamAmplitude, softApplySkillGates, decodePackedMlp, hydratePackedMlpNode,
         applyRisingUpperInflate, applyUpstreamAmplitudeLift, predictUpstreamPeakDelta,
         seqGruUrl, seqSoftAdoptCandidates, pearson, residuals, estimateRecentBias, estimateMlpOnlineCorrection, applyMlpOnlineCorrection,
         driverIsHigh, basinRainAt, hindcastSeries,

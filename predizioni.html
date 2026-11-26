@@ -7,7 +7,6 @@
     <meta name="theme-color" content="#123847">
     <meta name="description" content="Prova sperimentale di trasferimento monte→valle sui livelli ARPAE. Non ufficiale, non affidabile, non è una previsione di piena e non va usata per decisioni.">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <script defer src="https://cdn.plot.ly/plotly-basic-2.35.2.min.js"></script>
     <style>
         :root { --ink: #173747; --muted: #536b78; --accent: #086b78; --line: #dce6eb; --surface: #fff; --header-h: 10rem; }
         * { box-sizing: border-box; }
@@ -25,7 +24,7 @@
         .header-inner { max-width: 1600px; margin: auto; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
         .eyebrow { font-size: .75rem; letter-spacing: .14em; font-weight: 700; text-transform: uppercase; margin-bottom: .45rem; }
         h1 { font-size: clamp(1.55rem, 2.8vw, 2.35rem); font-weight: 700; letter-spacing: -.04em; margin: 0 0 .4rem; transition: font-size .2s ease; }
-        .header-tagline { margin: 0; color: #d3e5ec; white-space: nowrap; }
+        .header-tagline { margin: 0; color: #d3e5ec; max-width: 62ch; }
         .site-header.is-compact .eyebrow,
         .site-header.is-compact .header-tagline,
         .site-header.is-compact .source-link { display: none; }
@@ -124,6 +123,11 @@
             .site-header, .site-header h1 { transition: none; }
             *, *::before, *::after { scroll-behavior: auto !important; }
         }
+
+        .station-filter { display: flex; align-items: center; gap: .4rem; font-size: .82rem; color: var(--muted, #546474); }
+        .station-filter input { min-height: 44px; border: 1px solid #c7d3dc; border-radius: 10px; padding: .45rem .7rem; min-width: 11rem; }
+        .metric-chip { display: inline-block; margin: .1rem .25rem .1rem 0; padding: .18rem .45rem; border-radius: 999px; background: #eef6f8; color: #173c4b; font-weight: 650; }
+        .edge-meta details { margin-top: .35rem; font-size: .82rem; }
     </style>
 </head>
 <body>
@@ -136,6 +140,7 @@
             <nav class="site-nav" aria-label="Sezioni principali">
                 <a href="index.html#osservazioni">Osservazioni</a>
                 <a href="predizioni.html" aria-current="page">Predizioni (sperimentali)</a>
+                <a href="piene.html">Piene e modelli</a>
             </nav>
         </div>
         <div>
@@ -164,6 +169,9 @@
         <div class="pred-main">
             <div class="toolbar">
                 <h2>Predizioni per stazione a valle</h2>
+                <label class="station-filter" for="station-filter">Filtra stazione
+                    <input id="station-filter" type="search" autocomplete="off" placeholder="Nome stazione">
+                </label>
                 <div id="range-buttons" role="group" aria-label="Intervallo dei grafici">
                     <button type="button" class="range-button" data-range="24" aria-pressed="false">24 ore</button>
                     <button type="button" class="range-button active" data-range="48" aria-pressed="true">48 ore</button>
@@ -183,6 +191,7 @@
     </footer>
 </main>
 
+<script src="asset-loader.js"></script>
 <script src="dashboard-data.js"></script>
 <script src="temporal-sampling.js"></script>
 <script src="predict-transfer.js"></script>
@@ -393,7 +402,7 @@
             font: { color: '#536b78', family: 'system-ui, sans-serif', size: 10 },
             showlegend: false,
             separators: ', ',
-            uirevision: `${selectedRange}-${down.id}`,
+            uirevision: `${selectedRange}-${hours}-${down.id}`,
             xaxis: {
                 type: 'date', range: [start, end],
                 tickmode: 'array', tickvals: ticks.tickvals, ticktext: ticks.ticktext,
@@ -425,13 +434,13 @@
         else Plotly.newPlot(el, traces, layout, { responsive: true, displayModeBar: false, staticPlot: true });
     }
 
-    function drawComparePlot(elementId, down, hindcast, bandHours) {
+    function drawComparePlot(elementId, down, hindcast, hindcastHours, forecastHours) {
         const el = document.getElementById(elementId);
         if (!el || !window.Plotly || !hindcast?.ok) return;
-        const hours = bandHours || hindcast.horizonHours || 2;
+        const hours = hindcastHours || hindcast.horizonHours || 2;
         const pts = hindcast.points;
         const start = +renderTime - selectedRange * 3600000;
-        const end = +renderTime;
+        const end = +renderTime + (forecastHours || 0) * 3600000;
         const ticks = D.romeTickVals(start, end, 4);
         const xs = pts.map(p => +p.time);
         const yValues = pts.flatMap(p => [p.predicted, p.observed]);
@@ -458,7 +467,7 @@
             font: { color: '#536b78', family: 'system-ui, sans-serif', size: 10 },
             showlegend: true, legend: { orientation: 'h', y: 1.15, x: 0, font: { size: 10 } },
             separators: ', ',
-            uirevision: `compare-${selectedRange}-${down.id}`,
+            uirevision: `compare-${selectedRange}-${forecastHours || 0}-${down.id}`,
             xaxis: {
                 type: 'date', range: [start, end],
                 tickmode: 'array', tickvals: ticks.tickvals, ticktext: ticks.ticktext,
@@ -470,22 +479,32 @@
                 fixedrange: true, zeroline: false, automargin: true,
                 gridcolor: '#e7eef2', showgrid: true
             },
-            shapes: D.thresholdShapes(down),
+            shapes: [
+                ...D.thresholdShapes(down),
+                {
+                    type: 'rect', x0: +renderTime, x1: end, y0: 0, y1: 1, yref: 'paper', layer: 'below',
+                    fillcolor: 'rgba(83,107,120,.055)', line: { width: 0 }
+                },
+                {
+                    type: 'line', x0: +renderTime, x1: +renderTime, y0: 0, y1: 1, yref: 'paper',
+                    line: { color: '#9bb0ba', width: 1, dash: 'dot' }
+                }
+            ],
             autosize: true, height: 180,
             margin: { t: 28, b: 40, r: 18, l: 48 },
-            title: { text: `Stesso istante: predetto ${formatHorizonHours(hours)} h prima vs successo`, font: { size: 11, color: '#536b78' }, x: 0, xanchor: 'left' }
+            title: { text: `Stesso istante: predetto ${formatHorizonHours(hours)} h prima vs successo · asse allineato`, font: { size: 11, color: '#536b78' }, x: 0, xanchor: 'left' }
         };
         el.setAttribute('aria-label', `${down.name}: confronto allo stesso istante tra predetto e osservato.`);
         if (el.data) Plotly.react(el, traces, layout, { responsive: true, displayModeBar: false, staticPlot: true });
         else Plotly.newPlot(el, traces, layout, { responsive: true, displayModeBar: false, staticPlot: true });
     }
 
-    function drawResidualPlot(elementId, down, hindcast) {
+    function drawResidualPlot(elementId, down, hindcast, forecastHours) {
         const el = document.getElementById(elementId);
         if (!el || !window.Plotly || !hindcast?.ok) return;
         const pts = hindcast.points;
         const start = +renderTime - selectedRange * 3600000;
-        const end = +renderTime;
+        const end = +renderTime + (forecastHours || 0) * 3600000;
         const ticks = D.romeTickVals(start, end, 4);
         const res = pts.map(p => p.residual);
         const pad = Math.max(0.05, ...res.map(Math.abs)) * 1.15;
@@ -498,7 +517,7 @@
             paper_bgcolor: '#fff', plot_bgcolor: '#fff',
             font: { color: '#536b78', family: 'system-ui, sans-serif', size: 10 },
             showlegend: false, separators: ', ',
-            uirevision: `resid-${selectedRange}-${down.id}`,
+            uirevision: `resid-${selectedRange}-${forecastHours || 0}-${down.id}`,
             xaxis: {
                 type: 'date', range: [start, end],
                 tickmode: 'array', tickvals: ticks.tickvals, ticktext: ticks.ticktext,
@@ -510,8 +529,18 @@
                 fixedrange: true, zeroline: true, zerolinecolor: '#9bb0ba', automargin: true,
                 gridcolor: '#e7eef2', showgrid: true
             },
+            shapes: [
+                {
+                    type: 'rect', x0: +renderTime, x1: end, y0: 0, y1: 1, yref: 'paper', layer: 'below',
+                    fillcolor: 'rgba(83,107,120,.055)', line: { width: 0 }
+                },
+                {
+                    type: 'line', x0: +renderTime, x1: +renderTime, y0: 0, y1: 1, yref: 'paper',
+                    line: { color: '#9bb0ba', width: 1, dash: 'dot' }
+                }
+            ],
             autosize: true, height: 120,
-            margin: { t: 8, b: 40, r: 18, l: 52 }
+            margin: { t: 8, b: 40, r: 18, l: 48 }
         };
         el.setAttribute('aria-label', `${down.name}: residui allo stesso istante di verifica.`);
         if (el.data) Plotly.react(el, traces, layout, { responsive: true, displayModeBar: false, staticPlot: true });
@@ -551,17 +580,19 @@
 
     function predictionMetaHtml(node, prediction, nodeModel, hours, reliableH) {
         const upsLabel = (prediction.upstreams || node.upstreams).join(' + ');
-        const skillLabel = prediction.skill120 == null ? '' : ` · skill@2h ${prediction.skill120.toFixed(2)}`;
         const ci = nodeModel?.skill120CI;
         const ciLabel = ci && Number.isFinite(ci.lo) && Number.isFinite(ci.hi)
-            ? ` · CI90 [${ci.lo.toFixed(2)}, ${ci.hi.toFixed(2)}]`
-            : '';
-        const bandLabel = nodeModel?.quantiles ? ' · banda q10–90' : '';
-        const risingBandLabel = prediction.risingBand?.active
-            ? ` · salita banda ×${Number(prediction.risingBand.upperInflate || 1).toFixed(1)}`
-            : '';
+            ? `CI90 [${ci.lo.toFixed(2)}, ${ci.hi.toFixed(2)}]`
+            : 'CI n/d';
+        const skill = prediction.skill120 == null ? 'n/d' : prediction.skill120.toFixed(2);
+        const bandLabel = nodeModel?.quantiles ? 'banda q10–90' : 'banda residua';
         const degLabel = prediction.degraded ? ' · <strong>degradata</strong>' : '';
-        return `da <strong>${upsLabel}</strong><br>lag ${formatLags(prediction)} · r=${prediction.r == null ? 'n/d' : prediction.r.toFixed(2)} · RMSE ${number(prediction.rmse)} m · fonte <strong>${prediction.source}</strong>${prediction.kind ? ' · ' + prediction.kind : ''}${skillLabel}${ciLabel}${bandLabel}${risingBandLabel}${degLabel}<br>orizzonte pieno ${formatHorizonHours(reliableH)} h · coda sfumata fino a ${formatHorizonHours(hours)} h${prediction.reason ? '<br>' + prediction.reason : ''}`;
+        return `da <strong>${upsLabel}</strong><br>`
+            + `<span class="metric-chip">errore tipico ±${number(prediction.rmse)} m</span>`
+            + `<span class="metric-chip">skill@2h ${skill}</span>`
+            + `<span class="metric-chip">affidabile fino a ${formatHorizonHours(reliableH)} h</span>${degLabel}<br>`
+            + `Coda sfumata fino a ${formatHorizonHours(hours)} h · ${bandLabel}. Skill: 1 perfetta, 0 come persistenza, sotto 0 peggiore.`
+            + `<details><summary>Dettagli tecnici</summary>lag ${formatLags(prediction)} · r=${prediction.r == null ? 'n/d' : prediction.r.toFixed(2)} · fonte ${prediction.source}${prediction.kind ? ' · ' + prediction.kind : ''} · ${ciLabel}${prediction.reason ? '<br>' + prediction.reason : ''}</details>`;
     }
 
     function stationThresholds(sensor) {
@@ -617,6 +648,13 @@
     function refreshCardPlots(downstream) {
         const state = cardState.get(downstream);
         if (!state) return;
+        if (!window.Plotly) {
+            window.RenoAssets?.loadPlotly().then(() => refreshCardPlots(downstream)).catch(() => {
+                const plot = document.getElementById(`plot-${nodeCardId(downstream)}`);
+                if (plot) plot.textContent = 'Grafici non disponibili. Tabella e misure restano consultabili.';
+            });
+            return;
+        }
         const id = nodeCardId(downstream);
         const compareEl = document.getElementById(`compare-${id}`);
         const residEl = document.getElementById(`resid-${id}`);
@@ -651,14 +689,14 @@
             if (compareEl) {
                 compareEl.hidden = false;
                 requestAnimationFrame(() => {
-                    drawComparePlot(`compare-${id}`, state.down, hc, hindcastH);
+                    drawComparePlot(`compare-${id}`, state.down, hc, hindcastH, bandH);
                     if (window.Plotly?.Plots) Plotly.Plots.resize(compareEl);
                 });
             }
             if (residEl) {
                 residEl.hidden = false;
                 requestAnimationFrame(() => {
-                    drawResidualPlot(`resid-${id}`, state.down, hc);
+                    drawResidualPlot(`resid-${id}`, state.down, hc, bandH);
                     if (window.Plotly?.Plots) Plotly.Plots.resize(residEl);
                 });
             }
@@ -926,15 +964,26 @@
                 }
             });
         }
+        applyStationFilter();
         updateStationDag();
         const offline = (coeffs?.nodes && Object.keys(coeffs.nodes).length)
             || (coeffs?.edges && Object.keys(coeffs.edges).length);
-        status.textContent = `Sperimentale · ${okCount} stazioni con stima · aggiornato ${dateTime(renderTime)} · modello offline ${offline ? 'caricato' : 'assente'} · senza valore operativo`;
+        const cachedObs = Object.values(sensorsById).some(sensor => sensor?.cached);
+        status.textContent = `Sperimentale · ${okCount} stazioni con stima · aggiornato ${dateTime(renderTime)} · modello offline ${offline ? 'caricato' : 'assente'}${cachedObs ? ' · osservazioni da cache locale' : ''} · senza valore operativo`;
         const target = grid.querySelector('.edge-card.is-target');
         if (target) {
             updateHeaderCompact();
             target.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'start' });
         }
+    }
+
+
+    function applyStationFilter() {
+        const q = (document.getElementById('station-filter')?.value || '').trim().toLocaleLowerCase('it-IT');
+        document.querySelectorAll('.edge-card').forEach(card => {
+            const name = (card.dataset.downstream || '').toLocaleLowerCase('it-IT');
+            card.hidden = !!q && !name.includes(q);
+        });
     }
 
     function bindRangeButtons() {
@@ -974,6 +1023,7 @@
         updateHeaderCompact();
         bindRangeButtons();
         ensurePlotObserver();
+        document.getElementById('station-filter')?.addEventListener('input', () => applyStationFilter());
         window.addEventListener('scroll', () => updateHeaderCompact(), { passive: true });
         window.addEventListener('hashchange', () => {
             document.querySelectorAll('.edge-card.is-target').forEach(el => el.classList.remove('is-target'));
@@ -990,34 +1040,72 @@
         });
         try {
             const fetchFn = window.fetch.bind(window);
-            // Config + coeffs in parallel; ARPAE starts as soon as config is ready (not after coeffs).
+            // Config + coeffs in parallel; cached observations render before the ARPAE network call.
             const configP = client.json('config.json');
             const coeffsP = P.loadCoeffs(fetchFn);
             config = await configP;
             const cache = D.readCache(window.localStorage, config);
-            const [coeffsResult, arpaeResult] = await Promise.all([coeffsP, client.load(config)]);
-            coeffs = coeffsResult;
-            const now = Date.now();
-            const records = { ...cache };
-            Object.entries(arpaeResult.items).forEach(([name, item]) => { records[name] = { item, fetchedAt: now }; });
-            D.saveCache(window.localStorage, records);
-            sensorsById = Object.fromEntries(Object.keys(config.sensors).map(name => {
-                const record = records[name];
-                const parsed = record ? D.parseSensorData(name, record.item, { kind: 'level' }) : null;
-                return [name, parsed || blank(name)];
-            }));
-            for (const gauge of D.rainfallGauges(config)) {
-                const record = records[gauge.name];
-                const parsed = record
-                    ? D.parseSensorData(gauge.name, record.item, {
-                        kind: 'rain', impacts: gauge.impacts, dagColumn: gauge.dagColumn
-                    })
-                    : null;
-                sensorsById[gauge.name] = parsed || {
-                    ...blank(gauge.name), kind: 'rain', unit: 'mm', impacts: gauge.impacts, dagColumn: gauge.dagColumn
-                };
+            const applyRecords = (records, cached) => {
+                sensorsById = Object.fromEntries(Object.keys(config.sensors).map(name => {
+                    const record = records[name];
+                    const parsed = record ? D.parseSensorData(name, record.item, { kind: 'level' }) : null;
+                    return [name, { ...(parsed || blank(name)), cached, fetchedAt: record?.fetchedAt || null }];
+                }));
+                for (const gauge of D.rainfallGauges(config)) {
+                    const record = records[gauge.name];
+                    const parsed = record
+                        ? D.parseSensorData(gauge.name, record.item, {
+                            kind: 'rain', impacts: gauge.impacts, dagColumn: gauge.dagColumn
+                        })
+                        : null;
+                    sensorsById[gauge.name] = {
+                        ...(parsed || { ...blank(gauge.name), kind: 'rain', unit: 'mm', impacts: gauge.impacts, dagColumn: gauge.dagColumn }),
+                        cached,
+                        fetchedAt: record?.fetchedAt || null
+                    };
+                }
+            };
+            coeffs = await coeffsP;
+            if (Object.keys(cache).length) {
+                applyRecords(cache, true);
+                renderAll();
             }
-            renderAll();
+            const refreshLive = async () => {
+                const arpaeResult = await client.load(config);
+                const now = Date.now();
+                const records = { ...cache };
+                Object.entries(arpaeResult.items).forEach(([name, item]) => { records[name] = { item, fetchedAt: now }; });
+                D.saveCache(window.localStorage, records);
+                applyRecords(records, false);
+                renderAll();
+            };
+            const expectedNames = [
+                ...Object.keys(config.sensors),
+                ...D.rainfallGauges(config).map(gauge => gauge.name)
+            ];
+            const refreshMs = Math.max(5, Number(config.refreshMinutes) || 5) * 60000;
+            const cacheFresh = expectedNames.length && expectedNames.every(name =>
+                cache[name] && Date.now() - cache[name].fetchedAt >= 0 && Date.now() - cache[name].fetchedAt < refreshMs
+            );
+            let livePromise = null;
+            if (!cacheFresh) {
+                livePromise = refreshLive().catch(error => {
+                    const line = document.getElementById('status-line');
+                    if (line && !Object.keys(cache).length) line.textContent = error.message || 'Impossibile caricare i dati.';
+                });
+                if (!Object.keys(cache).length) await livePromise;
+            } else {
+                const oldest = Math.min(...expectedNames.map(name => cache[name].fetchedAt));
+                const waitMs = Math.max(1000, oldest + refreshMs - Date.now() + 1000);
+                setTimeout(() => refreshLive().catch(() => {}), waitMs);
+            }
+            const loadTail = () => {
+                P.hydratePackedMlpNode(fetchFn, coeffs, 'Cento', { part: 'tail' }).then(ok => {
+                    if (ok) refreshCard('Cento');
+                }).catch(() => { /* coda MLP opzionale */ });
+            };
+            if ('requestIdleCallback' in window) requestIdleCallback(loadTail, { timeout: 2500 });
+            else setTimeout(loadTail, 900);
             // Banda q10–90 Cento (~48 MB): dopo il primo paint; aggiorna solo la card Cento.
             if (coeffs?.nodes?.Cento?.kind === 'window_delta_mlp') {
                 P.softMergeCentoBands(fetchFn, coeffs).then(ok => {
