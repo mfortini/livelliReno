@@ -16,7 +16,7 @@
 
     <!-- RainViewer Radar (using direct API integration) -->
 
-    <!-- Plotly.js for charts (using specific version) -->
+    <!-- Chart.js for charts (pinned version loaded lazily) -->
     <meta name="description" content="Livelli osservati del Reno e del Samoggia: misure ARPAE, grafici delle ultime 72 ore e mappa delle stazioni. Dati e soglie, non previsioni di piena.">
 
     <style>
@@ -409,6 +409,7 @@
 </div>
 
 <script src="asset-loader.js"></script>
+<script src="chartjs-renderer.js"></script>
 <script src="dashboard-data.js"></script>
 <script src="temporal-sampling.js"></script>
 <script src="predict-transfer.js"></script>
@@ -719,106 +720,69 @@
         return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     }
 
-    // ===== Draw Time Series Chart with Levels and Gridlines using Plotly.js =====
+    // ===== Draw Time Series Chart with Levels and Gridlines using Chart.js =====
     function drawTimeSeries(sensor, plotElementId, range, zoomed = false) {
-        if (!window.Plotly) {
-            const target = document.getElementById(plotElementId);
-            if (target) target.textContent = 'Caricamento grafico…';
-            window.RenoAssets?.loadPlotly().then(() => drawTimeSeries(sensor, plotElementId, range, zoomed)).catch(() => {
+        const element = document.getElementById(plotElementId);
+        if (!element) return;
+        if (!window.Chart || !window.RenoChartjs) {
+            element.textContent = 'Caricamento grafico…';
+            window.RenoAssets?.loadChartJs().then(() => drawTimeSeries(sensor, plotElementId, range, zoomed)).catch(() => {
                 const el = document.getElementById(plotElementId);
                 if (el) el.textContent = 'Grafici non disponibili. Le misure restano consultabili.';
             });
             return;
         }
-        // Filter the time series data based on the selected range (24, 48, 72 hours)
         const filteredData = D.filter(sensor, range, renderTime);
-        const element = document.getElementById(plotElementId);
-        if (!element) return;
         const version = (element.renderVersion || 0) + 1;
         element.renderVersion = version;
-        if (!window.Plotly || !filteredData.some(point => point.value !== null) || (isNormalized && !D.yellowThreshold(sensor))) {
-            const message = !window.Plotly ? 'Grafici non disponibili. Le misure restano consultabili.' : isNormalized && !D.yellowThreshold(sensor) ? 'Rapporto non calcolabile: soglia gialla non disponibile.' : 'Nessuna misura valida nell’intervallo selezionato.';
-            element.renderPromise = (element.renderPromise || Promise.resolve()).catch(() => {}).then(() => {
-                if (element.renderVersion !== version) return;
-                if (element.data && window.Plotly) Plotly.purge(element);
-                element.textContent = message;
-            });
+        if (!filteredData.some(point => point.value !== null) || (isNormalized && !D.yellowThreshold(sensor))) {
+            const message = isNormalized && !D.yellowThreshold(sensor) ? 'Rapporto non calcolabile: soglia gialla non disponibile.' : 'Nessuna misura valida nell’intervallo selezionato.';
+            window.RenoChartjs.destroyChart(element);
+            element.textContent = message;
             return;
         }
-        // Convert times to Europe/Rome timezone
         const points = D.withGaps(filteredData);
         const times = points.map(d => +d.time);
         const values = points.map(d => isNormalized ? D.normalize(sensor, d.value) : d.value);
-        const hoverFormatter = new Intl.DateTimeFormat('it-IT', { timeZone: 'Europe/Rome', dateStyle: 'short', timeStyle: 'long' });
         const traces = [{
             x: times, y: values, type: 'scatter', mode: 'lines', name: isNormalized ? '(liv−giallo)/giallo' : 'Livello',
-            customdata: points.map(d => hoverFormatter.format(d.time)), connectgaps: false,
-            hovertemplate: '%{customdata}<br><b>%{y:.2f}' + (isNormalized ? '' : ' m') + '</b><extra></extra>',
             line: { color: '#087e91', width: 2.5 }
         }];
-
-        // Calculate the weighted average using only the filtered data
         const weightedAverage = D.weightedAverage(sensor, filteredData, isNormalized);
         const yAxisRange = D.yRangeFor(sensor, values, { normalized: isNormalized });
         const start = +renderTime - range * 3600000;
         const end = +renderTime;
         const tickCount = zoomed ? 7 : 4;
         const ticks = D.romeTickVals(start, end, tickCount);
-
         const layout = {
-            paper_bgcolor: '#fff',
-            plot_bgcolor: '#fff',
-            font: { color: '#536b78', family: 'system-ui, sans-serif', size: 10 },
             showlegend: false,
-            separators: ', ',
-            dragmode: zoomed ? 'zoom' : false,
-            uirevision: `${range}-${isNormalized}`,
             xaxis: {
                 type: 'date', range: [start, end],
-                tickmode: 'array', tickvals: ticks.tickvals, ticktext: ticks.ticktext,
-                fixedrange: !zoomed, zeroline: false, automargin: true,
-                gridcolor: '#e7eef2',
-                showgrid: true,
-                tickformat: '%d %b %H:%M',
-                tickformatstops: [{ dtickrange: [null, null], value: '%d %b %H:%M' }]
+                tickmode: 'array', tickvals: ticks.tickvals, ticktext: ticks.ticktext
             },
             yaxis: {
-                range: yAxisRange, title: { text: isNormalized ? '(liv−g)/g' : 'm', font: { size: 10 }, standoff: 4 },
-                fixedrange: !zoomed, zeroline: isNormalized, zerolinecolor: '#a68000', automargin: true,
-                gridcolor: '#e7eef2',
-                showgrid: true
+                range: yAxisRange, title: { text: isNormalized ? '(liv−g)/g' : 'm' },
+                zeroline: isNormalized, zerolinecolor: '#a68000'
             },
             shapes: [
                 ...D.thresholdShapes(sensor, { normalized: isNormalized }),
                 ...(D.averageShape(weightedAverage) ? [D.averageShape(weightedAverage)] : [])
-            ],
-            autosize: true,
-            height: zoomed ? Math.max(260, Math.min(window.innerHeight * .6, 500)) : 245,
-            margin: { t: 15, b: 45, r: 18, l: 48 }
+            ]
         };
-        const plot_config = {
-            responsive: true, displayModeBar: zoomed, displaylogo: false, scrollZoom: false,
-            modeBarButtonsToRemove: ['select2d', 'lasso2d'],
-            staticPlot: isTouchDevice() && !zoomed
-        };
-        // Ensure the element exists before calling Plotly
         element.setAttribute('aria-label', `${sensor.name}: andamento delle ultime ${range} ore, ${isNormalized ? 'scarto (livello−giallo)/giallo' : 'livello in metri'}. Orari italiani.`);
-        element.renderPromise = (element.renderPromise || Promise.resolve()).catch(() => {}).then(async () => {
+        try {
             if (element.renderVersion !== version || !element.isConnected) return;
-            // Check if the plot already exists
-            if (element.data) {
-                // Update the plot using Plotly.react
-                await Plotly.react(element, traces, layout, plot_config);
-            } else {
-                // Create the plot for the first time
-                element.textContent = '';
-                await Plotly.newPlot(element, traces, layout, plot_config);
-            }
-        }).catch(error => {
+            window.RenoChartjs.renderTraceChart(element, traces, layout, {
+                interactive: !isTouchDevice(),
+                xType: 'time',
+                yUnit: isNormalized ? '' : ' m',
+                yAxisWidth: 48
+            });
+        } catch (error) {
             if (element.renderVersion !== version) return;
             element.textContent = 'Grafico non disponibile. Consulta le misure o la fonte ARPAE.';
             console.error('Errore nel grafico:', error);
-        });
+        }
     }
 
     // ===== Filter the time series data to show only the latest X hours =====
@@ -1168,7 +1132,7 @@
                     cardHeader.className = 'sensor-card-header';
                     cardHeader.innerHTML = '<h3></h3><p class="sensor-basin"></p><div class="sensor-value"></div><div class="sensor-status"></div><p class="sensor-time"></p>';
                     const cardBody = document.createElement('div');
-                    // Create a div element for the Plotly chart
+                    // Create a div element for the chart
                     const plotDiv = document.createElement('div');
                     plotDiv.id = `plot-${sensor.id}`;
                     plotDiv.className = 'sensor-plot';

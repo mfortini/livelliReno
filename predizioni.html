@@ -192,6 +192,7 @@
 </main>
 
 <script src="asset-loader.js"></script>
+<script src="chartjs-renderer.js"></script>
 <script src="dashboard-data.js"></script>
 <script src="temporal-sampling.js"></script>
 <script src="predict-transfer.js"></script>
@@ -220,6 +221,17 @@
     const cardState = new Map();
     const visiblePlots = new Set();
     let plotObserver = null;
+    function chartBackendReady() {
+        return !!(window.Chart && window.RenoChartjs);
+    }
+
+    function renderPredPlot(el, traces, layout) {
+        window.RenoChartjs.renderTraceChart(el, traces, layout, { interactive: false, yAxisWidth: 48 });
+    }
+
+    function purgePredPlot(el) {
+        if (el) window.RenoChartjs?.destroyChart(el);
+    }
 
     function reliableHoursFor(nodeModel, prediction) {
         const fromModel = P.maxReliableHorizonMinutes(nodeModel || prediction) / 60;
@@ -331,7 +343,7 @@
 
     function drawStationPlot(elementId, down, prediction, hindcast, bandHours, options = {}) {
         const el = document.getElementById(elementId);
-        if (!el || !window.Plotly || !prediction?.ok) return;
+        if (!el || !chartBackendReady() || !prediction?.ok) return;
         const hours = bandHours || bandHoursFor(null, prediction);
         const reliableH = reliableHoursFor(null, prediction);
         const reliableEnd = +renderTime + reliableH * 3600000;
@@ -430,13 +442,12 @@
             margin: { t: 15, b: 45, r: 18, l: 48 }
         };
         el.setAttribute('aria-label', `${down.name}: ultime ${selectedRange} ore e previsione sperimentale fino a ${formatHorizonHours(hours)} h (affidabile ${formatHorizonHours(reliableH)} h). Orari italiani.`);
-        if (el.data) Plotly.react(el, traces, layout, { responsive: true, displayModeBar: false, staticPlot: true });
-        else Plotly.newPlot(el, traces, layout, { responsive: true, displayModeBar: false, staticPlot: true });
+        renderPredPlot(el, traces, layout);
     }
 
     function drawComparePlot(elementId, down, hindcast, hindcastHours, forecastHours) {
         const el = document.getElementById(elementId);
-        if (!el || !window.Plotly || !hindcast?.ok) return;
+        if (!el || !chartBackendReady() || !hindcast?.ok) return;
         const hours = hindcastHours || hindcast.horizonHours || 2;
         const pts = hindcast.points;
         const start = +renderTime - selectedRange * 3600000;
@@ -495,13 +506,12 @@
             title: { text: `Stesso istante: predetto ${formatHorizonHours(hours)} h prima vs successo · asse allineato`, font: { size: 11, color: '#536b78' }, x: 0, xanchor: 'left' }
         };
         el.setAttribute('aria-label', `${down.name}: confronto allo stesso istante tra predetto e osservato.`);
-        if (el.data) Plotly.react(el, traces, layout, { responsive: true, displayModeBar: false, staticPlot: true });
-        else Plotly.newPlot(el, traces, layout, { responsive: true, displayModeBar: false, staticPlot: true });
+        renderPredPlot(el, traces, layout);
     }
 
     function drawResidualPlot(elementId, down, hindcast, forecastHours) {
         const el = document.getElementById(elementId);
-        if (!el || !window.Plotly || !hindcast?.ok) return;
+        if (!el || !chartBackendReady() || !hindcast?.ok) return;
         const pts = hindcast.points;
         const start = +renderTime - selectedRange * 3600000;
         const end = +renderTime + (forecastHours || 0) * 3600000;
@@ -543,8 +553,7 @@
             margin: { t: 8, b: 40, r: 18, l: 48 }
         };
         el.setAttribute('aria-label', `${down.name}: residui allo stesso istante di verifica.`);
-        if (el.data) Plotly.react(el, traces, layout, { responsive: true, displayModeBar: false, staticPlot: true });
-        else Plotly.newPlot(el, traces, layout, { responsive: true, displayModeBar: false, staticPlot: true });
+        renderPredPlot(el, traces, layout);
     }
 
     function computeHindcast(state) {
@@ -648,8 +657,8 @@
     function refreshCardPlots(downstream) {
         const state = cardState.get(downstream);
         if (!state) return;
-        if (!window.Plotly) {
-            window.RenoAssets?.loadPlotly().then(() => refreshCardPlots(downstream)).catch(() => {
+        if (!chartBackendReady()) {
+            window.RenoAssets?.loadChartJs().then(() => refreshCardPlots(downstream)).catch(() => {
                 const plot = document.getElementById(`plot-${nodeCardId(downstream)}`);
                 if (plot) plot.textContent = 'Grafici non disponibili. Tabella e misure restano consultabili.';
             });
@@ -690,14 +699,12 @@
                 compareEl.hidden = false;
                 requestAnimationFrame(() => {
                     drawComparePlot(`compare-${id}`, state.down, hc, hindcastH, bandH);
-                    if (window.Plotly?.Plots) Plotly.Plots.resize(compareEl);
                 });
             }
             if (residEl) {
                 residEl.hidden = false;
                 requestAnimationFrame(() => {
                     drawResidualPlot(`resid-${id}`, state.down, hc, bandH);
-                    if (window.Plotly?.Plots) Plotly.Plots.resize(residEl);
                 });
             }
             if (note) {
@@ -715,11 +722,11 @@
         } else {
             if (compareEl) {
                 compareEl.hidden = true;
-                if (window.Plotly && compareEl.data) Plotly.purge(compareEl);
+                purgePredPlot(compareEl);
             }
             if (residEl) {
                 residEl.hidden = true;
-                if (window.Plotly && residEl.data) Plotly.purge(residEl);
+                purgePredPlot(residEl);
             }
             if (note) {
                 note.hidden = true;

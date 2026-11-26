@@ -241,28 +241,15 @@
 </main>
 
 <script src="asset-loader.js"></script>
+<script src="chartjs-renderer.js"></script>
 <script>
 (function () {
     'use strict';
 
-    // ---- asset loading: prefer shared RenoAssets, fallback to a tiny local loader
-    let plotlyPromise = null;
-    function loadPlotly() {
-        if (window.Plotly) return Promise.resolve(window.Plotly);
-        if (window.RenoAssets && typeof window.RenoAssets.loadPlotly === 'function') {
-            return window.RenoAssets.loadPlotly();
-        }
-        if (!plotlyPromise) {
-            plotlyPromise = new Promise((resolve, reject) => {
-                const s = document.createElement('script');
-                s.src = 'https://cdn.plot.ly/plotly-basic-2.35.2.min.js';
-                s.async = true;
-                s.onload = () => resolve(window.Plotly);
-                s.onerror = () => reject(new Error('Plotly non disponibile'));
-                document.head.appendChild(s);
-            });
-        }
-        return plotlyPromise;
+    // ---- asset loading
+    function loadChartJs() {
+        if (window.Chart && window.RenoChartjs) return Promise.resolve(window.Chart);
+        return window.RenoAssets.loadChartJs();
     }
 
     // ---- formatting helpers (Europe/Rome, Italian style)
@@ -521,7 +508,7 @@
         document.getElementById('page-next').disabled = page >= pages - 1;
     }
 
-    // ---- 4) event detail: lazy series + lazy Plotly
+    // ---- 4) event detail: lazy series + lazy Chart.js
     function loadSeries() {
         if (seriesPack) return Promise.resolve(seriesPack);
         if (!seriesPromise) {
@@ -551,9 +538,7 @@
 
     function clearEventPlot(message) {
         const plotDiv = document.getElementById('event-plot');
-        if (window.Plotly && plotDiv.data && typeof window.Plotly.purge === 'function') {
-            window.Plotly.purge(plotDiv);
-        }
+        window.RenoChartjs?.destroyChart(plotDiv);
         plotDiv.textContent = '';
         const note = document.getElementById('event-note');
         if (note) note.textContent = message;
@@ -583,12 +568,12 @@
             clearEventPlot('Serie monte-valle non disponibile: questo evento non è presente nel report monte-valle usato per il pack.');
             return;
         }
-        Promise.all([loadSeries(), loadResponses(), loadPlotly()])
-            .then(([sp, rp, Plotly]) => drawEventPlot(sp, Plotly, c, rp))
+        Promise.all([loadSeries(), loadResponses(), loadChartJs()])
+            .then(([sp, rp]) => drawEventPlot(sp, c, rp))
             .catch(err => clearEventPlot('Grafico non disponibile: ' + err.message));
     }
 
-    function drawEventPlot(sp, Plotly, c, rp) {
+    function drawEventPlot(sp, c, rp) {
         const ev = sp.events[String(c.metaId)];
         const plotDiv = document.getElementById('event-plot');
         if (!ev) { clearEventPlot('Serie non trovata per questo evento nel pack caricato.'); return; }
@@ -633,7 +618,7 @@
         }
         const layout = {
             margin: { t: 20, r: 16, b: 46, l: 52 },
-            xaxis: { title: 'Ore rispetto al picco di Cento', zeroline: true, zerolinecolor: '#c62828' },
+            xaxis: { title: 'Ore rispetto al picco di Cento', range: [x[0], x[x.length - 1]], zeroline: true, zerolinecolor: '#c62828' },
             yaxis: { title: 'Livello relativo (m)' },
             legend: { orientation: 'h', y: -0.18 },
             shapes: [{
@@ -641,7 +626,13 @@
                 line: { color: '#c62828', width: 1, dash: 'dot' }
             }]
         };
-        Plotly.react(plotDiv, traces, layout, { responsive: true, displaylogo: false });
+        window.RenoChartjs.renderTraceChart(plotDiv, traces, layout, {
+            interactive: true,
+            xType: 'linear',
+            yUnit: ' m',
+            tickCount: 7,
+            xTooltipFormatter: value => `${Math.round(value)} h dal picco`
+        });
         const note = document.getElementById('event-note');
         if (note) {
             note.textContent = response?.pred?.some(Number.isFinite)

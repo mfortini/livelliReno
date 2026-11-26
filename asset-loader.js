@@ -34,10 +34,12 @@
         document.head.appendChild(link);
     }
 
-    function loadPlotly() {
-        if (window.Plotly) return Promise.resolve(window.Plotly);
-        return loadScript('plotly', 'https://cdn.plot.ly/plotly-basic-2.35.2.min.js')
-            .then(() => window.Plotly);
+    function loadChartJs() {
+        if (window.Chart) return Promise.resolve(window.Chart);
+        return loadScript('chartjs', 'https://unpkg.com/chart.js@4.5.1/dist/chart.umd.min.js', {
+            integrity: 'sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ',
+            crossorigin: ''
+        }).then(() => window.Chart);
     }
 
     function loadLeaflet() {
@@ -54,5 +56,5 @@
             .then(() => window.L);
     }
 
-    root.RenoAssets = { loadPlotly, loadLeaflet };
+    root.RenoAssets = { loadChartJs, loadLeaflet };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
