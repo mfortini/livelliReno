@@ -21,3 +21,4 @@ models/ml-cento-compare-leakfree-*.json
 models/ab-*-eval.json
 models/ab-*-per-event.json
 graphify-out/
+models/cento-dnn-*.json
