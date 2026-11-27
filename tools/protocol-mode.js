@@ -332,6 +332,26 @@ function buildCandidatesForNode(node, ctx) {
         if (musk) {
             out.muskingum_gru = { coeffs: { nodes: { [node]: force(musk) } } };
         }
+        // GRU≤blendStart + MLP long with linear junction (A/B vs prod MLP).
+        const mlpNode = prodNode?.kind === 'window_delta_mlp' ? prodNode : null;
+        if (seqGru && mlpNode) {
+            out.blend_gru_mlp = {
+                coeffs: {
+                    nodes: {
+                        [node]: force({
+                            kind: 'blend_gru_mlp',
+                            downstream: node,
+                            blendStartMin: 60,
+                            blendEndMin: 120,
+                            gru: { ...seqGru, reliable: true },
+                            mlp: { ...mlpNode, reliable: true },
+                            skill120: seqGru.skill120 ?? mlpNode.skill120
+                        })
+                    }
+                },
+                note: 'GRU≤60′ → blend 60–120′ → MLP≥120′'
+            };
+        }
         const rc = loadJson(path.join(ctx.root, 'models/hybrid-rc-cento.json'));
         if (rc) {
             out.rc_gru = { coeffs: { nodes: { [node]: force(rc) } } };

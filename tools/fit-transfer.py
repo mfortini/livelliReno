@@ -46,6 +46,7 @@ HIGH_QUANTILE = 0.85
 SPIKE_ABS = 3.0  # m in one 30-min step → drop
 SKILL_KEEP = 0.10  # min event skill@120 to mark reliable
 HOLDOUT_MONTHS = 3
+HOLDOUT_FROM: str | None = None  # overridden by --holdout-from
 RAIN6_STEPS = 12  # 6 h
 RAIN24_STEPS = 48  # 24 h
 SPLIT_MODE = "alt"  # "alt" | "block"; overridden by --split
@@ -271,6 +272,7 @@ def month_blocks(
     Defaults to module ``SPLIT_MODE`` (set by CLI ``--split``).
     """
     mode = mode or SPLIT_MODE
+    holdout_from = holdout_from if holdout_from is not None else HOLDOUT_FROM
     naive = index.tz_convert("UTC").tz_localize(None) if index.tz is not None else index
     months = naive.to_period("M")
     uniq = months.unique().sort_values()
@@ -741,10 +743,17 @@ def main() -> None:
         default="alt",
         help="Train/validate month split: alternating (alt) or contiguous halves (block)",
     )
+    parser.add_argument(
+        "--holdout-from",
+        type=str,
+        default=None,
+        help="ISO date (e.g. 2026-01-01): months ≥ cut → holdout; usare una data futura per includere i mesi recenti in training",
+    )
     args = parser.parse_args()
 
-    global SPLIT_MODE
+    global SPLIT_MODE, HOLDOUT_FROM
     SPLIT_MODE = args.split
+    HOLDOUT_FROM = args.holdout_from
     warnings.filterwarnings("ignore", category=FutureWarning)
     warnings.filterwarnings("ignore", message=".*inplace keyword.*")
     t0 = time.time()

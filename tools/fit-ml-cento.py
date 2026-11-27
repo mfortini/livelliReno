@@ -70,7 +70,27 @@ UPSTREAMS_NO_CHIUSA = [
     "Bonconvento",
     "Casalecchio tiro a volo",
 ]
-EVENT_PAD = pd.Timedelta(hours=6)  # catalog flood windows ±6 h for flood-only train
+# Global Reno monte set: headwaters (u) + mid-chain state (x) excluding Cento.
+# Order: heads first, then mid-chain toward Cento (Forcelli / Bagnetto last).
+UPSTREAMS_GLOBAL = [
+    "Pracchia",
+    "Silla",
+    "Suviana",
+    "Invaso",
+    "Lavino di Sotto",
+    "Paltrone Samoggia",
+    "Porretta Terme",
+    "Vergato DX",
+    "Sasso Marconi",
+    "Casalecchio chiusa",
+    "Casalecchio tiro a volo",
+    "Bonconvento",
+    "Sostegno Reno",
+    "Bagnetto Reno",
+    "Forcelli",
+]
+EVENT_PAD_HOURS = 6  # catalog flood windows ±N h for flood-only train (CLI override)
+EVENT_PAD = pd.Timedelta(hours=EVENT_PAD_HOURS)
 # Downstream acceptors (backwater): not chase targets.
 ACCEPTORS = ["Dosso", "Opera Reno Panfilia", "Secondo Salto", "Gallo"]
 # Successive valle edges for chain-delta features (upstream_node - acceptor_node).
@@ -191,6 +211,7 @@ def build_feature_matrix(
     soglia_kind: str = "yellow",
     chain_pairs: list[tuple[str, str]] | None = None,
     poly_points: int = POLY_NAIVE_POINTS,
+    deriv_mode: str = "poly",
     upstream_tau: dict[str, int] | None = None,
     lag_align_h: int = 0,
     align_mode: str = "shift",
@@ -209,15 +230,19 @@ def build_feature_matrix(
     For h ≤ tau_i the wave reaching valle at t+h is already observed upstream.
     Shifts < 0 (h > tau_i) become NaN features with miss=1 — no future peeking.
 
-    ``station_lookback`` (optional): per-station window length in 30′ steps, capped
-    by ``lookback``. Used by ``--lookback-tau`` (L_i = τ_i + buffer); unrelated to
-    lag-align shift/augment.
+    ``station_lookback`` (optional): per-station window length in 30′ steps.
+    Used by ``--lookback-tau`` (L_i = τ_i + buffer); lengths may exceed the
+    default ``lookback`` when ``--lookback-tau-cap-hours`` raises the cap.
+    Unrelated to lag-align shift/augment.
+
+    ``deriv_mode``: ``poly`` → d1/d2 from local quadratic OLS; ``lin3`` → d1
+    only from linear OLS on last 3 samples (no d2).
 
     ``station_lag_steps`` (optional): explicit lag indices per station (τ-fraction
     grid). Feature names use the absolute step (``*_lag{s}``).
 
     ``drop_level`` / ``drop_level_stations``: omit absolute level/headroom/ratio
-    (keep delta/d1/d2/miss) so the model stays in increments — no absolute state.
+    (keep delta/d1[/d2]/miss) so the model stays in increments — no absolute state.
     """
     parts: dict[str, pd.Series] = {}
     feature_cols: list[str] = []
@@ -230,6 +255,10 @@ def build_feature_matrix(
     prefix = f"headroom_{soglia_kind}" if use_soglia_headroom else "level"
     ratio_prefix = f"ratio_{soglia_kind}"
     n_poly = max(POLY_NAIVE_MIN, int(poly_points))
+    use_lin3 = str(deriv_mode).lower() == "lin3"
+    max_lb = int(lookback)
+    if station_lookback:
+        max_lb = max(max_lb, max(int(v) for v in station_lookback.values()))
     nan_series = pd.Series(np.nan, index=wide.index, dtype=float)
     one_series = pd.Series(1.0, index=wide.index, dtype=float)
 
@@ -250,7 +279,7 @@ def build_feature_matrix(
             is_aligned_up = False
         else:
             lb = int(station_lookback.get(station, lookback)) if station_lookback else int(lookback)
-            lb = max(1, min(lb, int(lookback)))
+            lb = max(1, min(lb, max_lb))
             lag_keys = list(range(lb))
             is_aligned_up = station in upstream_tau
             lag_off = (
@@ -270,9 +299,14 @@ def build_feature_matrix(
         signal_prev = (ref - prev) if use_head else prev
         signal_delta = signal - signal_prev
         signal_delta = signal_delta.where(level.notna() & prev.notna())
-        # Local quadratic OLS on raw level → 1st/2nd derivative estimates (per 30′ step).
-        log(f"  poly d1/d2 for {station} (n={n_poly})…", level="debug")
-        d1_s, d2_s = series_poly_derivatives(level, n_points=n_poly)
+        if use_lin3:
+            log(f"  lin3 slope for {station}…", level="debug")
+            d1_s = series_lin3_slope(level, n_points=LIN3_POINTS)
+            d2_s = None
+        else:
+            # Local quadratic OLS on raw level → 1st/2nd derivative estimates (per 30′ step).
+            log(f"  poly d1/d2 for {station} (n={n_poly})…", level="debug")
+            d1_s, d2_s = series_poly_derivatives(level, n_points=n_poly)
         feat_prefix = prefix if use_head else "level"
         for k in lag_keys:
             s = k + lag_off
@@ -281,17 +315,20 @@ def build_feature_matrix(
             c_dv = f"delta_{tag}_lag{k}"
             c_mv = f"miss_{tag}_lag{k}"
             c_d1 = f"d1_{tag}_lag{k}"
-            c_d2 = f"d2_{tag}_lag{k}"
             parts[c_dv] = dv
             parts[c_mv] = mv
             parts[c_d1] = shifted(d1_s, s)
-            parts[c_d2] = shifted(d2_s, s)
+            deriv_cols = [c_d1]
+            if not use_lin3:
+                c_d2 = f"d2_{tag}_lag{k}"
+                parts[c_d2] = shifted(d2_s, s)
+                deriv_cols.append(c_d2)
             if drop_level_st:
-                feature_cols.extend([c_dv, c_mv, c_d1, c_d2])
+                feature_cols.extend([c_dv, c_mv, *deriv_cols])
             else:
                 c_lv = f"{feat_prefix}_{tag}_lag{k}"
                 parts[c_lv] = shifted(signal, s)
-                feature_cols.extend([c_lv, c_dv, c_mv, c_d1, c_d2])
+                feature_cols.extend([c_lv, c_dv, c_mv, *deriv_cols])
         if use_ratio:
             # Fill fraction of soglia (0 ⇒ empty relative to yellow, 1 ⇒ at yellow).
             ratio = level / ref
@@ -313,13 +350,16 @@ def build_feature_matrix(
                 c_dv = f"adelta_{tag}_lag{j}"
                 c_mv = f"amiss_{tag}_lag{j}"
                 c_d1 = f"ad1_{tag}_lag{j}"
-                c_d2 = f"ad2_{tag}_lag{j}"
                 parts[c_lv] = shifted(signal, s)
                 parts[c_dv] = shifted(signal_delta, s)
                 parts[c_mv] = shifted(miss, s).fillna(1.0)
                 parts[c_d1] = shifted(d1_s, s)
-                parts[c_d2] = shifted(d2_s, s)
-                feature_cols.extend([c_lv, c_dv, c_mv, c_d1, c_d2])
+                aug_cols = [c_lv, c_dv, c_mv, c_d1]
+                if not use_lin3:
+                    c_d2 = f"ad2_{tag}_lag{j}"
+                    parts[c_d2] = shifted(d2_s, s)
+                    aug_cols.append(c_d2)
+                feature_cols.extend(aug_cols)
 
     for a, b in (chain_pairs or []):
         if a not in wide.columns or b not in wide.columns:
@@ -420,6 +460,37 @@ def series_poly_derivatives(
         pd.Series(d1, index=level.index, dtype=float),
         pd.Series(d2, index=level.index, dtype=float),
     )
+
+
+def _lin_slope_weights(n_points: int) -> np.ndarray:
+    """Linear map y[0..n) → slope a1 for OLS y≈a0+a1 x with x=-(n-1)..0."""
+    x = np.arange(-(n_points - 1), 1, dtype=np.float64)
+    v = np.column_stack([np.ones(n_points), x])
+    pinv = np.linalg.pinv(v)  # 2 × n
+    return pinv[1].copy()
+
+
+_LIN3_SLOPE_W = _lin_slope_weights(LIN3_POINTS)
+
+
+def series_lin3_slope(
+    level: pd.Series,
+    n_points: int = LIN3_POINTS,
+) -> pd.Series:
+    """Local linear OLS slope (per step) on the last n_points samples."""
+    from numpy.lib.stride_tricks import sliding_window_view
+
+    n_points = max(2, int(n_points))
+    w = _lin_slope_weights(n_points) if n_points != LIN3_POINTS else _LIN3_SLOPE_W
+    vals = level.to_numpy(dtype=float)
+    n = len(vals)
+    d1 = np.full(n, np.nan)
+    if n >= n_points:
+        win = sliding_window_view(vals, n_points)
+        ok = np.isfinite(win).all(axis=1)
+        idx = np.flatnonzero(ok) + (n_points - 1)
+        d1[idx] = win[ok] @ w
+    return pd.Series(d1, index=level.index, dtype=float)
 
 
 def poly2_extrapolate(window: np.ndarray, h_steps: int) -> float:
@@ -1023,9 +1094,36 @@ def main() -> None:
         help="Append monte stations beyond the default UPSTREAMS set (e.g. Bagnetto Reno).",
     )
     parser.add_argument(
+        "--monte-set",
+        choices=("default", "global"),
+        default="default",
+        help=(
+            "default=UPSTREAMS (+ flags); "
+            "global=headwaters+mid-chain (UPSTREAMS_GLOBAL) for system-wide features"
+        ),
+    )
+    parser.add_argument(
         "--no-chiusa",
         action="store_true",
         help="Ablation: drop Casalecchio chiusa from UPSTREAMS (tiro a volo remains)",
+    )
+    parser.add_argument(
+        "--deriv-mode",
+        choices=("poly", "lin3"),
+        default="poly",
+        help=(
+            "poly=d1/d2 from local quadratic OLS (default); "
+            "lin3=d1 only from linear OLS on last 3 samples (no d2)"
+        ),
+    )
+    parser.add_argument(
+        "--flood-pad-hours",
+        type=float,
+        default=EVENT_PAD_HOURS,
+        help=(
+            f"Pad hours around catalog flood windows for --flood-only "
+            f"(default {EVENT_PAD_HOURS:g} h)"
+        ),
     )
     parser.add_argument(
         "--chiusa-weir",
@@ -1041,7 +1139,7 @@ def main() -> None:
     parser.add_argument(
         "--flood-only",
         action="store_true",
-        help="Restrict train/fit masks to catalog flood windows (±6 h); calm out of loss",
+        help="Restrict train/fit masks to catalog flood windows (±pad); calm out of loss",
     )
     parser.add_argument(
         "--events",
@@ -1089,6 +1187,15 @@ def main() -> None:
         type=float,
         default=4.0,
         help="Extra hours added to each upstream τ for --lookback-tau (default 4 h)",
+    )
+    parser.add_argument(
+        "--lookback-tau-cap-hours",
+        type=float,
+        default=None,
+        help=(
+            "Max L_i in hours for --lookback-tau (default = --lookback steps, 24 h). "
+            "Raise (e.g. 48) so distant heads keep τ+buffer history."
+        ),
     )
     parser.add_argument(
         "--tau-frac",
@@ -1250,12 +1357,21 @@ def main() -> None:
         acceptors = list(args.acceptors)
     else:
         acceptors = list(ACCEPTORS)
-    ups = list(UPSTREAMS_NO_CHIUSA if args.no_chiusa else UPSTREAMS)
+    if args.monte_set == "global":
+        ups = list(UPSTREAMS_GLOBAL)
+        if args.no_chiusa:
+            ups = [u for u in ups if u != "Casalecchio chiusa"]
+    else:
+        ups = list(UPSTREAMS_NO_CHIUSA if args.no_chiusa else UPSTREAMS)
     if args.extra_upstreams:
         for name in args.extra_upstreams:
             if name not in ups and name != DOWNSTREAM:
                 ups.append(name)
+    # Acceptors stay valle-only (backwater state); never duplicate into ups.
+    ups = [u for u in ups if u not in acceptors and u != DOWNSTREAM]
     station_list = [DOWNSTREAM, *ups, *acceptors]
+    deriv_mode = str(args.deriv_mode).lower()
+    flood_pad = pd.Timedelta(hours=float(args.flood_pad_hours))
     use_yellow = args.feature_set in ("yellow-headroom", "yellow-chain")
     use_chain = args.feature_set in ("chain", "yellow-chain")
     tag = (
@@ -1267,15 +1383,20 @@ def main() -> None:
     )
     if acceptors and acceptors != ACCEPTORS:
         tag = f"{tag}-" + "-".join(safe_name(a) for a in acceptors)
+    if args.monte_set == "global":
+        tag = f"{tag}-global"
     if args.extra_upstreams:
         tag = f"{tag}-x" + "-".join(safe_name(u) for u in args.extra_upstreams)
     tag = f"{tag}-p{poly_points}"
+    if deriv_mode == "lin3":
+        tag = f"{tag}-lin3"
     if args.no_chiusa:
         tag = f"{tag}-nochiusa"
     if args.chiusa_weir and not args.no_chiusa:
         tag = f"{tag}-weir"
     if args.flood_only:
-        tag = f"{tag}-flood"
+        pad_h = float(args.flood_pad_hours)
+        tag = f"{tag}-flood" if pad_h == float(EVENT_PAD_HOURS) else f"{tag}-flood{pad_h:g}h"
     if args.lag_align:
         tag = f"{tag}-lag{args.lag_align}"
     if args.lookback_tau:
@@ -1313,10 +1434,16 @@ def main() -> None:
     log(f"export-dnn={args.export_dnn}")
     log(f"skip-lgbm={args.skip_lgbm}  verbose={_VERBOSE}")
     log(f"target-mode={args.target_mode}")
-    log(
-        f"poly window={poly_points} pts "
-        f"({(poly_points - 1) * 0.5:.1f} h)  degree={POLY_NAIVE_DEGREE}"
-    )
+    log(f"deriv-mode={deriv_mode}  monte-set={args.monte_set}")
+    if deriv_mode == "lin3":
+        log(f"lin3 slope on last {LIN3_POINTS} samples (no d2)")
+    else:
+        log(
+            f"poly window={poly_points} pts "
+            f"({(poly_points - 1) * 0.5:.1f} h)  degree={POLY_NAIVE_DEGREE}"
+        )
+    if args.flood_only:
+        log(f"flood-pad={float(args.flood_pad_hours):g} h")
 
     config = json.loads(args.config.read_text(encoding="utf-8"))
     stations = list(config["sensors"].keys())
@@ -1332,7 +1459,10 @@ def main() -> None:
         if not args.events.exists():
             raise SystemExit(f"--flood-only requires events catalog at {args.events}")
         flood_events = load_catalog_events(args.events, DOWNSTREAM)
-        log(f"flood catalog events for {DOWNSTREAM}: {len(flood_events)}")
+        log(
+            f"flood catalog events for {DOWNSTREAM}: {len(flood_events)} "
+            f"(pad ±{float(args.flood_pad_hours):g} h)"
+        )
 
     soglia_levels = load_soglia_levels(args.soglie, prefer="yellow") if use_yellow else {}
     if use_yellow and not soglia_levels:
@@ -1412,6 +1542,11 @@ def main() -> None:
                 max_lag_est,
                 int(math.ceil(float(args.tau_frac_max) * int(args.lookback))),
             )
+        if args.lookback_tau and args.lookback_tau_cap_hours is not None:
+            max_lag_est = max(
+                max_lag_est,
+                int(round(float(args.lookback_tau_cap_hours) * 60 / ft.STEP_MINUTES)),
+            )
         for up in ups:
             x_up = wide[up].to_numpy(dtype=float)
             lag, r = ft.estimate_lag(
@@ -1426,16 +1561,26 @@ def main() -> None:
 
     if args.lookback_tau:
         buf_steps = max(0, int(round(float(args.lookback_tau_buffer_hours) * 60 / ft.STEP_MINUTES)))
-        min_lb = max(POLY_NAIVE_MIN, poly_points)
+        if args.lookback_tau_cap_hours is not None:
+            cap_steps = max(
+                1,
+                int(round(float(args.lookback_tau_cap_hours) * 60 / ft.STEP_MINUTES)),
+            )
+        else:
+            cap_steps = int(args.lookback)
+        # Holdout poly / lin3 still need a few points; prefer poly_points for poly mode.
+        min_lb = max(POLY_NAIVE_MIN, poly_points if deriv_mode != "lin3" else LIN3_POINTS)
         for st in needed:
             if st == DOWNSTREAM or st in acceptors:
+                # Cento + valle acceptors (backwater state): flat --lookback window.
                 station_lookback[st] = int(args.lookback)
             else:
                 tau = int(upstream_tau.get(st, args.lookback))
-                station_lookback[st] = max(min_lb, min(int(args.lookback), tau + buf_steps))
+                station_lookback[st] = max(min_lb, min(cap_steps, tau + buf_steps))
         log(
             f"lookback-tau buffer={buf_steps} step "
-            f"({args.lookback_tau_buffer_hours:g} h): "
+            f"({args.lookback_tau_buffer_hours:g} h) cap={cap_steps} step "
+            f"({cap_steps * ft.STEP_MINUTES / 60:g} h): "
             + ", ".join(f"{s}={station_lookback[s]}" for s in needed),
             level="ok",
         )
@@ -1479,22 +1624,30 @@ def main() -> None:
 
     log_step("Feature matrix")
     t_feat = time.perf_counter()
+    feat_lookback = int(args.lookback)
+    if station_lookback:
+        feat_lookback = max(feat_lookback, max(int(v) for v in station_lookback.values()))
+    deriv_note = (
+        f"d1=lin3({LIN3_POINTS})" if deriv_mode == "lin3"
+        else f"d1/d2=poly{poly_points}"
+    )
     log(
-        f"Building features: lookback={args.lookback} yellow={use_yellow} "
-        f"ratio={use_yellow} chain={bool(chain_pairs)} d1/d2=poly{poly_points} "
+        f"Building features: lookback={feat_lookback} yellow={use_yellow} "
+        f"ratio={use_yellow} chain={bool(chain_pairs)} {deriv_note} "
         f"lag-align={bool(lag_align_tau)} lookback-tau={bool(station_lookback) and not station_lag_steps} "
         f"tau-frac={bool(station_lag_steps)}"
     )
 
     def make_feats(h_steps: int) -> tuple[pd.DataFrame, list[str]]:
         return build_feature_matrix(
-            wide, rain, lookback=args.lookback, stations=needed,
+            wide, rain, lookback=feat_lookback, stations=needed,
             soglia_levels=soglia_levels,
             use_soglia_headroom=use_yellow,
             use_soglia_ratio=use_yellow,
             soglia_kind="yellow",
             chain_pairs=chain_pairs,
             poly_points=poly_points,
+            deriv_mode=deriv_mode,
             upstream_tau=lag_align_tau,
             lag_align_h=h_steps,
             align_mode=args.lag_align or "shift",
@@ -1568,7 +1721,7 @@ def main() -> None:
                 f"({100.0 * int(train_m.sum()) / max(1, n_before):.1f}% kept)"
             )
         if args.flood_only and flood_events:
-            flood_m = flood_window_mask(index, flood_events)
+            flood_m = flood_window_mask(index, flood_events, pad=flood_pad)
             # Calm out of train loss; keep val/hold full for FAR / calm checks in eval.
             n_before = int(train_m.sum())
             train_m = train_m & flood_m
@@ -1706,8 +1859,9 @@ def main() -> None:
         "useSogliaHeadroom": use_yellow,
         "useSogliaRatio": use_yellow,
         "usePolyDerivatives": True,
-        "polyDerivPoints": poly_points,
-        "polyDerivDegree": POLY_NAIVE_DEGREE,
+        "derivMode": deriv_mode,
+        "polyDerivPoints": LIN3_POINTS if deriv_mode == "lin3" else poly_points,
+        "polyDerivDegree": 1 if deriv_mode == "lin3" else POLY_NAIVE_DEGREE,
         "sogliaKind": "yellow" if use_yellow else None,
         "sogliaLevels": {k: soglia_levels[k] for k in needed if k in soglia_levels} if use_yellow else {},
         "chainPairs": [list(p) for p in chain_pairs],
@@ -1720,6 +1874,11 @@ def main() -> None:
         "lookbackTau": bool(args.lookback_tau),
         "lookbackTauBufferHours": (
             float(args.lookback_tau_buffer_hours) if args.lookback_tau else None
+        ),
+        "lookbackTauCapHours": (
+            float(args.lookback_tau_cap_hours)
+            if args.lookback_tau and args.lookback_tau_cap_hours is not None
+            else (float(args.lookback) * ft.STEP_MINUTES / 60.0 if args.lookback_tau else None)
         ),
         "stationLookbackSteps": dict(station_lookback) if station_lookback else {},
         "tauFrac": bool(station_lag_steps),
@@ -1757,7 +1916,7 @@ def main() -> None:
         "upstreams": ups,
         "acceptors": acceptors,
         "stations": needed,
-        "lookbackSteps": args.lookback,
+        "lookbackSteps": feat_lookback,
         "stepMinutes": ft.STEP_MINUTES,
         "featureNames": export_feature_cols,
         "featureRecipe": feature_recipe,
@@ -1771,6 +1930,8 @@ def main() -> None:
         "risingUnderWeight": args.rising_under_weight,
         "risingOnly": bool(args.rising_only),
         "floodOnly": bool(args.flood_only),
+        "floodPadHours": float(args.flood_pad_hours) if args.flood_only else None,
+        "monteSet": args.monte_set,
         "thresholdOn": "event_or_move",
         "holdoutBaseline": "poly2",
         "note": (
@@ -1779,10 +1940,22 @@ def main() -> None:
                 "headroom = soglia_gialla − livello; "
                 "ratio = livello / soglia_gialla; "
                 "chain = livello_monte_catena − livello_valle; "
-                "d1/d2 = derivate 1ª/2ª da OLS quadratico locale (3–4 punti); "
-                "holdout skill vs poly2."
+                + (
+                    "d1 = slope linreg su 3 campioni (no d2); "
+                    if deriv_mode == "lin3" else
+                    "d1/d2 = derivate 1ª/2ª da OLS quadratico locale; "
+                )
+                + "holdout skill vs poly2."
                 if acceptors else
-                "Ablation without valle acceptors; d1/d2 da OLS quadratico; holdout vs poly2."
+                (
+                    "Ablation without valle acceptors; "
+                    + (
+                        "d1=lin3; "
+                        if deriv_mode == "lin3" else
+                        "d1/d2 da OLS quadratico; "
+                    )
+                    + "holdout vs poly2."
+                )
             )
             + (
                 f" Rising-under-weight={args.rising_under_weight:g} on Δy>0."
@@ -1801,8 +1974,11 @@ def main() -> None:
         "stations": needed,
         "featureSet": args.feature_set,
         "featureRecipe": feature_recipe,
-        "lookbackSteps": args.lookback,
-        "lookbackMinutes": args.lookback * ft.STEP_MINUTES,
+        "lookbackSteps": feat_lookback,
+        "lookbackMinutes": feat_lookback * ft.STEP_MINUTES,
+        "floodPadHours": float(args.flood_pad_hours) if args.flood_only else None,
+        "monteSet": args.monte_set,
+        "derivMode": deriv_mode,
         "stepMinutes": ft.STEP_MINUTES,
         "horizonsMinutes": [h * ft.STEP_MINUTES for h in horizons],
         "features": export_feature_cols,

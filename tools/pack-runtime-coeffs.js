@@ -196,9 +196,17 @@ function pack(data, sourceSha) {
     if (data.nodes && typeof data.nodes === 'object') {
         out.nodes = {};
         for (const [name, node] of Object.entries(data.nodes)) {
-            out.nodes[name] = node?.kind === 'window_delta_mlp' && node?.horizons
-                ? packMlpNode(name, node)
-                : stripHorizonBlobs(node);
+            if (node?.kind === 'window_delta_mlp' && node?.horizons) {
+                out.nodes[name] = packMlpNode(name, node);
+            } else if (node?.kind === 'blend_gru_mlp' && node?.mlp?.horizons) {
+                out.nodes[name] = {
+                    ...node,
+                    mlp: packMlpNode(name, node.mlp),
+                    gru: stripHorizonBlobs(node.gru)
+                };
+            } else {
+                out.nodes[name] = stripHorizonBlobs(node);
+            }
         }
         out.sidecars = sidecarManifest(data.nodes.Cento);
     }

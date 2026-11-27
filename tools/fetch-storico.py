@@ -368,7 +368,28 @@ def write_parquet(path: Path, series: dict[str, float]) -> int:
     return len(rows)
 
 
+def merge_existing(out_dir: Path, name: str, series: dict[str, float]) -> dict[str, float]:
+    """Unisce le serie già presenti su disco: gli aggiornamenti incrementali non
+    cancellano l'archivio lungo. I valori nuovi vincono sullo stesso timestamp."""
+    merged: dict[str, float] = {}
+    csv_path = out_dir / f"{name}.csv"
+    parquet_path = out_dir / f"{name}.parquet"
+    if duckdb is not None and parquet_path.exists():
+        src = str(parquet_path).replace("'", "''")
+        for stamp, value in duckdb.sql(f"SELECT time, value FROM '{src}'").fetchall():
+            if stamp is not None:
+                merged[str(stamp)] = value
+    elif csv_path.exists():
+        with csv_path.open(newline="", encoding="utf-8") as handle:
+            for row in csv.DictReader(handle):
+                if row.get("time"):
+                    merged[row["time"]] = float(row["value"]) if row.get("value") not in (None, "") else None
+    merged.update(series)
+    return merged
+
+
 def write_series(out_dir: Path, name: str, series: dict[str, float], fmt: str) -> int:
+    series = merge_existing(out_dir, name, series)
     n = 0
     if fmt in ("csv", "both"):
         n = write_csv(out_dir / f"{name}.csv", series)

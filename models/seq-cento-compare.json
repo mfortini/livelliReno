@@ -42,17 +42,17 @@
     "gru",
     "cnn"
   ],
-  "holdoutFrom": null,
+  "holdoutFrom": "2026-12-01",
   "disclaimer": "Sperimentale: non operativo, non allertistico. Offline only.",
-  "mlpRef": "models/cento-dnn-novalle.json",
+  "mlpRef": "/data/ComuneDiCento/livelliReno/models/ml-cento-compare-novalle.json",
   "gate": {
     "gru": {
-      "validateEventsSkill120": 0.749386,
-      "holdoutEventsSkillPersist120": 0.615823,
-      "mlpValidateEventsSkill120": 0.809471,
-      "mlpHoldoutEventsSkillPersist120": 0.74686,
-      "prodValidateEventsSkill120": 0.809471,
-      "prodHoldoutEventsSkillPersist120": 0.74686,
+      "validateEventsSkill120": 0.752744,
+      "holdoutEventsSkillPersist120": null,
+      "mlpValidateEventsSkill120": null,
+      "mlpHoldoutEventsSkillPersist120": null,
+      "prodValidateEventsSkill120": 0.817856,
+      "prodHoldoutEventsSkillPersist120": null,
       "beatsMlpValidate": false,
       "beatsProdValidate": false,
       "beatsProdHoldoutPersist": false,
@@ -62,12 +62,12 @@
       ]
     },
     "cnn": {
-      "validateEventsSkill120": 0.714421,
-      "holdoutEventsSkillPersist120": 0.55503,
-      "mlpValidateEventsSkill120": 0.809471,
-      "mlpHoldoutEventsSkillPersist120": 0.74686,
-      "prodValidateEventsSkill120": 0.809471,
-      "prodHoldoutEventsSkillPersist120": 0.74686,
+      "validateEventsSkill120": 0.716778,
+      "holdoutEventsSkillPersist120": null,
+      "mlpValidateEventsSkill120": null,
+      "mlpHoldoutEventsSkillPersist120": null,
+      "prodValidateEventsSkill120": 0.817856,
+      "prodHoldoutEventsSkillPersist120": null,
       "beatsMlpValidate": false,
       "beatsProdValidate": false,
       "beatsProdHoldoutPersist": false,
@@ -77,8 +77,482 @@
       ]
     }
   },
-  "trainedAt": "2026-11-18T19:30:25Z",
+  "trainedAt": "2026-11-27T15:28:05Z",
   "horizons": {
+    "30": {
+      "horizonMinutes": 30,
+      "nChannels": 11,
+      "channelNames": [
+        "level_Cento",
+        "delta_Cento",
+        "miss_Cento",
+        "level_Forcelli",
+        "delta_Forcelli",
+        "miss_Forcelli",
+        "level_Bagnetto_Reno",
+        "delta_Bagnetto_Reno",
+        "miss_Bagnetto_Reno",
+        "rain6h",
+        "rain24h"
+      ],
+      "nSamples": {
+        "train": 177779,
+        "validate": 179084,
+        "holdout": 0
+      },
+      "channelStats": {
+        "level_Cento": {
+          "mean": -0.65667694,
+          "std": 1.78030023
+        },
+        "delta_Cento": {
+          "mean": 2.05e-06,
+          "std": 0.0296416
+        },
+        "miss_Cento": {
+          "mean": 0.0,
+          "std": 1.0
+        },
+        "level_Forcelli": {
+          "mean": 6.52959477,
+          "std": 0.83235359
+        },
+        "delta_Forcelli": {
+          "mean": -4.461e-05,
+          "std": 0.03848132
+        },
+        "miss_Forcelli": {
+          "mean": 0.0,
+          "std": 1.0
+        },
+        "level_Bagnetto_Reno": {
+          "mean": 18.54887853,
+          "std": 1.91791301
+        },
+        "delta_Bagnetto_Reno": {
+          "mean": -0.00012634,
+          "std": 0.1249681
+        },
+        "miss_Bagnetto_Reno": {
+          "mean": 0.0,
+          "std": 1.0
+        },
+        "rain6h": {
+          "mean": 1.47972873,
+          "std": 5.43720246
+        },
+        "rain24h": {
+          "mean": 5.93250473,
+          "std": 14.55099303
+        }
+      },
+      "gru": {
+        "train": {
+          "rmse": 0.011674,
+          "skill": 0.605248,
+          "mae": 0.007636,
+          "n": 177779,
+          "baseline": "persist",
+          "rmseBaseline": 0.029574
+        },
+        "validate": {
+          "rmse": 0.011084,
+          "skill": 0.632816,
+          "mae": 0.007815,
+          "n": 179084,
+          "baseline": "persist",
+          "rmseBaseline": 0.030186
+        },
+        "validateEvents": {
+          "rmse": 0.031666,
+          "skill": 0.843343,
+          "mae": 0.017353,
+          "n": 2291,
+          "baseline": "persist",
+          "rmseBaseline": 0.202135
+        },
+        "holdout": {
+          "rmse": null,
+          "skill": null,
+          "mae": null,
+          "n": 0,
+          "baseline": "poly2"
+        },
+        "holdoutEvents": {
+          "rmse": null,
+          "skill": null,
+          "mae": null,
+          "n": 0,
+          "baseline": "poly2"
+        },
+        "architecture": "GRU(h=64)",
+        "earlyStopping": {
+          "best_epoch": 47,
+          "best_val_mse": 0.00012285
+        }
+      },
+      "cnn": {
+        "train": {
+          "rmse": 0.013491,
+          "skill": 0.543826,
+          "mae": 0.008327,
+          "n": 177779,
+          "baseline": "persist",
+          "rmseBaseline": 0.029574
+        },
+        "validate": {
+          "rmse": 0.012061,
+          "skill": 0.60046,
+          "mae": 0.008356,
+          "n": 179084,
+          "baseline": "persist",
+          "rmseBaseline": 0.030186
+        },
+        "validateEvents": {
+          "rmse": 0.040675,
+          "skill": 0.798771,
+          "mae": 0.022951,
+          "n": 2291,
+          "baseline": "persist",
+          "rmseBaseline": 0.202135
+        },
+        "holdout": {
+          "rmse": null,
+          "skill": null,
+          "mae": null,
+          "n": 0,
+          "baseline": "poly2"
+        },
+        "holdoutEvents": {
+          "rmse": null,
+          "skill": null,
+          "mae": null,
+          "n": 0,
+          "baseline": "poly2"
+        },
+        "architecture": "CNN[32, 64]/k5",
+        "earlyStopping": {
+          "best_epoch": 10,
+          "best_val_mse": 0.00014546
+        }
+      }
+    },
+    "60": {
+      "horizonMinutes": 60,
+      "nChannels": 11,
+      "channelNames": [
+        "level_Cento",
+        "delta_Cento",
+        "miss_Cento",
+        "level_Forcelli",
+        "delta_Forcelli",
+        "miss_Forcelli",
+        "level_Bagnetto_Reno",
+        "delta_Bagnetto_Reno",
+        "miss_Bagnetto_Reno",
+        "rain6h",
+        "rain24h"
+      ],
+      "nSamples": {
+        "train": 177778,
+        "validate": 179068,
+        "holdout": 0
+      },
+      "channelStats": {
+        "level_Cento": {
+          "mean": -0.65671118,
+          "std": 1.78019151
+        },
+        "delta_Cento": {
+          "mean": 3.48e-06,
+          "std": 0.0296425
+        },
+        "miss_Cento": {
+          "mean": 0.0,
+          "std": 1.0
+        },
+        "level_Forcelli": {
+          "mean": 6.5296436,
+          "std": 0.83249798
+        },
+        "delta_Forcelli": {
+          "mean": -4.298e-05,
+          "std": 0.03848407
+        },
+        "miss_Forcelli": {
+          "mean": 0.0,
+          "std": 1.0
+        },
+        "level_Bagnetto_Reno": {
+          "mean": 18.54891309,
+          "std": 1.91777794
+        },
+        "delta_Bagnetto_Reno": {
+          "mean": -0.00012405,
+          "std": 0.12496828
+        },
+        "miss_Bagnetto_Reno": {
+          "mean": 0.0,
+          "std": 1.0
+        },
+        "rain6h": {
+          "mean": 1.47989488,
+          "std": 5.43746432
+        },
+        "rain24h": {
+          "mean": 5.93288549,
+          "std": 14.55161368
+        }
+      },
+      "gru": {
+        "train": {
+          "rmse": 0.015993,
+          "skill": 0.711738,
+          "mae": 0.010715,
+          "n": 177778,
+          "baseline": "persist",
+          "rmseBaseline": 0.055481
+        },
+        "validate": {
+          "rmse": 0.016964,
+          "skill": 0.707654,
+          "mae": 0.011238,
+          "n": 179068,
+          "baseline": "persist",
+          "rmseBaseline": 0.058028
+        },
+        "validateEvents": {
+          "rmse": 0.045408,
+          "skill": 0.821117,
+          "mae": 0.026229,
+          "n": 6948,
+          "baseline": "persist",
+          "rmseBaseline": 0.253842
+        },
+        "holdout": {
+          "rmse": null,
+          "skill": null,
+          "mae": null,
+          "n": 0,
+          "baseline": "poly2"
+        },
+        "holdoutEvents": {
+          "rmse": null,
+          "skill": null,
+          "mae": null,
+          "n": 0,
+          "baseline": "poly2"
+        },
+        "architecture": "GRU(h=64)",
+        "earlyStopping": {
+          "best_epoch": 34,
+          "best_val_mse": 0.00028778
+        }
+      },
+      "cnn": {
+        "train": {
+          "rmse": 0.018989,
+          "skill": 0.657746,
+          "mae": 0.012636,
+          "n": 177778,
+          "baseline": "persist",
+          "rmseBaseline": 0.055481
+        },
+        "validate": {
+          "rmse": 0.01902,
+          "skill": 0.672219,
+          "mae": 0.012769,
+          "n": 179068,
+          "baseline": "persist",
+          "rmseBaseline": 0.058028
+        },
+        "validateEvents": {
+          "rmse": 0.052753,
+          "skill": 0.792184,
+          "mae": 0.033576,
+          "n": 6948,
+          "baseline": "persist",
+          "rmseBaseline": 0.253842
+        },
+        "holdout": {
+          "rmse": null,
+          "skill": null,
+          "mae": null,
+          "n": 0,
+          "baseline": "poly2"
+        },
+        "holdoutEvents": {
+          "rmse": null,
+          "skill": null,
+          "mae": null,
+          "n": 0,
+          "baseline": "poly2"
+        },
+        "architecture": "CNN[32, 64]/k5",
+        "earlyStopping": {
+          "best_epoch": 16,
+          "best_val_mse": 0.00036178
+        }
+      }
+    },
+    "90": {
+      "horizonMinutes": 90,
+      "nChannels": 11,
+      "channelNames": [
+        "level_Cento",
+        "delta_Cento",
+        "miss_Cento",
+        "level_Forcelli",
+        "delta_Forcelli",
+        "miss_Forcelli",
+        "level_Bagnetto_Reno",
+        "delta_Bagnetto_Reno",
+        "miss_Bagnetto_Reno",
+        "rain6h",
+        "rain24h"
+      ],
+      "nSamples": {
+        "train": 177768,
+        "validate": 179060,
+        "holdout": 0
+      },
+      "channelStats": {
+        "level_Cento": {
+          "mean": -0.65685394,
+          "std": 1.78006944
+        },
+        "delta_Cento": {
+          "mean": 3.47e-06,
+          "std": 0.02964034
+        },
+        "miss_Cento": {
+          "mean": 0.0,
+          "std": 1.0
+        },
+        "level_Forcelli": {
+          "mean": 6.52957859,
+          "std": 0.83244773
+        },
+        "delta_Forcelli": {
+          "mean": -4.374e-05,
+          "std": 0.0384812
+        },
+        "miss_Forcelli": {
+          "mean": 0.0,
+          "std": 1.0
+        },
+        "level_Bagnetto_Reno": {
+          "mean": 18.54891535,
+          "std": 1.91767207
+        },
+        "delta_Bagnetto_Reno": {
+          "mean": -0.00012334,
+          "std": 0.12497201
+        },
+        "miss_Bagnetto_Reno": {
+          "mean": 0.0,
+          "std": 1.0
+        },
+        "rain6h": {
+          "mean": 1.47974482,
+          "std": 5.43725111
+        },
+        "rain24h": {
+          "mean": 5.9323494,
+          "std": 14.55063995
+        }
+      },
+      "gru": {
+        "train": {
+          "rmse": 0.022427,
+          "skill": 0.725251,
+          "mae": 0.014442,
+          "n": 177768,
+          "baseline": "persist",
+          "rmseBaseline": 0.081626
+        },
+        "validate": {
+          "rmse": 0.025211,
+          "skill": 0.70647,
+          "mae": 0.015307,
+          "n": 179060,
+          "baseline": "persist",
+          "rmseBaseline": 0.085887
+        },
+        "validateEvents": {
+          "rmse": 0.056716,
+          "skill": 0.785293,
+          "mae": 0.029918,
+          "n": 16164,
+          "baseline": "persist",
+          "rmseBaseline": 0.264153
+        },
+        "holdout": {
+          "rmse": null,
+          "skill": null,
+          "mae": null,
+          "n": 0,
+          "baseline": "poly2"
+        },
+        "holdoutEvents": {
+          "rmse": null,
+          "skill": null,
+          "mae": null,
+          "n": 0,
+          "baseline": "poly2"
+        },
+        "architecture": "GRU(h=64)",
+        "earlyStopping": {
+          "best_epoch": 22,
+          "best_val_mse": 0.00063557
+        }
+      },
+      "cnn": {
+        "train": {
+          "rmse": 0.027176,
+          "skill": 0.667072,
+          "mae": 0.016976,
+          "n": 177768,
+          "baseline": "persist",
+          "rmseBaseline": 0.081626
+        },
+        "validate": {
+          "rmse": 0.028099,
+          "skill": 0.672836,
+          "mae": 0.01724,
+          "n": 179060,
+          "baseline": "persist",
+          "rmseBaseline": 0.085887
+        },
+        "validateEvents": {
+          "rmse": 0.065209,
+          "skill": 0.753139,
+          "mae": 0.036812,
+          "n": 16164,
+          "baseline": "persist",
+          "rmseBaseline": 0.264153
+        },
+        "holdout": {
+          "rmse": null,
+          "skill": null,
+          "mae": null,
+          "n": 0,
+          "baseline": "poly2"
+        },
+        "holdoutEvents": {
+          "rmse": null,
+          "skill": null,
+          "mae": null,
+          "n": 0,
+          "baseline": "poly2"
+        },
+        "architecture": "CNN[32, 64]/k5",
+        "earlyStopping": {
+          "best_epoch": 16,
+          "best_val_mse": 0.00078957
+        }
+      }
+    },
     "120": {
       "horizonMinutes": 120,
       "nChannels": 11,
@@ -96,156 +570,144 @@
         "rain24h"
       ],
       "nSamples": {
-        "train": 176274,
-        "validate": 176351,
-        "holdout": 3617
+        "train": 177762,
+        "validate": 179054,
+        "holdout": 0
       },
       "channelStats": {
         "level_Cento": {
-          "mean": -0.64877145,
-          "std": 1.78524613
+          "mean": -0.65690698,
+          "std": 1.77998994
         },
         "delta_Cento": {
-          "mean": 2.95e-06,
-          "std": 0.02975976
+          "mean": 3.22e-06,
+          "std": 0.02963884
         },
         "miss_Cento": {
           "mean": 0.0,
           "std": 1.0
         },
         "level_Forcelli": {
-          "mean": 6.53041823,
-          "std": 0.83585121
+          "mean": 6.52955582,
+          "std": 0.83240651
         },
         "delta_Forcelli": {
-          "mean": -4.484e-05,
-          "std": 0.03856752
+          "mean": -4.464e-05,
+          "std": 0.03847622
         },
         "miss_Forcelli": {
           "mean": 0.0,
           "std": 1.0
         },
         "level_Bagnetto_Reno": {
-          "mean": 18.59752195,
-          "std": 1.85459415
+          "mean": 18.5489442,
+          "std": 1.91756802
         },
         "delta_Bagnetto_Reno": {
-          "mean": -0.00012414,
-          "std": 0.12552715
+          "mean": -0.00012305,
+          "std": 0.12497286
         },
         "miss_Bagnetto_Reno": {
           "mean": 0.0,
           "std": 1.0
         },
         "rain6h": {
-          "mean": 1.48375468,
-          "std": 5.44936797
+          "mean": 1.47952978,
+          "std": 5.43677972
         },
         "rain24h": {
-          "mean": 5.94884916,
-          "std": 14.5893762
+          "mean": 5.93183379,
+          "std": 14.54961391
         }
       },
       "gru": {
         "train": {
-          "rmse": 0.031831,
-          "skill": 0.705211,
-          "mae": 0.019112,
-          "n": 176274,
+          "rmse": 0.030298,
+          "skill": 0.718253,
+          "mae": 0.018734,
+          "n": 177762,
           "baseline": "persist",
-          "rmseBaseline": 0.107979
+          "rmseBaseline": 0.107538
         },
         "validate": {
-          "rmse": 0.034716,
-          "skill": 0.691555,
-          "mae": 0.02006,
-          "n": 176351,
+          "rmse": 0.034997,
+          "skill": 0.691668,
+          "mae": 0.019965,
+          "n": 179054,
           "baseline": "persist",
-          "rmseBaseline": 0.11255
+          "rmseBaseline": 0.113504
         },
         "validateEvents": {
-          "rmse": 0.071475,
-          "skill": 0.749386,
-          "mae": 0.038558,
-          "n": 24985,
+          "rmse": 0.071046,
+          "skill": 0.752744,
+          "mae": 0.037275,
+          "n": 25485,
           "baseline": "persist",
-          "rmseBaseline": 0.2852
+          "rmseBaseline": 0.287337
         },
         "holdout": {
-          "rmse": 0.041668,
-          "skill": 0.535399,
-          "mae": 0.009986,
-          "n": 3617,
-          "baseline": "poly2",
-          "rmseBaseline": 0.089685,
-          "skillPersist": 0.603828,
-          "rmsePersist": 0.105175
+          "rmse": null,
+          "skill": null,
+          "mae": null,
+          "n": 0,
+          "baseline": "poly2"
         },
         "holdoutEvents": {
-          "rmse": 0.184097,
-          "skill": 0.542661,
-          "mae": 0.066329,
-          "n": 171,
-          "baseline": "poly2",
-          "rmseBaseline": 0.40254,
-          "skillPersist": 0.615823,
-          "rmsePersist": 0.4792
+          "rmse": null,
+          "skill": null,
+          "mae": null,
+          "n": 0,
+          "baseline": "poly2"
         },
         "architecture": "GRU(h=64)",
         "earlyStopping": {
-          "best_epoch": 14,
-          "best_val_mse": 0.00120517
+          "best_epoch": 17,
+          "best_val_mse": 0.00122478
         }
       },
       "cnn": {
         "train": {
-          "rmse": 0.038716,
-          "skill": 0.641453,
-          "mae": 0.022523,
-          "n": 176274,
+          "rmse": 0.036194,
+          "skill": 0.663428,
+          "mae": 0.021798,
+          "n": 177762,
           "baseline": "persist",
-          "rmseBaseline": 0.107979
+          "rmseBaseline": 0.107538
         },
         "validate": {
-          "rmse": 0.038786,
-          "skill": 0.655385,
-          "mae": 0.022777,
-          "n": 176351,
+          "rmse": 0.038682,
+          "skill": 0.659198,
+          "mae": 0.022389,
+          "n": 179054,
           "baseline": "persist",
-          "rmseBaseline": 0.11255
+          "rmseBaseline": 0.113504
         },
         "validateEvents": {
-          "rmse": 0.081447,
-          "skill": 0.714421,
-          "mae": 0.047183,
-          "n": 24985,
+          "rmse": 0.08138,
+          "skill": 0.716778,
+          "mae": 0.046324,
+          "n": 25485,
           "baseline": "persist",
-          "rmseBaseline": 0.2852
+          "rmseBaseline": 0.287337
         },
         "holdout": {
-          "rmse": 0.047869,
-          "skill": 0.466247,
-          "mae": 0.011735,
-          "n": 3617,
-          "baseline": "poly2",
-          "rmseBaseline": 0.089685,
-          "skillPersist": 0.544861,
-          "rmsePersist": 0.105175
+          "rmse": null,
+          "skill": null,
+          "mae": null,
+          "n": 0,
+          "baseline": "poly2"
         },
         "holdoutEvents": {
-          "rmse": 0.213229,
-          "skill": 0.470291,
-          "mae": 0.090824,
-          "n": 171,
-          "baseline": "poly2",
-          "rmseBaseline": 0.40254,
-          "skillPersist": 0.55503,
-          "rmsePersist": 0.4792
+          "rmse": null,
+          "skill": null,
+          "mae": null,
+          "n": 0,
+          "baseline": "poly2"
         },
         "architecture": "CNN[32, 64]/k5",
         "earlyStopping": {
-          "best_epoch": 9,
-          "best_val_mse": 0.00150439
+          "best_epoch": 23,
+          "best_val_mse": 0.00149633
         }
       }
     }

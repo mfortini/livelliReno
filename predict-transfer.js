@@ -1921,7 +1921,11 @@
         const span = Math.max(1, blendEnd - blendStart);
         const gruHorizon = Math.min(horizonHours, blendEnd / 60);
         const gruPts = forecastWindowSeq(gruModel, sensorMap, rainSensors, gruHorizon, now, stepMs, options);
-        const ridgePts = forecastDirectHorizon(upstreams, ridgeModel, horizonHours, now, stepMs, options);
+        // Long leg: ridge by default; options.mlpModel switches to the window MLP (blend_gru_mlp).
+        const ridgePts = options.mlpModel
+            ? forecastWindowMlp(options.mlpModel, sensorMap, rainSensors, horizonHours, now, stepMs, options)
+            : forecastDirectHorizon(upstreams, ridgeModel, horizonHours, now, stepMs, options);
+        const longRegime = options.mlpModel ? 'mlp' : 'ridge';
         const nowMs = +now;
         const gruByT = new Map();
         for (const p of gruPts) {
@@ -1962,7 +1966,7 @@
                 value = r.value;
                 spreadLow = r.spreadLow;
                 spreadHigh = r.spreadHigh;
-                regime = 'ridge';
+                regime = longRegime;
             } else if (g && r && finite(g.value) && finite(r.value)) {
                 const w = Math.min(1, Math.max(0, (minutes - blendStart) / span));
                 value = (1 - w) * g.value + w * r.value;
@@ -1984,7 +1988,7 @@
                 value = r.value;
                 spreadLow = r.spreadLow;
                 spreadHigh = r.spreadHigh;
-                regime = 'ridge';
+                regime = longRegime;
             }
             if (!finite(value)) continue;
             points.push({ time: new Date(t), value, regime, spreadLow, spreadHigh });
@@ -2521,12 +2525,45 @@
         };
     }
 
+    function parseBlendGruMlpNode(node) {
+        if (!node || node.kind !== 'blend_gru_mlp') return null;
+        const gru = parseWindowSeqNode(node.gru || node.seq);
+        const mlp = parseWindowMlpNode(node.mlp);
+        if (!gru || !mlp) return null;
+        const skill120 = finite(Number(node.skill120)) ? Number(node.skill120)
+            : (finite(gru.skill120) ? gru.skill120 : mlp.skill120);
+        const upstreams = [...new Set([...(gru.upstreams || []), ...(mlp.upstreams || [])])];
+        return {
+            kind: 'blend_gru_mlp',
+            source: 'offline',
+            downstream: node.downstream || gru.downstream || mlp.downstream,
+            gru,
+            mlp,
+            blendStartMin: finite(Number(node.blendStartMin)) ? Number(node.blendStartMin) : 60,
+            blendEndMin: finite(Number(node.blendEndMin)) ? Number(node.blendEndMin) : 120,
+            upstreams,
+            lagMinutes: upstreams.map(() => (mlp.lookbackSteps || 0) * (mlp.stepMinutes || 30)),
+            horizons: { ...(mlp.horizons || {}), ...(gru.horizons || {}) },
+            reliable: node.reliable !== false && (skill120 == null || skill120 >= SKILL_KEEP),
+            skill120,
+            r: skill120,
+            rmse: mlp.rmse ?? gru.rmse ?? null,
+            spreadLow: gru.spreadLow ?? mlp.spreadLow,
+            spreadHigh: gru.spreadHigh ?? mlp.spreadHigh,
+            a: [],
+            b: 0,
+            c: [],
+            trainedAt: typeof node.trainedAt === 'string' ? node.trainedAt : null
+        };
+    }
+
     function parseOfflineNode(coeffs, downstreamId, upstreamIds) {
         const node = coeffs?.nodes?.[downstreamId];
         if (!node) return null;
         if (node.kind === 'rc_gru') return parseRcGruNode(node);
         if (node.kind === 'muskingum_gru') return parseMuskingumGruNode(node);
         if (node.kind === 'blend_gru_ridge') return parseBlendGruRidgeNode(node);
+        if (node.kind === 'blend_gru_mlp') return parseBlendGruMlpNode(node);
         if (node.kind === 'window_delta_mlp') return parseWindowMlpNode(node);
         if (node.kind === 'window_delta_gru' || node.kind === 'window_delta_cnn' || node.kind === 'window_delta_transformer') {
             return parseWindowSeqNode(node);
@@ -2963,13 +3000,14 @@
             };
         }
 
-        // M3: GRU≤2h + ridge long with weighted junction.
-        if (offlineNode?.kind === 'blend_gru_ridge') {
+        // M3: GRU≤2h + ridge long with weighted junction (o gamba MLP per blend_gru_mlp).
+        if (offlineNode?.kind === 'blend_gru_ridge' || offlineNode?.kind === 'blend_gru_mlp') {
+            const longLabel = offlineNode.kind === 'blend_gru_mlp' ? 'MLP' : 'ridge';
             if (offlineNode.reliable === false) {
                 return {
                     ok: false,
                     maxHorizonMinutes,
-                    reason: 'Nessuna stima affidabile: blend GRU+ridge sotto soglia.',
+                    reason: `Nessuna stima affidabile: blend GRU+${longLabel} sotto soglia.`,
                     source: 'offline',
                     kind: offlineNode.kind,
                     skill120: offlineNode.skill120,
@@ -2985,23 +3023,24 @@
                 if (up?.id) sensorMap[up.id] = up;
             }
             const rainSensors = options.rainSensors || [];
-            const ridgeUps = (offlineNode.upstreams || []).map(id => sensorMap[id]).filter(Boolean);
-            if (ridgeUps.length !== (offlineNode.upstreams || []).length) {
-                return { ok: false, reason: 'Serie a monte incomplete per il tratto ridge del blend.' };
+            const blendUps = (offlineNode.upstreams || []).map(id => sensorMap[id]).filter(Boolean);
+            if (blendUps.length !== (offlineNode.upstreams || []).length) {
+                return { ok: false, reason: `Serie a monte incomplete per il tratto ${longLabel} del blend.` };
             }
             const rawForecast = forecastBlendGruRidge(
-                offlineNode.gru, offlineNode.ridge, ridgeUps, sensorMap, rainSensors, horizonHours, now, stepMs, {
+                offlineNode.gru, offlineNode.ridge, blendUps, sensorMap, rainSensors, horizonHours, now, stepMs, {
                     anchor,
                     maxStep: options.maxStep === null ? null : maxStep,
                     downstream,
                     rainSensors,
                     smooth: options.smooth,
                     blendStartMin: offlineNode.blendStartMin,
-                    blendEndMin: offlineNode.blendEndMin
+                    blendEndMin: offlineNode.blendEndMin,
+                    mlpModel: offlineNode.kind === 'blend_gru_mlp' ? offlineNode.mlp : null
                 }
             );
             if (!rawForecast.length) {
-                return { ok: false, reason: 'Blend GRU+ridge incompleto sulla finestra richiesta.' };
+                return { ok: false, reason: `Blend GRU+${longLabel} incompleto sulla finestra richiesta.` };
             }
             const forecast = rawForecast.map(point => {
                 const lo = finite(point.spreadLow) ? point.spreadLow : offlineNode.spreadLow;
@@ -3954,16 +3993,18 @@
     async function hydratePackedMlpNode(fetcher, data, station = 'Cento', options = {}) {
         try {
             const node = data?.nodes?.[station];
-            const packed = node?.packedWeights;
+            // Blend nodes keep the MLP leg nested: hydrate it instead of the top node.
+            const target = node?.packedWeights ? node : (node?.mlp?.packedWeights ? node.mlp : node);
+            const packed = target?.packedWeights;
             if (!packed?.chunks) return false;
             const part = options.part || 'initial';
             const parts = part === 'all' ? Object.keys(packed.chunks) : [part];
             let changed = false;
-            node.horizons = node.horizons || {};
+            target.horizons = target.horizons || {};
             for (const key of parts) {
                 const chunk = packed.chunks[key];
                 if (!chunk?.url || !Array.isArray(chunk.horizons)) continue;
-                if (chunk.horizons.every(h => node.horizons[String(h)]?.layers)) continue;
+                if (chunk.horizons.every(h => target.horizons[String(h)]?.layers)) continue;
                 const res = await fetcher(chunk.url);
                 if (!res?.ok || typeof res.arrayBuffer !== 'function') continue;
                 const decoded = decodePackedMlp(await res.arrayBuffer());
@@ -3971,7 +4012,7 @@
                 for (const h of chunk.horizons) {
                     const block = decoded.horizons[String(h)];
                     if (!block) continue;
-                    node.horizons[String(h)] = {
+                    target.horizons[String(h)] = {
                         ...(packed.horizonMeta?.[String(h)] || {}),
                         ...block
                     };

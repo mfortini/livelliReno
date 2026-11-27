@@ -1940,6 +1940,105 @@ test('blend_gru_ridge joins GRU short and ridge long without jump at edges', () 
     assert.ok(Math.abs(at180.med - (y0 + 0.05)) < 1e-6);
 });
 
+test('blend_gru_mlp joins GRU short and MLP long with linear junction', () => {
+    const start = new Date('2026-11-10T00:00:00Z');
+    const now = new Date('2026-11-11T12:00:00Z');
+    const n = Math.round((+now - +start) / (30 * 60000)) + 1;
+    const values = Array.from({ length: n }, (_, i) => 1 + 0.01 * i);
+    const down = sensor('Gallo', values, start);
+    const up = sensor('Opera Reno Panfilia', values.map(v => v + 0.1), start);
+    const stations = ['Gallo', 'Opera Reno Panfilia'];
+    const channelNames = [];
+    for (const station of stations) {
+        const tag = station.replace(/ /g, '_');
+        channelNames.push(`level_${tag}`, `delta_${tag}`, `miss_${tag}`);
+    }
+    const nC = channelNames.length;
+    const mean = Array(nC).fill(0);
+    const std = Array(nC).fill(1);
+    const hidden = 1;
+    const gru = {
+        inputSize: nC,
+        hiddenSize: hidden,
+        weightIh: Array.from({ length: 3 * hidden }, () => Array(nC).fill(0)),
+        weightHh: Array.from({ length: 3 * hidden }, () => Array(hidden).fill(0)),
+        biasIh: Array(3 * hidden).fill(0),
+        biasHh: Array(3 * hidden).fill(0)
+    };
+    const headLayers = [{ W: [[0]], b: [0.10], activation: 'linear' }];
+    const gruNode = {
+        kind: 'window_delta_gru',
+        stations,
+        upstreams: ['Opera Reno Panfilia'],
+        channelNames,
+        lookbackSteps: 4,
+        stepMinutes: 30,
+        useRain: false,
+        reliable: true,
+        skill120: 0.8,
+        horizons: {
+            '30': { mean, std, gru, headLayers, spreadLow: 0.01, spreadHigh: 0.01 },
+            '60': { mean, std, gru, headLayers, spreadLow: 0.01, spreadHigh: 0.01 },
+            '90': { mean, std, gru, headLayers, spreadLow: 0.01, spreadHigh: 0.01 },
+            '120': { mean, std, gru, headLayers, spreadLow: 0.01, spreadHigh: 0.01, validate: { skill: 0.8 } }
+        }
+    };
+    // MLP: 1 feature (level_Gallo_lag0), zero weight + bias 0.20 → predicts y0+0.20.
+    const mlpNode = {
+        kind: 'window_delta_mlp',
+        downstream: 'Gallo',
+        stations,
+        upstreams: ['Opera Reno Panfilia'],
+        featureNames: ['level_Gallo_lag0'],
+        featureRecipe: { featureSet: 'raw', usePolyDerivatives: false },
+        lookbackSteps: 4,
+        stepMinutes: 30,
+        useRain: false,
+        reliable: true,
+        skill120: 0.7,
+        horizons: {
+            '30': { mean: [0], std: [1], layers: [{ W: [[0]], b: [0.20], activation: 'linear' }], spreadLow: 0.02, spreadHigh: 0.02 },
+            '60': { mean: [0], std: [1], layers: [{ W: [[0]], b: [0.20], activation: 'linear' }], spreadLow: 0.02, spreadHigh: 0.02 },
+            '90': { mean: [0], std: [1], layers: [{ W: [[0]], b: [0.20], activation: 'linear' }], spreadLow: 0.02, spreadHigh: 0.02 },
+            '120': { mean: [0], std: [1], layers: [{ W: [[0]], b: [0.20], activation: 'linear' }], spreadLow: 0.02, spreadHigh: 0.02 },
+            '150': { mean: [0], std: [1], layers: [{ W: [[0]], b: [0.20], activation: 'linear' }], spreadLow: 0.02, spreadHigh: 0.02 },
+            '180': { mean: [0], std: [1], layers: [{ W: [[0]], b: [0.20], activation: 'linear' }], spreadLow: 0.02, spreadHigh: 0.02 },
+            '360': { mean: [0], std: [1], layers: [{ W: [[0]], b: [0.20], activation: 'linear' }], spreadLow: 0.02, spreadHigh: 0.02 }
+        }
+    };
+    const blend = {
+        kind: 'blend_gru_mlp',
+        downstream: 'Gallo',
+        blendStartMin: 60,
+        blendEndMin: 120,
+        gru: gruNode,
+        mlp: mlpNode,
+        reliable: true,
+        skill120: 0.8
+    };
+    const sensorMap = { Gallo: down, 'Opera Reno Panfilia': up };
+    const result = P.predictNode(down, [up], {
+        hours: 24, now, coeffs: { nodes: { Gallo: blend } },
+        horizonHours: 6, downstreamId: 'Gallo', sensorMap, rainSensors: [], smooth: 0
+    });
+    assert.equal(result.ok, true);
+    assert.equal(result.kind, 'blend_gru_mlp');
+    const y0 = down.timeSeries.at(-1).value;
+    const pts = (result.forecast || []).filter(p => p.regime !== 'anchor');
+    const at60 = pts.find(p => Math.abs(+p.time - (+now + 60 * 60000)) < 1000);
+    const at90 = pts.find(p => Math.abs(+p.time - (+now + 90 * 60000)) < 1000);
+    const at180 = pts.find(p => Math.abs(+p.time - (+now + 180 * 60000)) < 1000);
+    assert.ok(at60 && at90 && at180);
+    // GRU leg saturates at +0.10 by 60′ (maxStep clamps the first step);
+    // MLP predicts +0.20; blend at 90′ is the linear midpoint of the two legs.
+    assert.ok(Math.abs(at60.med - (y0 + 0.10)) < 1e-6);
+    assert.ok(Math.abs(at90.med - (y0 + 0.125)) < 1e-6);
+    assert.ok(Math.abs(at180.med - (y0 + 0.20)) < 1e-6);
+    assert.equal(at60.regime, 'gru');
+    assert.equal(at90.regime, 'blend');
+    assert.equal(at180.regime, 'mlp');
+});
+
 test('estimatePredictedLag recovers a shifted hindcast series', () => {
     const n = 40;
     const obs = Array.from({ length: n }, (_, i) => Math.sin(i / 4) + 0.1 * i);
