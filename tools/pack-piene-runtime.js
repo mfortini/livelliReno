@@ -35,6 +35,34 @@ const evalTable = readJson('eval-table.json');
 const evalPerEvent = readJson('eval-per-event.json');
 const report = readJson('report-piene-lag-align.json');
 
+// Model version metadata (trainedAt) shown on the models table.
+function modelTrainedAt(file, node, kind) {
+    try {
+        const d = JSON.parse(fs.readFileSync(path.join(MODELS, file), 'utf8'));
+        if (node && d?.nodes?.[node]?.trainedAt) return d.nodes[node].trainedAt;
+        if (typeof d?.trainedAt === 'string') return d.trainedAt;
+        const times = Object.values(d?.nodes || {})
+            .filter(n => !kind || n?.kind === kind)
+            .map(n => n?.trainedAt).filter(t => typeof t === 'string').sort();
+        return times.length ? times[times.length - 1] : null;
+    } catch {
+        return null;
+    }
+}
+const MODEL_META = {
+    prod: { file: 'transfer-coeffs.json', node: 'Cento' },
+    ridge: { file: 'transfer-coeffs.json', kind: 'direct_horizon_delta_ridge' },
+    seq_gru: { file: 'seq-cento-gru.json' },
+    seq_cnn: { file: 'seq-cento-cnn.json' },
+    muskingum_gru: { file: 'hybrid-muskingum-cento-seq.json' },
+    rc_gru: { file: 'hybrid-rc-cento-seq.json' }
+};
+const modelMeta = {};
+for (const [key, spec] of Object.entries(MODEL_META)) {
+    const trainedAt = modelTrainedAt(spec.file, spec.node, spec.kind);
+    if (trainedAt) modelMeta[key] = { trainedAt };
+}
+
 // ---------------------------------------------------------------------------
 // Dictionaries
 // ---------------------------------------------------------------------------
@@ -217,6 +245,7 @@ const pack = {
     detection: events.detection || null,
     stations: stationNames,
     models: modelNames,
+    modelMeta,
     horizons,
     metrics: METRICS,
     stationInfo,

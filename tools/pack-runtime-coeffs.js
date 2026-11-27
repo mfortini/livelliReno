@@ -153,7 +153,9 @@ function scanSeqAdopt() {
             if (data?.downstream) out[data.downstream] = {
                 url: `models/${file}`,
                 reliable: data.reliable === true,
-                skill120: round(data.skill120, 4)
+                skill120: round(data.skill120, 4),
+                kind: typeof data.kind === 'string' ? data.kind : null,
+                trainedAt: typeof data.trainedAt === 'string' ? data.trainedAt : null
             };
         } catch {}
     }

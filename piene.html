@@ -161,7 +161,7 @@
                     <tr>
                         <th>Modello</th><th>Eventi</th><th>RMSE (m)</th><th>Skill</th><th>Skill IC 90%</th>
                         <th>NSE</th><th>KGE</th><th>Ritardo fase (min)</th><th>RMSE monta</th><th>RMSE piena/decrescita</th>
-                        <th>Err. picco (m)</th><th>Err. ora picco (min)</th><th>Copertura banda</th>
+                        <th>Err. picco (m)</th><th>Err. ora picco (min)</th><th>Copertura banda</th><th>Addestrato</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -448,7 +448,8 @@
                 '<td>' + fmt(metric(arr, 'fallingRmse'), 3) + '</td>' +
                 '<td>' + fmt(metric(arr, 'peakLevelErrMed'), 3) + '</td>' +
                 '<td>' + fmtInt(metric(arr, 'peakTimeErrMed')) + '</td>' +
-                '<td>' + fmt(metric(arr, 'bandCoverageEvent')) + '</td>';
+                '<td>' + fmt(metric(arr, 'bandCoverageEvent')) + '</td>' +
+                '<td>' + fmtDateShort(pack.modelMeta?.[m]?.trainedAt) + '</td>';
             tbody.appendChild(tr);
         });
     }

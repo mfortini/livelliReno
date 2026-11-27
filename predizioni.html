@@ -596,7 +596,23 @@
         const skill = prediction.skill120 == null ? 'n/d' : prediction.skill120.toFixed(2);
         const bandLabel = nodeModel?.quantiles ? 'banda q10–90' : 'banda residua';
         const degLabel = prediction.degraded ? ' · <strong>degradata</strong>' : '';
+        const kindLabels = {
+            window_delta_mlp: 'MLP', direct_horizon_delta_ridge: 'ridge',
+            window_delta_gru: 'GRU seq', blend_gru_mlp: 'miscela GRU+MLP',
+            blend_gru_ridge: 'miscela GRU+ridge', muskingum_gru: 'Muskingum+GRU',
+            rc_gru: 'RC+GRU'
+        };
+        const modelKind = prediction.kind || nodeModel?.kind;
+        const isSeq = modelKind === 'window_delta_gru';
+        const trainedAt = isSeq
+            ? coeffs?.seqAdopt?.[node.downstream]?.trainedAt
+            : nodeModel?.trainedAt;
+        const modelLabel = modelKind ? (kindLabels[modelKind] || modelKind) : null;
+        const modelLine = modelLabel
+            ? `Modello: <strong>${modelLabel}</strong>${trainedAt ? ` · addestrato il ${new Intl.DateTimeFormat('it-IT', { timeZone: 'Europe/Rome', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date(trainedAt))}` : ''}<br>`
+            : '';
         return `da <strong>${upsLabel}</strong><br>`
+            + modelLine
             + `<span class="metric-chip">errore tipico ±${number(prediction.rmse)} m</span>`
             + `<span class="metric-chip">skill@2h ${skill}</span>`
             + `<span class="metric-chip">affidabile fino a ${formatHorizonHours(reliableH)} h</span>${degLabel}<br>`
